@@ -1,0 +1,134 @@
+
+import apiClient from '../apiClient';
+
+// Type definitions
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  refreshToken?: string;
+  expiresIn?: number;
+  user?: {
+    id: string | number;
+    email: string;
+    roles: string[];
+    name?: string;
+  };
+}
+
+class AuthService {
+  private endpoint = '/auth';
+  private tokenKey = 'pharma_auth_token';
+  private refreshTokenKey = 'pharma_refresh_token';
+  private userKey = 'pharma_user';
+
+  // Login user and store tokens
+  async login(credentials: LoginRequest): Promise<LoginResponse> {
+    const response = await apiClient.post<LoginResponse>(`${this.endpoint}/login`, credentials);
+    
+    if (response?.token) {
+      this.setToken(response.token);
+      
+      if (response.refreshToken) {
+        this.setRefreshToken(response.refreshToken);
+      }
+      
+      if (response.user) {
+        this.setUser(response.user);
+      }
+      
+      // Set the authentication token for future API requests
+      apiClient.setAuthToken(response.token);
+    }
+    
+    return response;
+  }
+
+  // Logout user and remove tokens
+  logout(): void {
+    // Clear tokens from storage
+    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.refreshTokenKey);
+    localStorage.removeItem(this.userKey);
+    
+    // Remove auth header from API client
+    apiClient.removeAuthToken();
+  }
+
+  // Refresh the access token using a refresh token
+  async refreshToken(): Promise<boolean> {
+    const refreshToken = this.getRefreshToken();
+    
+    if (!refreshToken) {
+      return false;
+    }
+    
+    try {
+      const response = await apiClient.post<LoginResponse>(
+        `${this.endpoint}/refresh`, 
+        { refreshToken }
+      );
+      
+      if (response?.token) {
+        this.setToken(response.token);
+        
+        if (response.refreshToken) {
+          this.setRefreshToken(response.refreshToken);
+        }
+        
+        apiClient.setAuthToken(response.token);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      this.logout();
+      return false;
+    }
+  }
+
+  // Check if user is logged in
+  isAuthenticated(): boolean {
+    const token = this.getToken();
+    return !!token;
+  }
+
+  // Get current user information
+  getUser(): any {
+    const userStr = localStorage.getItem(this.userKey);
+    if (userStr) {
+      try {
+        return JSON.parse(userStr);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  // Private helper methods
+  private setToken(token: string): void {
+    localStorage.setItem(this.tokenKey, token);
+  }
+
+  private getToken(): string | null {
+    return localStorage.getItem(this.tokenKey);
+  }
+
+  private setRefreshToken(refreshToken: string): void {
+    localStorage.setItem(this.refreshTokenKey, refreshToken);
+  }
+
+  private getRefreshToken(): string | null {
+    return localStorage.getItem(this.refreshTokenKey);
+  }
+
+  private setUser(user: any): void {
+    localStorage.setItem(this.userKey, JSON.stringify(user));
+  }
+}
+
+export default new AuthService();

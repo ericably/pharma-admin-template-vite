@@ -61,6 +61,18 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				pharmacy: {
+					50: '#e6f7ff',
+					100: '#ccefff',
+					200: '#99dfff',
+					300: '#66cfff',
+					400: '#33bfff',
+					500: '#0ea5e9', /* Main pharmacy blue */
+					600: '#0284c7',
+					700: '#0369a1',
+					800: '#075985',
+					900: '#0c4a6e'
 				}
 			},
 			borderRadius: {
