@@ -5,14 +5,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
-import { AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import AuthService from "../api/services/AuthService";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@pharmacy.com");
+  const [password, setPassword] = useState("password123");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -57,6 +56,16 @@ export default function Login() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
+            
+            <Alert variant="default" className="bg-blue-50 border-blue-200 text-blue-800">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Development Credentials</AlertTitle>
+              <AlertDescription>
+                For testing, use: <br/>
+                Email: admin@pharmacy.com<br/>
+                Password: password123
+              </AlertDescription>
+            </Alert>
             
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

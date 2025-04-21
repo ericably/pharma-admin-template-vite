@@ -25,26 +25,70 @@ class AuthService {
   private refreshTokenKey = 'pharma_refresh_token';
   private userKey = 'pharma_user';
 
+  // Mock credentials for development - remove in production
+  private mockCredentials = {
+    email: "admin@pharmacy.com",
+    password: "password123"
+  };
+
   // Login user and store tokens
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await apiClient.post<LoginResponse>(`${this.endpoint}/login`, credentials);
-    
-    if (response?.token) {
-      this.setToken(response.token);
+    // For development: mock login when API is not available
+    if (credentials.email === this.mockCredentials.email && 
+        credentials.password === this.mockCredentials.password) {
       
-      if (response.refreshToken) {
-        this.setRefreshToken(response.refreshToken);
+      // Create mock response
+      const mockResponse: LoginResponse = {
+        token: "mock-jwt-token-for-development",
+        refreshToken: "mock-refresh-token",
+        expiresIn: 3600,
+        user: {
+          id: 1,
+          email: credentials.email,
+          roles: ["ROLE_ADMIN"],
+          name: "Admin User"
+        }
+      };
+      
+      // Store mock data
+      this.setToken(mockResponse.token);
+      if (mockResponse.refreshToken) {
+        this.setRefreshToken(mockResponse.refreshToken);
+      }
+      if (mockResponse.user) {
+        this.setUser(mockResponse.user);
       }
       
-      if (response.user) {
-        this.setUser(response.user);
-      }
+      // Set auth token for API client
+      apiClient.setAuthToken(mockResponse.token);
       
-      // Set the authentication token for future API requests
-      apiClient.setAuthToken(response.token);
+      return mockResponse;
     }
     
-    return response;
+    // Try real API if mock credentials don't match
+    try {
+      const response = await apiClient.post<LoginResponse>(`${this.endpoint}/login`, credentials);
+      
+      if (response?.token) {
+        this.setToken(response.token);
+        
+        if (response.refreshToken) {
+          this.setRefreshToken(response.refreshToken);
+        }
+        
+        if (response.user) {
+          this.setUser(response.user);
+        }
+        
+        // Set the authentication token for future API requests
+        apiClient.setAuthToken(response.token);
+      }
+      
+      return response;
+    } catch (error) {
+      console.error("API login failed:", error);
+      throw new Error("Invalid email or password");
+    }
   }
 
   // Logout user and remove tokens

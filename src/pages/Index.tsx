@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthService from "../api/services/AuthService";
@@ -8,7 +9,7 @@ const Index = () => {
   useEffect(() => {
     // Redirect to dashboard if authenticated, otherwise to login
     if (AuthService.isAuthenticated()) {
-      navigate("/");
+      navigate("/dashboard");
     } else {
       navigate("/login");
     }
