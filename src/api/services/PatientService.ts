@@ -31,7 +31,21 @@ class PatientService {
 
   // Create a new patient
   async createPatient(patient: Omit<Patient, '@id' | 'id'>) {
-    return apiClient.post<Patient>(this.endpoint, patient);
+    // For now, we'll use the sample data since the API is not connected
+    console.log('Creating patient:', patient);
+    // Mock successful response
+    const mockResponse = {
+      ...patient,
+      id: `P-${Math.floor(1000 + Math.random() * 9000)}`,
+      '@id': `/patients/${Math.floor(1000 + Math.random() * 9000)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    return Promise.resolve(mockResponse);
+    
+    // When API is ready, uncomment this:
+    // return apiClient.post<Patient>(this.endpoint, patient);
   }
 
   // Update an existing patient

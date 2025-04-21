@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -43,94 +42,93 @@ import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import PatientService, { Patient } from "@/api/services/PatientService";
 
-// Sample data
-const patients = [
-  { 
-    id: "P-1001", 
-    name: "John Smith", 
-    email: "john.smith@example.com", 
-    phone: "555-123-4567", 
-    dob: "1975-03-15",
-    address: "123 Main St, Anytown",
-    insurance: "BlueCross",
-    status: "Active" 
-  },
-  { 
-    id: "P-1002", 
-    name: "Mary Johnson", 
-    email: "mary.j@example.com", 
-    phone: "555-234-5678", 
-    dob: "1982-07-22",
-    address: "456 Oak Ave, Someville",
-    insurance: "Medicare",
-    status: "Active" 
-  },
-  { 
-    id: "P-1003", 
-    name: "Robert Brown", 
-    email: "rbrown@example.com", 
-    phone: "555-345-6789", 
-    dob: "1968-11-03",
-    address: "789 Pine Rd, Othertown",
-    insurance: "Aetna",
-    status: "Inactive" 
-  },
-  { 
-    id: "P-1004", 
-    name: "Jennifer Williams", 
-    email: "jwill@example.com", 
-    phone: "555-456-7890", 
-    dob: "1990-05-17",
-    address: "321 Cedar Ln, Newcity",
-    insurance: "UnitedHealth",
-    status: "Active" 
-  },
-  { 
-    id: "P-1005", 
-    name: "Michael Davis", 
-    email: "mdavis@example.com", 
-    phone: "555-567-8901", 
-    dob: "1973-09-28",
-    address: "654 Maple Dr, Smalltown",
-    insurance: "Cigna",
-    status: "Active" 
-  },
-  { 
-    id: "P-1006", 
-    name: "Sarah Miller", 
-    email: "smiller@example.com", 
-    phone: "555-678-9012", 
-    dob: "1988-02-14",
-    address: "987 Birch St, Largeville",
-    insurance: "BlueCross",
-    status: "Active" 
-  },
-  { 
-    id: "P-1007", 
-    name: "James Wilson", 
-    email: "jwilson@example.com", 
-    phone: "555-789-0123", 
-    dob: "1965-12-09",
-    address: "159 Walnut Ave, Hometown",
-    insurance: "Medicare",
-    status: "Inactive" 
-  },
-  { 
-    id: "P-1008", 
-    name: "Patricia Moore", 
-    email: "pmoore@example.com", 
-    phone: "555-890-1234", 
-    dob: "1980-04-23",
-    address: "753 Spruce Ct, Villageton",
-    insurance: "Kaiser",
-    status: "Active" 
-  }
-];
-
 export default function Patients() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>([
+    { 
+      id: "P-1001", 
+      name: "John Smith", 
+      email: "john.smith@example.com", 
+      phone: "555-123-4567", 
+      dob: "1975-03-15",
+      address: "123 Main St, Anytown",
+      insurance: "BlueCross",
+      status: "Active" 
+    },
+    { 
+      id: "P-1002", 
+      name: "Mary Johnson", 
+      email: "mary.j@example.com", 
+      phone: "555-234-5678", 
+      dob: "1982-07-22",
+      address: "456 Oak Ave, Someville",
+      insurance: "Medicare",
+      status: "Active" 
+    },
+    { 
+      id: "P-1003", 
+      name: "Robert Brown", 
+      email: "rbrown@example.com", 
+      phone: "555-345-6789", 
+      dob: "1968-11-03",
+      address: "789 Pine Rd, Othertown",
+      insurance: "Aetna",
+      status: "Inactive" 
+    },
+    { 
+      id: "P-1004", 
+      name: "Jennifer Williams", 
+      email: "jwill@example.com", 
+      phone: "555-456-7890", 
+      dob: "1990-05-17",
+      address: "321 Cedar Ln, Newcity",
+      insurance: "UnitedHealth",
+      status: "Active" 
+    },
+    { 
+      id: "P-1005", 
+      name: "Michael Davis", 
+      email: "mdavis@example.com", 
+      phone: "555-567-8901", 
+      dob: "1973-09-28",
+      address: "654 Maple Dr, Smalltown",
+      insurance: "Cigna",
+      status: "Active" 
+    },
+    { 
+      id: "P-1006", 
+      name: "Sarah Miller", 
+      email: "smiller@example.com", 
+      phone: "555-678-9012", 
+      dob: "1988-02-14",
+      address: "987 Birch St, Largeville",
+      insurance: "BlueCross",
+      status: "Active" 
+    },
+    { 
+      id: "P-1007", 
+      name: "James Wilson", 
+      email: "jwilson@example.com", 
+      phone: "555-789-0123", 
+      dob: "1965-12-09",
+      address: "159 Walnut Ave, Hometown",
+      insurance: "Medicare",
+      status: "Inactive" 
+    },
+    { 
+      id: "P-1008", 
+      name: "Patricia Moore", 
+      email: "pmoore@example.com", 
+      phone: "555-890-1234", 
+      dob: "1980-04-23",
+      address: "753 Spruce Ct, Villageton",
+      insurance: "Kaiser",
+      status: "Active" 
+    }
+  ]);
+  
   const { toast } = useToast();
   
   const form = useForm({
@@ -146,7 +144,7 @@ export default function Patients() {
 
   const filteredPatients = patients.filter(patient => 
     patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    patient.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (patient.id && patient.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
     patient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     patient.phone.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -171,7 +169,10 @@ export default function Patients() {
         status: "Active"
       };
       
-      await PatientService.createPatient(newPatient);
+      const createdPatient = await PatientService.createPatient(newPatient);
+      
+      // Add the new patient to the local state
+      setPatients(prevPatients => [createdPatient, ...prevPatients]);
       
       toast({
         title: "Succès",
