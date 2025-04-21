@@ -39,6 +39,9 @@ import {
   FileText
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useForm } from "react-hook-form";
+import { useToast } from "@/hooks/use-toast";
+import PatientService, { Patient } from "@/api/services/PatientService";
 
 // Sample data
 const patients = [
@@ -126,6 +129,20 @@ const patients = [
 
 export default function Patients() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      dob: "",
+      address: "",
+      insurance: "",
+    }
+  });
 
   const filteredPatients = patients.filter(patient => 
     patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -142,6 +159,38 @@ export default function Patients() {
         return <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">Inactive</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const handleCreatePatient = async (data: any) => {
+    setIsLoading(true);
+    try {
+      // Create new patient with "Active" status
+      const newPatient: Omit<Patient, '@id' | 'id'> = {
+        ...data,
+        status: "Active"
+      };
+      
+      await PatientService.createPatient(newPatient);
+      
+      toast({
+        title: "Succès",
+        description: "Le patient a été ajouté avec succès.",
+        variant: "default",
+      });
+      
+      // Reset form and close dialog
+      form.reset();
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Error creating patient:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de l'ajout du patient.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -185,7 +234,7 @@ export default function Patients() {
               <FileDown className="mr-2 h-4 w-4" />
               Export
             </Button>
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
@@ -199,72 +248,82 @@ export default function Patients() {
                     Enter patient details to register them in the system.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
-                      Full Name
-                    </Label>
-                    <Input
-                      id="name"
-                      placeholder="Patient's full name"
-                      className="col-span-3"
-                    />
+                <form onSubmit={form.handleSubmit(handleCreatePatient)}>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="name" className="text-right">
+                        Full Name
+                      </Label>
+                      <Input
+                        id="name"
+                        placeholder="Patient's full name"
+                        className="col-span-3"
+                        {...form.register("name", { required: true })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="email" className="text-right">
+                        Email
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="patient@example.com"
+                        className="col-span-3"
+                        {...form.register("email", { required: true })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="phone" className="text-right">
+                        Phone
+                      </Label>
+                      <Input
+                        id="phone"
+                        placeholder="555-123-4567"
+                        className="col-span-3"
+                        {...form.register("phone", { required: true })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="dob" className="text-right">
+                        Date of Birth
+                      </Label>
+                      <Input
+                        id="dob"
+                        type="date"
+                        className="col-span-3"
+                        {...form.register("dob", { required: true })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="address" className="text-right">
+                        Address
+                      </Label>
+                      <Input
+                        id="address"
+                        placeholder="Full address"
+                        className="col-span-3"
+                        {...form.register("address")}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="insurance" className="text-right">
+                        Insurance
+                      </Label>
+                      <Input
+                        id="insurance"
+                        placeholder="Insurance provider"
+                        className="col-span-3"
+                        {...form.register("insurance")}
+                      />
+                    </div>
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="email" className="text-right">
-                      Email
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="patient@example.com"
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="phone" className="text-right">
-                      Phone
-                    </Label>
-                    <Input
-                      id="phone"
-                      placeholder="555-123-4567"
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="dob" className="text-right">
-                      Date of Birth
-                    </Label>
-                    <Input
-                      id="dob"
-                      type="date"
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="address" className="text-right">
-                      Address
-                    </Label>
-                    <Input
-                      id="address"
-                      placeholder="Full address"
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="insurance" className="text-right">
-                      Insurance
-                    </Label>
-                    <Input
-                      id="insurance"
-                      placeholder="Insurance provider"
-                      className="col-span-3"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit">Register Patient</Button>
-                </DialogFooter>
+                  <DialogFooter>
+                    <Button type="submit" disabled={isLoading}>
+                      {isLoading ? "Enregistrement..." : "Register Patient"}
+                    </Button>
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
           </div>
