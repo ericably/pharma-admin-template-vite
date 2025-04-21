@@ -38,7 +38,8 @@ export default function Login() {
           description: "Logged in successfully!",
           variant: "default",
         });
-        navigate("/dashboard");
+        // Navigate to the root path instead, which will redirect to dashboard if authenticated
+        navigate("/");
       } else {
         throw new Error("Login failed");
       }
