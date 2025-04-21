@@ -32,7 +32,22 @@ class MedicationService {
 
   // Create a new medication
   async createMedication(medication: Omit<Medication, '@id' | 'id'>) {
-    return apiClient.post<Medication>(this.endpoint, medication);
+    // For now, we'll use sample data since the API is not connected
+    console.log('Creating medication:', medication);
+    
+    // Mock successful response
+    const mockResponse = {
+      ...medication,
+      id: Math.floor(1000 + Math.random() * 9000),
+      '@id': `/medications/${Math.floor(1000 + Math.random() * 9000)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    return Promise.resolve(mockResponse);
+    
+    // When API is ready, uncomment this:
+    // return apiClient.post<Medication>(this.endpoint, medication);
   }
 
   // Update an existing medication

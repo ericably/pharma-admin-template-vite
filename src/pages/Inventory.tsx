@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { 
   ChevronDown, 
   Plus, 
@@ -38,9 +39,10 @@ import {
   AlertCircle
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import MedicationService, { Medication } from "@/api/services/MedicationService";
 
 // Sample data
-const medications = [
+const sampleMedications = [
   { 
     id: 1, 
     name: "Amoxicillin", 
@@ -124,7 +126,18 @@ const medications = [
 ];
 
 export default function Inventory() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [medications, setMedications] = useState(sampleMedications);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newMedication, setNewMedication] = useState({
+    name: "",
+    category: "",
+    dosage: "",
+    stock: 0,
+    price: 0,
+    supplier: "",
+  });
 
   const filteredMedications = medications.filter(medication => 
     medication.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -142,6 +155,73 @@ export default function Inventory() {
         return <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">Out of Stock</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setNewMedication(prev => ({
+      ...prev,
+      [id]: id === "stock" || id === "price" ? parseFloat(value) : value
+    }));
+  };
+
+  const handleAddMedication = async () => {
+    try {
+      // Validate required fields
+      if (!newMedication.name || !newMedication.category || !newMedication.dosage) {
+        toast({
+          title: "Missing information",
+          description: "Please fill in all required fields",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Determine status based on stock
+      const status = newMedication.stock <= 20 ? "Low Stock" : "In Stock";
+
+      // Create medication object
+      const medicationToAdd = {
+        ...newMedication,
+        status,
+      };
+
+      // Call the service to create medication
+      const response = await MedicationService.createMedication(medicationToAdd);
+      
+      // Update the local state with the new medication
+      const nextId = Math.max(...medications.map(m => m.id as number)) + 1;
+      const newMedicationWithId = {
+        ...medicationToAdd,
+        id: response.id || nextId,
+      };
+      
+      setMedications([...medications, newMedicationWithId]);
+      
+      // Show success message
+      toast({
+        title: "Success",
+        description: "Medication added successfully",
+      });
+      
+      // Reset form and close dialog
+      setNewMedication({
+        name: "",
+        category: "",
+        dosage: "",
+        stock: 0,
+        price: 0,
+        supplier: "",
+      });
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Error adding medication:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add medication. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -186,7 +266,7 @@ export default function Inventory() {
               <FileDown className="mr-2 h-4 w-4" />
               Export
             </Button>
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
@@ -209,6 +289,8 @@ export default function Inventory() {
                       id="name"
                       placeholder="Medication name"
                       className="col-span-3"
+                      value={newMedication.name}
+                      onChange={handleInputChange}
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -219,6 +301,8 @@ export default function Inventory() {
                       id="category"
                       placeholder="Medication category"
                       className="col-span-3"
+                      value={newMedication.category}
+                      onChange={handleInputChange}
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -229,6 +313,8 @@ export default function Inventory() {
                       id="dosage"
                       placeholder="e.g., 500mg"
                       className="col-span-3"
+                      value={newMedication.dosage}
+                      onChange={handleInputChange}
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -240,6 +326,8 @@ export default function Inventory() {
                       type="number"
                       placeholder="Initial stock"
                       className="col-span-3"
+                      value={newMedication.stock || ""}
+                      onChange={handleInputChange}
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -252,6 +340,8 @@ export default function Inventory() {
                       step="0.01"
                       placeholder="Unit price"
                       className="col-span-3"
+                      value={newMedication.price || ""}
+                      onChange={handleInputChange}
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -262,11 +352,13 @@ export default function Inventory() {
                       id="supplier"
                       placeholder="Supplier name"
                       className="col-span-3"
+                      value={newMedication.supplier}
+                      onChange={handleInputChange}
                     />
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button type="submit">Save Medication</Button>
+                  <Button type="button" onClick={handleAddMedication}>Save Medication</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
