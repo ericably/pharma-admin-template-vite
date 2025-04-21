@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, AlertCircle, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 import AuthService from "../api/services/AuthService";
 
 export default function Login() {
@@ -15,6 +16,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,11 +30,26 @@ export default function Login() {
       setError(null);
       setLoading(true);
       
-      await AuthService.login({ email, password });
-      navigate("/");
+      const response = await AuthService.login({ email, password });
+      
+      if (response) {
+        toast({
+          title: "Success",
+          description: "Logged in successfully!",
+          variant: "default",
+        });
+        navigate("/dashboard");
+      } else {
+        throw new Error("Login failed");
+      }
     } catch (err) {
       console.error("Login error:", err);
       setError("Invalid email or password. Please try again.");
+      toast({
+        title: "Error",
+        description: "Login failed. Please check your credentials.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
