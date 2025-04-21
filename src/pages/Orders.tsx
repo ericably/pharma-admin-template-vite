@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -27,7 +27,8 @@ import {
   Eye,
   CheckCircle,
   XCircle,
-  Truck
+  Truck,
+  Trash2
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import {
@@ -48,70 +49,240 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import OrderService, { Order, OrderItem } from "@/api/services/OrderService";
+import { useForm } from "react-hook-form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
-// Sample data
-const orders = [
-  { 
-    id: "PO-2023-001", 
-    supplier: "Pharma Wholesale Inc.", 
-    orderDate: "2023-05-10",
-    deliveryDate: "2023-05-15",
-    items: 12,
-    totalAmount: 1245.67,
-    status: "Delivered" 
-  },
-  { 
-    id: "PO-2023-002", 
-    supplier: "MedSource Supply", 
-    orderDate: "2023-05-12",
-    deliveryDate: "2023-05-17",
-    items: 8,
-    totalAmount: 876.50,
-    status: "Processing" 
-  },
-  { 
-    id: "PO-2023-003", 
-    supplier: "HealthMed Suppliers", 
-    orderDate: "2023-05-14",
-    deliveryDate: "2023-05-19",
-    items: 15,
-    totalAmount: 2130.25,
-    status: "Shipped" 
-  },
-  { 
-    id: "PO-2023-004", 
-    supplier: "Pharma Wholesale Inc.", 
-    orderDate: "2023-05-15",
-    deliveryDate: "2023-05-20",
-    items: 5,
-    totalAmount: 435.80,
-    status: "Processing" 
-  },
-  { 
-    id: "PO-2023-005", 
-    supplier: "MedSource Supply", 
-    orderDate: "2023-05-16",
-    deliveryDate: "2023-05-21",
-    items: 10,
-    totalAmount: 1100.00,
-    status: "Pending" 
-  },
-  { 
-    id: "PO-2023-006", 
-    supplier: "HealthMed Suppliers", 
-    orderDate: "2023-05-17",
-    deliveryDate: "2023-05-22",
-    items: 7,
-    totalAmount: 789.30,
-    status: "Pending" 
-  }
+// Sample suppliers for demo
+const suppliers = [
+  { id: "sup1", name: "Pharma Wholesale Inc." },
+  { id: "sup2", name: "MedSource Supply" },
+  { id: "sup3", name: "HealthMed Suppliers" },
+];
+
+// Sample medications for demo
+const medications = [
+  { id: "med1", name: "Amoxicillin 500mg", price: 5.25 },
+  { id: "med2", name: "Lisinopril 10mg", price: 3.75 },
+  { id: "med3", name: "Atorvastatin 20mg", price: 8.50 },
+  { id: "med4", name: "Metformin 500mg", price: 2.95 },
+  { id: "med5", name: "Omeprazole 20mg", price: 6.25 },
 ];
 
 export default function Orders() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [selectedMedication, setSelectedMedication] = useState("");
+  const [quantity, setQuantity] = useState<number>(1);
+  const { toast } = useToast();
+  
+  // Initialize form with react-hook-form
+  const form = useForm<Omit<Order, "@id" | "id">>({
+    defaultValues: {
+      supplier: "",
+      supplierId: "",
+      orderDate: new Date().toISOString().split('T')[0],
+      deliveryDate: "",
+      items: [],
+      totalAmount: 0,
+      status: "Pending",
+      notes: ""
+    }
+  });
+  
+  useEffect(() => {
+    // Fetch orders on component mount
+    fetchOrders();
+  }, []);
+  
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      // For demo purposes, we'll use the sample data
+      // In production, uncomment this to fetch from API:
+      // const response = await OrderService.getAllOrders();
+      // setOrders(response.items);
+      
+      // Using sample data for now
+      setOrders([
+        { 
+          id: "PO-2023-001", 
+          supplier: "Pharma Wholesale Inc.", 
+          supplierId: "sup1",
+          orderDate: "2023-05-10",
+          deliveryDate: "2023-05-15",
+          items: [{ medication: "Amoxicillin 500mg", medicationId: "med1", quantity: 12, unitPrice: 5.25 }],
+          totalAmount: 1245.67,
+          status: "Delivered" 
+        },
+        { 
+          id: "PO-2023-002", 
+          supplier: "MedSource Supply", 
+          supplierId: "sup2",
+          orderDate: "2023-05-12",
+          deliveryDate: "2023-05-17",
+          items: [{ medication: "Lisinopril 10mg", medicationId: "med2", quantity: 8, unitPrice: 3.75 }],
+          totalAmount: 876.50,
+          status: "Processing" 
+        },
+        { 
+          id: "PO-2023-003", 
+          supplier: "HealthMed Suppliers", 
+          supplierId: "sup3",
+          orderDate: "2023-05-14",
+          deliveryDate: "2023-05-19",
+          items: [{ medication: "Atorvastatin 20mg", medicationId: "med3", quantity: 15, unitPrice: 8.50 }],
+          totalAmount: 2130.25,
+          status: "Shipped" 
+        },
+        { 
+          id: "PO-2023-004", 
+          supplier: "Pharma Wholesale Inc.", 
+          supplierId: "sup1",
+          orderDate: "2023-05-15",
+          deliveryDate: "2023-05-20",
+          items: [{ medication: "Metformin 500mg", medicationId: "med4", quantity: 5, unitPrice: 2.95 }],
+          totalAmount: 435.80,
+          status: "Processing" 
+        },
+        { 
+          id: "PO-2023-005", 
+          supplier: "MedSource Supply", 
+          supplierId: "sup2",
+          orderDate: "2023-05-16",
+          deliveryDate: "2023-05-21",
+          items: [{ medication: "Omeprazole 20mg", medicationId: "med5", quantity: 10, unitPrice: 6.25 }],
+          totalAmount: 1100.00,
+          status: "Pending" 
+        },
+        { 
+          id: "PO-2023-006", 
+          supplier: "HealthMed Suppliers", 
+          supplierId: "sup3",
+          orderDate: "2023-05-17",
+          deliveryDate: "2023-05-22",
+          items: [{ medication: "Amoxicillin 500mg", medicationId: "med1", quantity: 7, unitPrice: 5.25 }],
+          totalAmount: 789.30,
+          status: "Pending" 
+        }
+      ]);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch orders",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add item to order
+  const addOrderItem = () => {
+    if (!selectedMedication || quantity <= 0) {
+      toast({
+        title: "Invalid Item",
+        description: "Please select a medication and enter a valid quantity",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const medication = medications.find(med => med.id === selectedMedication);
+    if (!medication) return;
+
+    const newItem: OrderItem = {
+      medication: medication.name,
+      medicationId: medication.id,
+      quantity: quantity,
+      unitPrice: medication.price
+    };
+
+    setOrderItems([...orderItems, newItem]);
+    setSelectedMedication("");
+    setQuantity(1);
+  };
+
+  // Remove item from order
+  const removeOrderItem = (index: number) => {
+    const updatedItems = [...orderItems];
+    updatedItems.splice(index, 1);
+    setOrderItems(updatedItems);
+  };
+
+  // Calculate order total
+  const calculateTotal = (items: OrderItem[]): number => {
+    return items.reduce((total, item) => total + (item.quantity * item.unitPrice), 0);
+  };
+
+  // Submit order form
+  const onSubmit = async (data: Omit<Order, "@id" | "id">) => {
+    if (orderItems.length === 0) {
+      toast({
+        title: "No Items Added",
+        description: "Please add at least one item to the order",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const selectedSupplier = suppliers.find(s => s.id === data.supplierId);
+    if (!selectedSupplier) return;
+
+    try {
+      const newOrder: Omit<Order, "@id" | "id"> = {
+        ...data,
+        supplier: selectedSupplier.name,
+        items: orderItems,
+        totalAmount: calculateTotal(orderItems),
+      };
+
+      // In production, uncomment to actually create order:
+      // await OrderService.createOrder(newOrder);
+      
+      console.log("Order created:", newOrder);
+      
+      // Add the new order to the local state for demo
+      const orderWithId = {
+        ...newOrder,
+        id: `PO-${new Date().getFullYear()}-${(orders.length + 1).toString().padStart(3, '0')}`,
+      };
+      
+      setOrders([orderWithId, ...orders]);
+      
+      toast({
+        title: "Success",
+        description: "Order created successfully",
+      });
+      
+      // Reset form and close dialog
+      setOrderItems([]);
+      form.reset();
+      setOpenDialog(false);
+    } catch (error) {
+      console.error("Error creating order:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create order",
+        variant: "destructive",
+      });
+    }
+  };
 
   const filteredOrders = orders.filter(order => 
-    order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    order.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     order.supplier.toLowerCase().includes(searchQuery.toLowerCase()) ||
     order.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -126,6 +297,8 @@ export default function Orders() {
         return <Badge variant="outline" className="bg-purple-50 text-purple-600 border-purple-200">Shipped</Badge>;
       case "Delivered":
         return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Delivered</Badge>;
+      case "Cancelled":
+        return <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">Cancelled</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -161,18 +334,18 @@ export default function Orders() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem>All Orders</DropdownMenuItem>
-                <DropdownMenuItem>Pending</DropdownMenuItem>
-                <DropdownMenuItem>Processing</DropdownMenuItem>
-                <DropdownMenuItem>Shipped</DropdownMenuItem>
-                <DropdownMenuItem>Delivered</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSearchQuery("")}>All Orders</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSearchQuery("Pending")}>Pending</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSearchQuery("Processing")}>Processing</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSearchQuery("Shipped")}>Shipped</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSearchQuery("Delivered")}>Delivered</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button variant="outline">
               <FileDown className="mr-2 h-4 w-4" />
               Export
             </Button>
-            <Dialog>
+            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
@@ -186,139 +359,255 @@ export default function Orders() {
                     Place a new order with your supplier.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="supplier" className="text-right">
-                      Supplier
-                    </Label>
-                    <Select>
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Select supplier" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pharma-wholesale">Pharma Wholesale Inc.</SelectItem>
-                        <SelectItem value="medsource">MedSource Supply</SelectItem>
-                        <SelectItem value="healthmed">HealthMed Suppliers</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="delivery-date" className="text-right">
-                      Expected Delivery
-                    </Label>
-                    <Input
-                      id="delivery-date"
-                      type="date"
-                      className="col-span-3"
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="supplierId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <FormLabel className="text-right">Supplier</FormLabel>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select supplier" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {suppliers.map(supplier => (
+                                  <SelectItem key={supplier.id} value={supplier.id}>
+                                    {supplier.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4 align-top">
-                    <Label htmlFor="notes" className="text-right pt-2">
-                      Notes
-                    </Label>
-                    <Textarea
-                      id="notes"
-                      placeholder="Order notes or special instructions"
-                      className="col-span-3"
+                    <FormField
+                      control={form.control}
+                      name="deliveryDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <FormLabel className="text-right">
+                              Expected Delivery
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="date"
+                                className="col-span-3"
+                                {...field}
+                              />
+                            </FormControl>
+                          </div>
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right col-span-4 font-semibold">
-                      Order Items
-                    </Label>
-                  </div>
-                  <div className="grid grid-cols-12 items-center gap-2">
-                    <div className="col-span-5">
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select medication" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="amoxicillin">Amoxicillin 500mg</SelectItem>
-                          <SelectItem value="lisinopril">Lisinopril 10mg</SelectItem>
-                          <SelectItem value="atorvastatin">Atorvastatin 20mg</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <FormField
+                      control={form.control}
+                      name="notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="grid grid-cols-4 items-center gap-4 align-top">
+                            <FormLabel className="text-right pt-2">Notes</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Order notes or special instructions"
+                                className="col-span-3"
+                                {...field}
+                              />
+                            </FormControl>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label className="text-right col-span-4 font-semibold">
+                        Order Items
+                      </Label>
                     </div>
-                    <div className="col-span-3">
-                      <Input type="number" placeholder="Quantity" />
+                    
+                    {/* Display current order items */}
+                    {orderItems.length > 0 && (
+                      <div className="border rounded-md p-3">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="text-xs text-muted-foreground">
+                              <th className="text-left p-1">Medication</th>
+                              <th className="text-center p-1">Qty</th>
+                              <th className="text-right p-1">Price</th>
+                              <th className="text-right p-1">Total</th>
+                              <th className="w-10"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {orderItems.map((item, index) => (
+                              <tr key={index} className="border-t">
+                                <td className="py-2">{item.medication}</td>
+                                <td className="text-center">{item.quantity}</td>
+                                <td className="text-right">${item.unitPrice.toFixed(2)}</td>
+                                <td className="text-right">${(item.quantity * item.unitPrice).toFixed(2)}</td>
+                                <td>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    className="h-7 w-7 p-0"
+                                    onClick={() => removeOrderItem(index)}
+                                  >
+                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                            <tr className="border-t font-medium">
+                              <td colSpan={3} className="py-2 text-right">Total:</td>
+                              <td className="text-right">${calculateTotal(orderItems).toFixed(2)}</td>
+                              <td></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                    
+                    {/* Add new order item */}
+                    <div className="grid grid-cols-12 items-center gap-2">
+                      <div className="col-span-5">
+                        <Select
+                          value={selectedMedication}
+                          onValueChange={setSelectedMedication}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select medication" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {medications.map(med => (
+                              <SelectItem key={med.id} value={med.id}>{med.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="col-span-3">
+                        <Input 
+                          type="number" 
+                          placeholder="Quantity" 
+                          value={quantity} 
+                          onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
+                          min={1}
+                        />
+                      </div>
+                      <div className="col-span-3">
+                        <Input 
+                          type="text" 
+                          value={selectedMedication 
+                            ? `$${medications.find(m => m.id === selectedMedication)?.price.toFixed(2) || "0.00"}`
+                            : ""
+                          } 
+                          readOnly 
+                          placeholder="Price" 
+                        />
+                      </div>
+                      <div className="col-span-1">
+                        <Button 
+                          type="button"
+                          variant="ghost" 
+                          size="sm" 
+                          className="px-2"
+                          onClick={addOrderItem}
+                        >
+                          <Plus className="h-5 w-5" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="col-span-3">
-                      <Input type="text" placeholder="Price" />
-                    </div>
-                    <div className="col-span-1">
-                      <Button variant="ghost" size="sm" className="px-2">+</Button>
-                    </div>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit">Create Order</Button>
-                </DialogFooter>
+                    
+                    <DialogFooter className="mt-4">
+                      <Button type="submit">Create Order</Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
               </DialogContent>
             </Dialog>
           </div>
         </div>
 
         <div className="rounded-md border overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order ID</TableHead>
-                <TableHead>Supplier</TableHead>
-                <TableHead>Order Date</TableHead>
-                <TableHead>Delivery Date</TableHead>
-                <TableHead>Items</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-[80px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredOrders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id}</TableCell>
-                  <TableCell>{order.supplier}</TableCell>
-                  <TableCell>{order.orderDate}</TableCell>
-                  <TableCell>{order.deliveryDate}</TableCell>
-                  <TableCell>{order.items}</TableCell>
-                  <TableCell className="text-right">${order.totalAmount.toFixed(2)}</TableCell>
-                  <TableCell>{getStatusBadge(order.status)}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Truck className="mr-2 h-4 w-4" />
-                          Update Status
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                          Mark Received
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <XCircle className="mr-2 h-4 w-4 text-red-600" />
-                          Cancel
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+          {loading ? (
+            <div className="flex justify-center items-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pharmacy-600"></div>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Order ID</TableHead>
+                  <TableHead>Supplier</TableHead>
+                  <TableHead>Order Date</TableHead>
+                  <TableHead>Delivery Date</TableHead>
+                  <TableHead>Items</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="w-[80px]">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredOrders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
+                      No orders found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredOrders.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-medium">{order.id}</TableCell>
+                      <TableCell>{order.supplier}</TableCell>
+                      <TableCell>{order.orderDate}</TableCell>
+                      <TableCell>{order.deliveryDate}</TableCell>
+                      <TableCell>{order.items.length}</TableCell>
+                      <TableCell className="text-right">${order.totalAmount.toFixed(2)}</TableCell>
+                      <TableCell>{getStatusBadge(order.status)}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Eye className="mr-2 h-4 w-4" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Truck className="mr-2 h-4 w-4" />
+                              Update Status
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                              Mark Received
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <XCircle className="mr-2 h-4 w-4 text-red-600" />
+                              Cancel
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </div>
       </Card>
     </div>
