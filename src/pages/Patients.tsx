@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -50,94 +49,45 @@ export default function Patients() {
   const [currentFilter, setCurrentFilter] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [patients, setPatients] = useState<Patient[]>([
-    { 
-      id: "P-1001", 
-      name: "John Smith", 
-      email: "john.smith@example.com", 
-      phone: "555-123-4567", 
-      dob: "1975-03-15",
-      address: "123 Main St, Anytown",
-      insurance: "BlueCross",
-      status: "Active" 
-    },
-    { 
-      id: "P-1002", 
-      name: "Mary Johnson", 
-      email: "mary.j@example.com", 
-      phone: "555-234-5678", 
-      dob: "1982-07-22",
-      address: "456 Oak Ave, Someville",
-      insurance: "Medicare",
-      status: "Active" 
-    },
-    { 
-      id: "P-1003", 
-      name: "Robert Brown", 
-      email: "rbrown@example.com", 
-      phone: "555-345-6789", 
-      dob: "1968-11-03",
-      address: "789 Pine Rd, Othertown",
-      insurance: "Aetna",
-      status: "Inactive" 
-    },
-    { 
-      id: "P-1004", 
-      name: "Jennifer Williams", 
-      email: "jwill@example.com", 
-      phone: "555-456-7890", 
-      dob: "1990-05-17",
-      address: "321 Cedar Ln, Newcity",
-      insurance: "UnitedHealth",
-      status: "Active" 
-    },
-    { 
-      id: "P-1005", 
-      name: "Michael Davis", 
-      email: "mdavis@example.com", 
-      phone: "555-567-8901", 
-      dob: "1973-09-28",
-      address: "654 Maple Dr, Smalltown",
-      insurance: "Cigna",
-      status: "Active" 
-    },
-    { 
-      id: "P-1006", 
-      name: "Sarah Miller", 
-      email: "smiller@example.com", 
-      phone: "555-678-9012", 
-      dob: "1988-02-14",
-      address: "987 Birch St, Largeville",
-      insurance: "BlueCross",
-      status: "Active" 
-    },
-    { 
-      id: "P-1007", 
-      name: "James Wilson", 
-      email: "jwilson@example.com", 
-      phone: "555-789-0123", 
-      dob: "1965-12-09",
-      address: "159 Walnut Ave, Hometown",
-      insurance: "Medicare",
-      status: "Inactive" 
-    },
-    { 
-      id: "P-1008", 
-      name: "Patricia Moore", 
-      email: "pmoore@example.com", 
-      phone: "555-890-1234", 
-      dob: "1980-04-23",
-      address: "753 Spruce Ct, Villageton",
-      insurance: "Kaiser",
-      status: "Active" 
-    }
-  ]);
+  const [patients, setPatients] = useState<Patient[]>([]);
+
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        setIsLoading(true);
+        const response = await PatientService.getAllPatients();
+
+        if (response.items && Array.isArray(response.items)) {
+          setPatients(response.items);
+        } else {
+          console.error('Unexpected response format:', response);
+          toast({
+            title: "Error",
+            description: "Data format from API is unexpected.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch patients:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load patient data.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPatients();
+  }, []);
+
 
   // New state for patient details viewing/editing
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [detailsMode, setDetailsMode] = useState<"view" | "edit">("view");
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  
+
   const { toast } = useToast();
   
   const form = useForm({
@@ -152,19 +102,19 @@ export default function Patients() {
   });
 
   const filteredPatients = patients.filter(patient => {
-    const matchesSearch = 
+    const matchesSearch =
       patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (patient.id && patient.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
       patient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       patient.phone.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     if (!matchesSearch) return false;
-    
+
     switch (currentFilter) {
       case "active":
-        return patient.status === "Active";
+        return patient.status.toLowerCase() === "active";
       case "inactive":
-        return patient.status === "Inactive";
+        return patient.status.toLowerCase() === "inactive";
       case "insurance":
         return patient.insurance !== undefined && patient.insurance !== "";
       case "all":
@@ -174,10 +124,10 @@ export default function Patients() {
   });
   
   const getStatusBadge = (status: string) => {
-    switch(status) {
-      case "Active":
+    switch(status.toLowerCase()) {
+      case "active":
         return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Active</Badge>;
-      case "Inactive":
+      case "inactive":
         return <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">Inactive</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
@@ -187,13 +137,16 @@ export default function Patients() {
   const handleCreatePatient = async (data: any) => {
     setIsLoading(true);
     try {
+      // Create new patient with "Active" status
       const newPatient: Omit<Patient, '@id' | 'id'> = {
         ...data,
         status: "Active"
       };
-      
+      console.log('newPatient', newPatient);
+
       const createdPatient = await PatientService.createPatient(newPatient);
       
+      // Add the new patient to the local state
       setPatients(prevPatients => [createdPatient, ...prevPatients]);
       
       toast({
@@ -202,6 +155,7 @@ export default function Patients() {
         variant: "default",
       });
       
+      // Reset form and close dialog
       form.reset();
       setIsDialogOpen(false);
     } catch (error) {
@@ -216,6 +170,83 @@ export default function Patients() {
     }
   };
 
+  const handleExportPatients = () => {
+    try {
+      const headers = ["ID", "Nom", "Email", "Phone", "Naissance", "Adresse", "Assurance", "Status"];
+      const csvRows = [headers];
+      console.log(filteredPatients)
+
+      filteredPatients.forEach(patient => {
+        const row = [
+          patient.id || '',
+          patient.name,
+          patient.email,
+          patient.phone,
+        //  patient.birthdate || '',
+          patient.address || '',
+          patient.insurance || '',
+          patient.status
+        ];
+        csvRows.push(row);
+      });
+
+      const csvContent = csvRows.map(row =>
+          row.map(cell =>
+              typeof cell === 'string' && cell.includes(',')
+                  ? `"${cell}"`
+                  : cell
+          ).join(',')
+      ).join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `patients_export_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Export réussi",
+        description: `${filteredPatients.length} patients exportés avec succès.`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error exporting patients:", error);
+      toast({
+        title: "Erreur d'exportation",
+        description: "Une erreur s'est produite lors de l'exportation des patients.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  /*
+  const handleDeletePatient = async (id: string) => {
+    setIsLoading(true);
+    try {
+      await PatientService.deletePatient(id);
+      setPatients(prevPatients => prevPatients.filter(patient => patient.id !== id));
+      toast({
+        title: "Succès",
+        description: "Le patient a été supprimé avec succès.",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error deleting patient:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de la suppression du patient.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+   */
+
   const handleViewPatient = (patient: Patient) => {
     setSelectedPatient(patient);
     setDetailsMode("view");
@@ -229,8 +260,8 @@ export default function Patients() {
   };
 
   const handlePatientUpdate = (updatedPatient: Patient) => {
-    setPatients(prevPatients => 
-      prevPatients.map(p => 
+    setPatients(prevPatients =>
+      prevPatients.map(p =>
         p.id === updatedPatient.id ? updatedPatient : p
       )
     );
@@ -241,7 +272,7 @@ export default function Patients() {
       try {
         await PatientService.deletePatient(id);
         setPatients(prevPatients => prevPatients.filter(p => p.id !== id));
-        
+
         toast({
           title: "Succès",
           description: "Le patient a été supprimé avec succès.",
@@ -258,11 +289,12 @@ export default function Patients() {
     }
   };
 
+  /*
   const handleExportPatients = () => {
     try {
       const headers = ["ID", "Name", "Email", "Phone", "Date of Birth", "Address", "Insurance", "Status"];
       const csvRows = [headers];
-      
+
       filteredPatients.forEach(patient => {
         const row = [
           patient.id || '',
@@ -276,25 +308,25 @@ export default function Patients() {
         ];
         csvRows.push(row);
       });
-      
-      const csvContent = csvRows.map(row => 
-        row.map(cell => 
-          typeof cell === 'string' && cell.includes(',') 
-            ? `"${cell}"` 
+
+      const csvContent = csvRows.map(row =>
+        row.map(cell =>
+          typeof cell === 'string' && cell.includes(',')
+            ? `"${cell}"`
             : cell
         ).join(',')
       ).join('\n');
-      
+
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
       link.setAttribute('download', `patients_export_${new Date().toISOString().split('T')[0]}.csv`);
       document.body.appendChild(link);
-      
+
       link.click();
       document.body.removeChild(link);
-      
+
       toast({
         title: "Export réussi",
         description: `${filteredPatients.length} patients exportés avec succès.`,
@@ -309,20 +341,21 @@ export default function Patients() {
       });
     }
   };
+  */
 
   const handleFilterChange = (filter: string) => {
     setCurrentFilter(filter);
-    
+
     const filterLabels: {[key: string]: string} = {
-      "all": "All Patients",
-      "active": "Active Patients",
-      "inactive": "Inactive Patients",
-      "insurance": "Patients with Insurance"
+      "all": "Tous les patients",
+      "active": "Patients actifs",
+      "inactive": "Patients inactifs",
+      "insurance": "Patients avec une assurance"
     };
-    
+
     toast({
-      title: "Filter Applied",
-      description: `Showing ${filterLabels[filter]}.`,
+      title: "Filtre appliqué",
+      description: `Voir ${filterLabels[filter]}.`,
       variant: "default",
     });
   };
@@ -352,22 +385,22 @@ export default function Patients() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex">
-                  Filter
+                  Filtre
                   <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem onClick={() => handleFilterChange("all")}>
-                  All Patients
+                  Tous les patients
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleFilterChange("active")}>
-                  Active Patients
+                  Patients actifs
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleFilterChange("inactive")}>
-                  Inactive Patients
+                  Patients inactifs
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleFilterChange("insurance")}>
-                  By Insurance
+                  Avec assurance
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -504,12 +537,13 @@ export default function Patients() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => handleViewPatient(patient)}>
                             <Eye className="mr-2 h-4 w-4" />
-                            View Details
+                            Details
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditPatient(patient)}>
                             <Edit className="mr-2 h-4 w-4" />
-                            Edit Details
+                            Modifier
                           </DropdownMenuItem>
+                          {/* Add more actions as needed
                           <DropdownMenuItem>
                             <FilePlus className="mr-2 h-4 w-4" />
                             New Prescription
@@ -518,12 +552,13 @@ export default function Patients() {
                             <FileText className="mr-2 h-4 w-4" />
                             View History
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-red-600" 
+                          */}
+                          <DropdownMenuItem
+                            className="text-red-600"
                             onClick={() => handleDeletePatient(patient.id || '')}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
+                            Supprimer
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -533,14 +568,14 @@ export default function Patients() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                    No patients found matching your criteria
+                    Pas de patients correspondants aux critères de recherche.
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </div>
-        
+
         <div className="mt-4 text-sm text-muted-foreground">
           Showing {filteredPatients.length} {filteredPatients.length === 1 ? 'patient' : 'patients'}
           {currentFilter !== "all" && (
@@ -552,7 +587,7 @@ export default function Patients() {
       </Card>
 
       {/* Patient Details Sheet */}
-      <PatientDetails 
+      <PatientDetails
         patient={selectedPatient}
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}

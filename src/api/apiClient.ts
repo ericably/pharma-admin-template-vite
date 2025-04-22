@@ -8,9 +8,9 @@ interface ApiClientOptions {
 }
 
 class ApiClient {
-  private baseUrl: string;
-  private headers: Record<string, string>;
-  private defaultTimeout: number;
+  private readonly baseUrl: string;
+  private readonly headers: Record<string, string>;
+  private readonly defaultTimeout: number;
 
   constructor(options: ApiClientOptions) {
     this.baseUrl = options.baseUrl;
@@ -24,7 +24,7 @@ class ApiClient {
 
   // Set JWT token for authenticated requests
   setAuthToken(token: string): void {
-    this.headers['Authorization'] = `Bearer ${token}`;
+   // this.headers['Authorization'] = `Bearer ${token}`;
   }
 
   // Remove JWT token
@@ -128,12 +128,12 @@ class ApiClient {
     };
     
     const response = await this.get<any>(endpoint, params);
-    
+
     return {
-      items: response['hydra:member'] || [],
-      totalItems: response['hydra:totalItems'] || 0,
+      items: response['member'] || [],
+      totalItems: response['totalItems'] || 0,
       itemsPerPage,
-      totalPages: Math.ceil((response['hydra:totalItems'] || 0) / itemsPerPage),
+      totalPages: Math.ceil((response['totalItems'] || 0) / itemsPerPage),
       currentPage: page,
     };
   }
@@ -141,7 +141,7 @@ class ApiClient {
 
 // Create and export a singleton instance
 export const apiClient = new ApiClient({
-  baseUrl: import.meta.env.VITE_API_URL || '/api', // Default to '/api' if not set
+  baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:8080/api', // Default to '/api' if not set
 });
 
 export default apiClient;
