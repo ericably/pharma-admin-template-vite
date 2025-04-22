@@ -44,6 +44,7 @@ import PatientService, { Patient } from "@/api/services/PatientService";
 
 export default function Patients() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentFilter, setCurrentFilter] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([
@@ -142,12 +143,27 @@ export default function Patients() {
     }
   });
 
-  const filteredPatients = patients.filter(patient => 
-    patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (patient.id && patient.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    patient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    patient.phone.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPatients = patients.filter(patient => {
+    const matchesSearch = 
+      patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (patient.id && patient.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      patient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      patient.phone.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+    
+    switch (currentFilter) {
+      case "active":
+        return patient.status === "Active";
+      case "inactive":
+        return patient.status === "Inactive";
+      case "insurance":
+        return patient.insurance !== undefined && patient.insurance !== "";
+      case "all":
+      default:
+        return true;
+    }
+  });
   
   const getStatusBadge = (status: string) => {
     switch(status) {
@@ -244,6 +260,23 @@ export default function Patients() {
     }
   };
 
+  const handleFilterChange = (filter: string) => {
+    setCurrentFilter(filter);
+    
+    const filterLabels: {[key: string]: string} = {
+      "all": "All Patients",
+      "active": "Active Patients",
+      "inactive": "Inactive Patients",
+      "insurance": "Patients with Insurance"
+    };
+    
+    toast({
+      title: "Filter Applied",
+      description: `Showing ${filterLabels[filter]}.`,
+      variant: "default",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -274,10 +307,18 @@ export default function Patients() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem>All Patients</DropdownMenuItem>
-                <DropdownMenuItem>Active Patients</DropdownMenuItem>
-                <DropdownMenuItem>Inactive Patients</DropdownMenuItem>
-                <DropdownMenuItem>By Insurance</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange("all")}>
+                  All Patients
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange("active")}>
+                  Active Patients
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange("inactive")}>
+                  Inactive Patients
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange("insurance")}>
+                  By Insurance
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button variant="outline" onClick={handleExportPatients}>
@@ -393,46 +434,63 @@ export default function Patients() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPatients.map((patient) => (
-                <TableRow key={patient.id}>
-                  <TableCell className="font-medium">{patient.id}</TableCell>
-                  <TableCell>{patient.name}</TableCell>
-                  <TableCell>{patient.email}</TableCell>
-                  <TableCell>{patient.phone}</TableCell>
-                  <TableCell>{patient.insurance}</TableCell>
-                  <TableCell>{getStatusBadge(patient.status)}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <FilePlus className="mr-2 h-4 w-4" />
-                          New Prescription
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <FileText className="mr-2 h-4 w-4" />
-                          View History
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {filteredPatients.length > 0 ? (
+                filteredPatients.map((patient) => (
+                  <TableRow key={patient.id}>
+                    <TableCell className="font-medium">{patient.id}</TableCell>
+                    <TableCell>{patient.name}</TableCell>
+                    <TableCell>{patient.email}</TableCell>
+                    <TableCell>{patient.phone}</TableCell>
+                    <TableCell>{patient.insurance}</TableCell>
+                    <TableCell>{getStatusBadge(patient.status)}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <FilePlus className="mr-2 h-4 w-4" />
+                            New Prescription
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <FileText className="mr-2 h-4 w-4" />
+                            View History
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-600">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                    No patients found matching your criteria
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
+        </div>
+        
+        <div className="mt-4 text-sm text-muted-foreground">
+          Showing {filteredPatients.length} {filteredPatients.length === 1 ? 'patient' : 'patients'}
+          {currentFilter !== "all" && (
+            <>
+              {' '}• Filter: {currentFilter === "active" ? "Active" : currentFilter === "inactive" ? "Inactive" : "With Insurance"}
+            </>
+          )}
         </div>
       </Card>
     </div>
