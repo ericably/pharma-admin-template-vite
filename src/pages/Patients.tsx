@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -35,12 +36,14 @@ import {
   Edit,
   Trash2,
   FilePlus,
-  FileText
+  FileText,
+  Eye
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import PatientService, { Patient } from "@/api/services/PatientService";
+import PatientDetails from "@/components/patients/PatientDetails";
 
 export default function Patients() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -129,6 +132,11 @@ export default function Patients() {
       status: "Active" 
     }
   ]);
+
+  // New state for patient details viewing/editing
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [detailsMode, setDetailsMode] = useState<"view" | "edit">("view");
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { toast } = useToast();
   
@@ -205,6 +213,48 @@ export default function Patients() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleViewPatient = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setDetailsMode("view");
+    setIsDetailsOpen(true);
+  };
+
+  const handleEditPatient = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setDetailsMode("edit");
+    setIsDetailsOpen(true);
+  };
+
+  const handlePatientUpdate = (updatedPatient: Patient) => {
+    setPatients(prevPatients => 
+      prevPatients.map(p => 
+        p.id === updatedPatient.id ? updatedPatient : p
+      )
+    );
+  };
+
+  const handleDeletePatient = async (id: string) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce patient ?")) {
+      try {
+        await PatientService.deletePatient(id);
+        setPatients(prevPatients => prevPatients.filter(p => p.id !== id));
+        
+        toast({
+          title: "Succès",
+          description: "Le patient a été supprimé avec succès.",
+          variant: "default",
+        });
+      } catch (error) {
+        console.error("Error deleting patient:", error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur s'est produite lors de la suppression du patient.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -452,7 +502,11 @@ export default function Patients() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewPatient(patient)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditPatient(patient)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit Details
                           </DropdownMenuItem>
@@ -464,7 +518,10 @@ export default function Patients() {
                             <FileText className="mr-2 h-4 w-4" />
                             View History
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
+                          <DropdownMenuItem 
+                            className="text-red-600" 
+                            onClick={() => handleDeletePatient(patient.id || '')}
+                          >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>
@@ -493,6 +550,15 @@ export default function Patients() {
           )}
         </div>
       </Card>
+
+      {/* Patient Details Sheet */}
+      <PatientDetails 
+        patient={selectedPatient}
+        isOpen={isDetailsOpen}
+        onClose={() => setIsDetailsOpen(false)}
+        onUpdate={handlePatientUpdate}
+        mode={detailsMode}
+      />
     </div>
   );
 }
