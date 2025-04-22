@@ -17,7 +17,7 @@ import AuthService from "./api/services/AuthService";
 
 const queryClient = new QueryClient();
 
-// Protected route component
+// Route protégée
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = AuthService.isAuthenticated();
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
@@ -27,18 +27,18 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is authenticated on app load
-    // Helps persist authentication across page refreshes
+    // Vérifier si l'utilisateur est authentifié au chargement de l'application
+    // Aide à maintenir l'authentification lors des rechargements de page
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem("pharma_auth_token");
         if (token) {
-          // If we have a token, set it in the apiClient
-          // This allows the user to stay logged in after refresh
+          // Si nous avons un jeton, définissez-le dans apiClient
+          // Cela permet à l'utilisateur de rester connecté après actualisation
           await AuthService.refreshToken();
         }
       } catch (error) {
-        console.error("Auth check failed:", error);
+        console.error("Échec de la vérification d'authentification:", error);
         AuthService.logout();
       } finally {
         setIsLoading(false);
@@ -63,21 +63,21 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Public routes */}
+            {/* Routes publiques */}
             <Route path="/login" element={<Login />} />
             
-            {/* Protected routes with layout */}
+            {/* Routes protégées avec disposition */}
             <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route index element={<Dashboard />} />
               <Route path="inventory" element={<Inventory />} />
               <Route path="patients" element={<Patients />} />
               <Route path="prescriptions" element={<Prescriptions />} />
-                          <Route path="orders" element={<Orders />} />
-                          <Route path="reports" element={<div>Reports Page</div>} />
-                          <Route path="settings" element={<div>Settings Page</div>} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="reports" element={<div>Page des Rapports</div>} />
+              <Route path="settings" element={<div>Page des Paramètres</div>} />
             </Route>
             
-            {/* Catch-all route */}
+            {/* Route par défaut */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
