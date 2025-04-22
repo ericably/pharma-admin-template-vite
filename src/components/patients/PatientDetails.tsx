@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -32,12 +32,12 @@ const PatientDetails = ({
   const [patientData, setPatientData] = useState<Patient | null>(null);
   const { toast } = useToast();
 
-  // Update local state when patient prop changes
-  useState(() => {
+  // Update local state when patient prop changes - fixed with useEffect
+  useEffect(() => {
     if (patient) {
       setPatientData({ ...patient });
     }
-  });
+  }, [patient]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
