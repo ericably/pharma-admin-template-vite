@@ -1,7 +1,6 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Download, Filter } from "lucide-react";
+import { FileText, Download } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,6 +8,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SalesTable } from "@/components/reports/SalesTable";
+
+const sampleSalesData = [
+  { date: "2025-04-22", product: "Paracétamol 500mg", quantity: 50, amount: 175.00 },
+  { date: "2025-04-22", product: "Amoxicilline 250mg", quantity: 30, amount: 216.00 },
+  { date: "2025-04-21", product: "Ibuprofène 400mg", quantity: 25, amount: 87.50 },
+  { date: "2025-04-21", product: "Oméprazole 20mg", quantity: 15, amount: 105.00 },
+  { date: "2025-04-20", product: "Ventoline 100μg", quantity: 10, amount: 140.00 },
+];
 
 export default function Reports() {
   return (
@@ -42,6 +50,7 @@ export default function Reports() {
                 <SelectItem value="custom">Période personnalisée</SelectItem>
               </SelectContent>
             </Select>
+            <SalesTable data={sampleSalesData} />
             <Button className="w-full">
               <Download className="mr-2 h-4 w-4" />
               Télécharger

@@ -1,9 +1,7 @@
-
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { PharmacySettingsForm } from "@/components/settings/PharmacySettingsForm";
 
 export default function Settings() {
   return (
@@ -18,25 +16,7 @@ export default function Settings() {
       <div className="grid gap-6">
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Informations de la Pharmacie</h3>
-          <div className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="pharmacy-name">Nom de la pharmacie</Label>
-              <Input id="pharmacy-name" placeholder="Votre Pharmacie" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="address">Adresse</Label>
-              <Input id="address" placeholder="123 Rue Principale" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="phone">Téléphone</Label>
-              <Input id="phone" placeholder="+33 1 23 45 67 89" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="contact@pharmacie.fr" />
-            </div>
-            <Button>Sauvegarder les modifications</Button>
-          </div>
+          <PharmacySettingsForm />
         </Card>
 
         <Card className="p-6">
