@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Table,
@@ -47,6 +46,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
+import { PrescriptionService } from "@/services/prescription";
 
 // Sample data
 const prescriptions = [
@@ -124,6 +125,8 @@ const prescriptions = [
 
 export default function Prescriptions() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const filteredPrescriptions = prescriptions.filter(prescription => 
     prescription.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -144,6 +147,37 @@ export default function Prescriptions() {
         return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Delivered</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    
+    const formData = new FormData(event.currentTarget);
+    const prescription = {
+      patient: formData.get("patient"),
+      medication: formData.get("medication"),
+      dosage: formData.get("dosage"),
+      quantity: Number(formData.get("quantity")),
+      doctor: formData.get("doctor"),
+      instructions: formData.get("instructions"),
+      date: new Date().toISOString().split('T')[0],
+      status: "En attente" as const
+    };
+
+    try {
+      const response = await PrescriptionService.createPrescription(prescription);
+      toast({
+        title: "Ordonnance créée",
+        description: "L'ordonnance a été créée avec succès.",
+      });
+      setIsDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la création de l'ordonnance.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -188,102 +222,104 @@ export default function Prescriptions() {
               <FileDown className="mr-2 h-4 w-4" />
               Export
             </Button>
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
-                  New Prescription
+                  Nouvelle Ordonnance
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[550px]">
                 <DialogHeader>
-                  <DialogTitle>Add New Prescription</DialogTitle>
+                  <DialogTitle>Ajouter une Nouvelle Ordonnance</DialogTitle>
                   <DialogDescription>
-                    Create a new prescription for a patient.
+                    Créer une nouvelle ordonnance pour un patient.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="patient" className="text-right">
-                      Patient
-                    </Label>
-                    <Select>
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Select patient" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="john-smith">John Smith</SelectItem>
-                        <SelectItem value="mary-johnson">Mary Johnson</SelectItem>
-                        <SelectItem value="robert-brown">Robert Brown</SelectItem>
-                        <SelectItem value="jennifer-williams">Jennifer Williams</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <form onSubmit={handleSubmit}>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="patient" className="text-right">
+                        Patient
+                      </Label>
+                      <Select>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Select patient" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="john-smith">John Smith</SelectItem>
+                          <SelectItem value="mary-johnson">Mary Johnson</SelectItem>
+                          <SelectItem value="robert-brown">Robert Brown</SelectItem>
+                          <SelectItem value="jennifer-williams">Jennifer Williams</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="medication" className="text-right">
+                        Medication
+                      </Label>
+                      <Select>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Select medication" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="amoxicillin-500mg">Amoxicillin 500mg</SelectItem>
+                          <SelectItem value="lisinopril-10mg">Lisinopril 10mg</SelectItem>
+                          <SelectItem value="atorvastatin-20mg">Atorvastatin 20mg</SelectItem>
+                          <SelectItem value="metformin-1000mg">Metformin 1000mg</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="dosage" className="text-right">
+                        Dosage
+                      </Label>
+                      <Input
+                        id="dosage"
+                        placeholder="e.g., 1 tablet 3x daily"
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="quantity" className="text-right">
+                        Quantity
+                      </Label>
+                      <Input
+                        id="quantity"
+                        type="number"
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="doctor" className="text-right">
+                        Doctor
+                      </Label>
+                      <Select>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Select doctor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="dr-howard-lee">Dr. Howard Lee</SelectItem>
+                          <SelectItem value="dr-sarah-chen">Dr. Sarah Chen</SelectItem>
+                          <SelectItem value="dr-james-wilson">Dr. James Wilson</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="instructions" className="text-right">
+                        Instructions
+                      </Label>
+                      <Input
+                        id="instructions"
+                        placeholder="Additional instructions"
+                        className="col-span-3"
+                      />
+                    </div>
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="medication" className="text-right">
-                      Medication
-                    </Label>
-                    <Select>
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Select medication" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="amoxicillin-500mg">Amoxicillin 500mg</SelectItem>
-                        <SelectItem value="lisinopril-10mg">Lisinopril 10mg</SelectItem>
-                        <SelectItem value="atorvastatin-20mg">Atorvastatin 20mg</SelectItem>
-                        <SelectItem value="metformin-1000mg">Metformin 1000mg</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="dosage" className="text-right">
-                      Dosage
-                    </Label>
-                    <Input
-                      id="dosage"
-                      placeholder="e.g., 1 tablet 3x daily"
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="quantity" className="text-right">
-                      Quantity
-                    </Label>
-                    <Input
-                      id="quantity"
-                      type="number"
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="doctor" className="text-right">
-                      Doctor
-                    </Label>
-                    <Select>
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Select doctor" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="dr-howard-lee">Dr. Howard Lee</SelectItem>
-                        <SelectItem value="dr-sarah-chen">Dr. Sarah Chen</SelectItem>
-                        <SelectItem value="dr-james-wilson">Dr. James Wilson</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="instructions" className="text-right">
-                      Instructions
-                    </Label>
-                    <Input
-                      id="instructions"
-                      placeholder="Additional instructions"
-                      className="col-span-3"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit">Create Prescription</Button>
-                </DialogFooter>
+                  <DialogFooter>
+                    <Button type="submit">Créer l'Ordonnance</Button>
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
           </div>
