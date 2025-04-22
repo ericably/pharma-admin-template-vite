@@ -163,7 +163,6 @@ export default function Patients() {
   const handleCreatePatient = async (data: any) => {
     setIsLoading(true);
     try {
-      // Create new patient with "Active" status
       const newPatient: Omit<Patient, '@id' | 'id'> = {
         ...data,
         status: "Active"
@@ -171,7 +170,6 @@ export default function Patients() {
       
       const createdPatient = await PatientService.createPatient(newPatient);
       
-      // Add the new patient to the local state
       setPatients(prevPatients => [createdPatient, ...prevPatients]);
       
       toast({
@@ -180,7 +178,6 @@ export default function Patients() {
         variant: "default",
       });
       
-      // Reset form and close dialog
       form.reset();
       setIsDialogOpen(false);
     } catch (error) {
@@ -192,6 +189,58 @@ export default function Patients() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleExportPatients = () => {
+    try {
+      const headers = ["ID", "Name", "Email", "Phone", "Date of Birth", "Address", "Insurance", "Status"];
+      const csvRows = [headers];
+      
+      filteredPatients.forEach(patient => {
+        const row = [
+          patient.id || '',
+          patient.name,
+          patient.email,
+          patient.phone,
+          patient.dob,
+          patient.address || '',
+          patient.insurance || '',
+          patient.status
+        ];
+        csvRows.push(row);
+      });
+      
+      const csvContent = csvRows.map(row => 
+        row.map(cell => 
+          typeof cell === 'string' && cell.includes(',') 
+            ? `"${cell}"` 
+            : cell
+        ).join(',')
+      ).join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `patients_export_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Export réussi",
+        description: `${filteredPatients.length} patients exportés avec succès.`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error exporting patients:", error);
+      toast({
+        title: "Erreur d'exportation",
+        description: "Une erreur s'est produite lors de l'exportation des patients.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -231,7 +280,7 @@ export default function Patients() {
                 <DropdownMenuItem>By Insurance</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExportPatients}>
               <FileDown className="mr-2 h-4 w-4" />
               Export
             </Button>
