@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Table,
@@ -52,8 +51,7 @@ import {
 import { Card } from "@/components/ui/card";
 import MedicationService, { Medication } from "@/api/services/MedicationService";
 
-// Sample data
-const sampleMedications = [
+const sampleMedications: Medication[] = [
   { 
     id: 1, 
     name: "Amoxicillin", 
@@ -139,36 +137,36 @@ const sampleMedications = [
 export default function Inventory() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [medications, setMedications] = useState(sampleMedications);
+  const [medications, setMedications] = useState<Medication[]>(sampleMedications);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [selectedMedication, setSelectedMedication] = useState<null | Medication>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [newMedication, setNewMedication] = useState({
+  const [newMedication, setNewMedication] = useState<Omit<Medication, '@id' | 'id' | 'createdAt' | 'updatedAt'>>({
     name: "",
     category: "",
+    description: "",
     dosage: "",
     stock: 0,
     price: 0,
     supplier: "",
+    status: ""
   });
   const [editMedication, setEditMedication] = useState<Medication | null>(null);
 
   const filteredMedications = medications.filter(medication => {
-    // Filter by search query
     const matchesSearch = 
       medication.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       medication.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
       medication.dosage.toLowerCase().includes(searchQuery.toLowerCase());
     
-    // Filter by status
     const matchesStatus = statusFilter ? medication.status === statusFilter : true;
     
     return matchesSearch && matchesStatus;
   });
-  
+
   const getStockStatusBadge = (status: string) => {
     switch(status) {
       case "Low Stock":
@@ -202,7 +200,6 @@ export default function Inventory() {
 
   const handleAddMedication = async () => {
     try {
-      // Validate required fields
       if (!newMedication.name || !newMedication.category || !newMedication.dosage) {
         toast({
           title: "Missing information",
@@ -212,34 +209,28 @@ export default function Inventory() {
         return;
       }
 
-      // Determine status based on stock
       const status = newMedication.stock <= 20 ? "Low Stock" : "In Stock";
 
-      // Create medication object
       const medicationToAdd = {
         ...newMedication,
         status,
       };
 
-      // Call the service to create medication
       const response = await MedicationService.createMedication(medicationToAdd);
       
-      // Update the local state with the new medication
       const nextId = Math.max(...medications.map(m => m.id as number)) + 1;
       const newMedicationWithId = {
         ...medicationToAdd,
         id: response.id || nextId,
-      };
+      } as Medication;
       
       setMedications([...medications, newMedicationWithId]);
       
-      // Show success message
       toast({
         title: "Success",
         description: "Medication added successfully",
       });
       
-      // Reset form and close dialog
       setNewMedication({
         name: "",
         category: "",
@@ -247,6 +238,8 @@ export default function Inventory() {
         stock: 0,
         price: 0,
         supplier: "",
+        description: "",
+        status: ""
       });
       setIsDialogOpen(false);
     } catch (error) {
@@ -263,33 +256,28 @@ export default function Inventory() {
     if (!editMedication || !editMedication.id) return;
 
     try {
-      // Determine status based on stock
       const status = editMedication.stock <= 20 ? "Low Stock" : "In Stock";
       const medicationToUpdate = {
         ...editMedication,
         status,
       };
 
-      // Call service to update medication
       const response = await MedicationService.updateMedication(
         editMedication.id,
         medicationToUpdate
       );
 
-      // Update local state
       const updatedMedications = medications.map(med => 
-        med.id === editMedication.id ? {...medicationToUpdate, id: med.id} : med
+        med.id === editMedication.id ? medicationToUpdate as Medication : med
       );
       
       setMedications(updatedMedications);
       
-      // Show success message
       toast({
         title: "Success",
         description: "Medication updated successfully",
       });
       
-      // Close the edit dialog
       setIsEditDialogOpen(false);
     } catch (error) {
       console.error("Error updating medication:", error);
@@ -305,22 +293,18 @@ export default function Inventory() {
     if (!selectedMedication || !selectedMedication.id) return;
 
     try {
-      // Call service to delete medication
       await MedicationService.deleteMedication(selectedMedication.id);
       
-      // Update local state
       const updatedMedications = medications.filter(
         med => med.id !== selectedMedication.id
       );
       setMedications(updatedMedications);
       
-      // Show success message
       toast({
         title: "Success",
         description: "Medication deleted successfully",
       });
       
-      // Close the dialog
       setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting medication:", error);
@@ -349,7 +333,6 @@ export default function Inventory() {
 
   const handleExport = () => {
     try {
-      // Create CSV data from filtered medications
       const headers = ["ID", "Name", "Category", "Dosage", "Stock", "Price", "Supplier", "Status"];
       const csvContent = [
         headers.join(","),
@@ -365,17 +348,14 @@ export default function Inventory() {
         ].join(","))
       ].join("\n");
       
-      // Create blob and download link
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       
-      // Set up download
       link.setAttribute('href', url);
       link.setAttribute('download', `inventory-${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
       
-      // Add to document, click and remove
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -608,7 +588,6 @@ export default function Inventory() {
         </div>
       </Card>
 
-      {/* View Medication Details Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -667,7 +646,6 @@ export default function Inventory() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Medication Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -764,7 +742,6 @@ export default function Inventory() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

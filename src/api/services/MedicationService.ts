@@ -10,9 +10,9 @@ export interface Medication {
   description?: string;
   dosage: string;
   stock: number;
-  supplier?: string;
+  supplier: string; // Changed from optional to required to match component usage
   price: number;
-  status?: string;
+  status: string; // Changed from optional to required to match component usage
   createdAt?: string;
   updatedAt?: string;
 }
