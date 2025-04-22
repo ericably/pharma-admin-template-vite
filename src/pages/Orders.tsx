@@ -96,7 +96,7 @@ export default function Orders() {
       deliveryDate: "",
       items: [],
       totalAmount: 0,
-      status: "Pending",
+      status: "En attente",
       notes: ""
     }
   });
@@ -124,7 +124,7 @@ export default function Orders() {
           deliveryDate: "2023-05-15",
           items: [{ medication: "Amoxicillin 500mg", medicationId: "med1", quantity: 12, unitPrice: 5.25 }],
           totalAmount: 1245.67,
-          status: "Delivered" 
+          status: "Livré" 
         },
         { 
           id: "PO-2023-002", 
@@ -134,7 +134,7 @@ export default function Orders() {
           deliveryDate: "2023-05-17",
           items: [{ medication: "Lisinopril 10mg", medicationId: "med2", quantity: 8, unitPrice: 3.75 }],
           totalAmount: 876.50,
-          status: "Processing" 
+          status: "En cours" 
         },
         { 
           id: "PO-2023-003", 
@@ -144,7 +144,7 @@ export default function Orders() {
           deliveryDate: "2023-05-19",
           items: [{ medication: "Atorvastatin 20mg", medicationId: "med3", quantity: 15, unitPrice: 8.50 }],
           totalAmount: 2130.25,
-          status: "Shipped" 
+          status: "Expédié" 
         },
         { 
           id: "PO-2023-004", 
@@ -154,7 +154,7 @@ export default function Orders() {
           deliveryDate: "2023-05-20",
           items: [{ medication: "Metformin 500mg", medicationId: "med4", quantity: 5, unitPrice: 2.95 }],
           totalAmount: 435.80,
-          status: "Processing" 
+          status: "En cours" 
         },
         { 
           id: "PO-2023-005", 
@@ -164,7 +164,7 @@ export default function Orders() {
           deliveryDate: "2023-05-21",
           items: [{ medication: "Omeprazole 20mg", medicationId: "med5", quantity: 10, unitPrice: 6.25 }],
           totalAmount: 1100.00,
-          status: "Pending" 
+          status: "En attente" 
         },
         { 
           id: "PO-2023-006", 
@@ -174,7 +174,7 @@ export default function Orders() {
           deliveryDate: "2023-05-22",
           items: [{ medication: "Amoxicillin 500mg", medicationId: "med1", quantity: 7, unitPrice: 5.25 }],
           totalAmount: 789.30,
-          status: "Pending" 
+          status: "En attente" 
         }
       ]);
     } catch (error) {
@@ -289,16 +289,16 @@ export default function Orders() {
   
   const getStatusBadge = (status: string) => {
     switch(status) {
-      case "Pending":
-        return <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">Pending</Badge>;
-      case "Processing":
-        return <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">Processing</Badge>;
-      case "Shipped":
-        return <Badge variant="outline" className="bg-purple-50 text-purple-600 border-purple-200">Shipped</Badge>;
-      case "Delivered":
-        return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Delivered</Badge>;
-      case "Cancelled":
-        return <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">Cancelled</Badge>;
+      case "En attente":
+        return <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">En attente</Badge>;
+      case "En cours":
+        return <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">En cours</Badge>;
+      case "Expédié":
+        return <Badge variant="outline" className="bg-purple-50 text-purple-600 border-purple-200">Expédié</Badge>;
+      case "Livré":
+        return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Livré</Badge>;
+      case "Annulé":
+        return <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">Annulé</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -335,10 +335,10 @@ export default function Orders() {
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem onClick={() => setSearchQuery("")}>All Orders</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSearchQuery("Pending")}>Pending</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSearchQuery("Processing")}>Processing</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSearchQuery("Shipped")}>Shipped</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSearchQuery("Delivered")}>Delivered</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSearchQuery("En attente")}>En attente</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSearchQuery("En cours")}>En cours</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSearchQuery("Expédié")}>Expédié</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSearchQuery("Livré")}>Livré</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button variant="outline">
