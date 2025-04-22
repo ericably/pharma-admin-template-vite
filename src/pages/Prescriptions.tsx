@@ -153,15 +153,21 @@ export default function Prescriptions() {
     event.preventDefault();
     
     const formData = new FormData(event.currentTarget);
+    const patientValue = formData.get("patient") as string || '';
+    const medicationValue = formData.get("medication") as string || '';
+    
+    const patientId = patientValue ? patientValue.split('-')[0] : '';
+    const medicationId = medicationValue ? medicationValue.split('-')[0] : '';
+    
     const prescription = {
-      patient: formData.get("patient") as string,
-      patientId: (formData.get("patient") as string).split('-')[0],
-      medication: formData.get("medication") as string,
-      medicationId: (formData.get("medication") as string).split('-')[0],
-      dosage: formData.get("dosage") as string,
-      quantity: Number(formData.get("quantity")),
-      doctor: formData.get("doctor") as string,
-      instructions: formData.get("instructions") as string,
+      patient: patientValue,
+      patientId: patientId,
+      medication: medicationValue,
+      medicationId: medicationId,
+      dosage: formData.get("dosage") as string || '',
+      quantity: Number(formData.get("quantity")) || 0,
+      doctor: formData.get("doctor") as string || '',
+      instructions: formData.get("instructions") as string || '',
       date: new Date().toISOString().split('T')[0],
       status: "En attente" as const
     };
