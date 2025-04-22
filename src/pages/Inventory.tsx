@@ -28,6 +28,16 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   ChevronDown, 
   Plus, 
@@ -36,6 +46,7 @@ import {
   MoreVertical,
   Edit,
   Trash2,
+  Eye,
   AlertCircle
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -130,6 +141,11 @@ export default function Inventory() {
   const [searchQuery, setSearchQuery] = useState("");
   const [medications, setMedications] = useState(sampleMedications);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [selectedMedication, setSelectedMedication] = useState<null | Medication>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [newMedication, setNewMedication] = useState({
     name: "",
     category: "",
@@ -138,12 +154,20 @@ export default function Inventory() {
     price: 0,
     supplier: "",
   });
+  const [editMedication, setEditMedication] = useState<Medication | null>(null);
 
-  const filteredMedications = medications.filter(medication => 
-    medication.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    medication.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    medication.dosage.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredMedications = medications.filter(medication => {
+    // Filter by search query
+    const matchesSearch = 
+      medication.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      medication.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      medication.dosage.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Filter by status
+    const matchesStatus = statusFilter ? medication.status === statusFilter : true;
+    
+    return matchesSearch && matchesStatus;
+  });
   
   const getStockStatusBadge = (status: string) => {
     switch(status) {
@@ -164,6 +188,16 @@ export default function Inventory() {
       ...prev,
       [id]: id === "stock" || id === "price" ? parseFloat(value) : value
     }));
+  };
+
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    if (editMedication) {
+      setEditMedication(prev => ({
+        ...prev!,
+        [id]: id === "stock" || id === "price" ? parseFloat(value) : value
+      }));
+    }
   };
 
   const handleAddMedication = async () => {
@@ -225,6 +259,145 @@ export default function Inventory() {
     }
   };
 
+  const handleEditMedication = async () => {
+    if (!editMedication || !editMedication.id) return;
+
+    try {
+      // Determine status based on stock
+      const status = editMedication.stock <= 20 ? "Low Stock" : "In Stock";
+      const medicationToUpdate = {
+        ...editMedication,
+        status,
+      };
+
+      // Call service to update medication
+      const response = await MedicationService.updateMedication(
+        editMedication.id,
+        medicationToUpdate
+      );
+
+      // Update local state
+      const updatedMedications = medications.map(med => 
+        med.id === editMedication.id ? {...medicationToUpdate, id: med.id} : med
+      );
+      
+      setMedications(updatedMedications);
+      
+      // Show success message
+      toast({
+        title: "Success",
+        description: "Medication updated successfully",
+      });
+      
+      // Close the edit dialog
+      setIsEditDialogOpen(false);
+    } catch (error) {
+      console.error("Error updating medication:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update medication. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteMedication = async () => {
+    if (!selectedMedication || !selectedMedication.id) return;
+
+    try {
+      // Call service to delete medication
+      await MedicationService.deleteMedication(selectedMedication.id);
+      
+      // Update local state
+      const updatedMedications = medications.filter(
+        med => med.id !== selectedMedication.id
+      );
+      setMedications(updatedMedications);
+      
+      // Show success message
+      toast({
+        title: "Success",
+        description: "Medication deleted successfully",
+      });
+      
+      // Close the dialog
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Error deleting medication:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete medication. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewDetails = (medication: Medication) => {
+    setSelectedMedication(medication);
+    setIsViewDialogOpen(true);
+  };
+
+  const handleEditClick = (medication: Medication) => {
+    setEditMedication({...medication});
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = (medication: Medication) => {
+    setSelectedMedication(medication);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleExport = () => {
+    try {
+      // Create CSV data from filtered medications
+      const headers = ["ID", "Name", "Category", "Dosage", "Stock", "Price", "Supplier", "Status"];
+      const csvContent = [
+        headers.join(","),
+        ...filteredMedications.map(med => [
+          med.id,
+          `"${med.name}"`,
+          `"${med.category}"`,
+          `"${med.dosage}"`,
+          med.stock,
+          med.price.toFixed(2),
+          `"${med.supplier || ''}"`,
+          `"${med.status}"`
+        ].join(","))
+      ].join("\n");
+      
+      // Create blob and download link
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      
+      // Set up download
+      link.setAttribute('href', url);
+      link.setAttribute('download', `inventory-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      
+      // Add to document, click and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Success",
+        description: "Inventory data exported successfully",
+      });
+    } catch (error) {
+      console.error("Error exporting inventory:", error);
+      toast({
+        title: "Error",
+        description: "Failed to export inventory data. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFilterChange = (filter: string | null) => {
+    setStatusFilter(filter);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -250,19 +423,26 @@ export default function Inventory() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex">
-                  Filter
+                  {statusFilter ? `Filter: ${statusFilter}` : 'Filter'}
                   <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem>All Items</DropdownMenuItem>
-                <DropdownMenuItem>Low Stock</DropdownMenuItem>
-                <DropdownMenuItem>In Stock</DropdownMenuItem>
-                <DropdownMenuItem>Out of Stock</DropdownMenuItem>
-                <DropdownMenuItem>By Category</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange(null)}>
+                  All Items
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange("Low Stock")}>
+                  Low Stock
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange("In Stock")}>
+                  In Stock
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange("Out of Stock")}>
+                  Out of Stock
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExport}>
               <FileDown className="mr-2 h-4 w-4" />
               Export
             </Button>
@@ -380,45 +560,227 @@ export default function Inventory() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredMedications.map((medication) => (
-                <TableRow key={medication.id}>
-                  <TableCell className="font-medium">{medication.id}</TableCell>
-                  <TableCell>{medication.name}</TableCell>
-                  <TableCell>{medication.category}</TableCell>
-                  <TableCell>{medication.dosage}</TableCell>
-                  <TableCell className="text-right">{medication.stock}</TableCell>
-                  <TableCell className="text-right">${medication.price.toFixed(2)}</TableCell>
-                  <TableCell>{getStockStatusBadge(medication.status)}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <AlertCircle className="mr-2 h-4 w-4" />
-                          Set Alert
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {filteredMedications.length > 0 ? (
+                filteredMedications.map((medication) => (
+                  <TableRow key={medication.id}>
+                    <TableCell className="font-medium">{medication.id}</TableCell>
+                    <TableCell>{medication.name}</TableCell>
+                    <TableCell>{medication.category}</TableCell>
+                    <TableCell>{medication.dosage}</TableCell>
+                    <TableCell className="text-right">{medication.stock}</TableCell>
+                    <TableCell className="text-right">${medication.price.toFixed(2)}</TableCell>
+                    <TableCell>{getStockStatusBadge(medication.status)}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleViewDetails(medication)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditClick(medication)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDeleteClick(medication)} className="text-red-600">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={8} className="h-24 text-center">
+                    No medications found matching your search criteria.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </div>
       </Card>
+
+      {/* View Medication Details Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Medication Details</DialogTitle>
+            <DialogDescription>
+              Detailed information about this medication.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedMedication && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label className="text-right font-medium">Name:</Label>
+                <div className="col-span-2">{selectedMedication.name}</div>
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label className="text-right font-medium">Category:</Label>
+                <div className="col-span-2">{selectedMedication.category}</div>
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label className="text-right font-medium">Dosage:</Label>
+                <div className="col-span-2">{selectedMedication.dosage}</div>
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label className="text-right font-medium">Stock:</Label>
+                <div className="col-span-2">{selectedMedication.stock}</div>
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label className="text-right font-medium">Price:</Label>
+                <div className="col-span-2">${selectedMedication.price.toFixed(2)}</div>
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label className="text-right font-medium">Supplier:</Label>
+                <div className="col-span-2">{selectedMedication.supplier || "N/A"}</div>
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label className="text-right font-medium">Status:</Label>
+                <div className="col-span-2">{getStockStatusBadge(selectedMedication.status)}</div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button onClick={() => setIsViewDialogOpen(false)}>Close</Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsViewDialogOpen(false);
+                handleEditClick(selectedMedication!);
+              }}
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Edit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Medication Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Medication</DialogTitle>
+            <DialogDescription>
+              Update the medication's information.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editMedication && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="Medication name"
+                  className="col-span-3"
+                  value={editMedication.name}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="category" className="text-right">
+                  Category
+                </Label>
+                <Input
+                  id="category"
+                  placeholder="Medication category"
+                  className="col-span-3"
+                  value={editMedication.category}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="dosage" className="text-right">
+                  Dosage
+                </Label>
+                <Input
+                  id="dosage"
+                  placeholder="e.g., 500mg"
+                  className="col-span-3"
+                  value={editMedication.dosage}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="stock" className="text-right">
+                  Stock
+                </Label>
+                <Input
+                  id="stock"
+                  type="number"
+                  placeholder="Stock quantity"
+                  className="col-span-3"
+                  value={editMedication.stock || ""}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="price" className="text-right">
+                  Price
+                </Label>
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  placeholder="Unit price"
+                  className="col-span-3"
+                  value={editMedication.price || ""}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="supplier" className="text-right">
+                  Supplier
+                </Label>
+                <Input
+                  id="supplier"
+                  placeholder="Supplier name"
+                  className="col-span-3"
+                  value={editMedication.supplier || ""}
+                  onChange={handleEditInputChange}
+                />
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleEditMedication}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedMedication?.name}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteMedication} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
