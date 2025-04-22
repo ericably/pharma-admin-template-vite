@@ -47,9 +47,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { PrescriptionService } from "@/services/prescription";
+import PrescriptionService from "@/api/services/PrescriptionService";
 
-// Sample data
 const prescriptions = [
   { 
     id: "RX-0001", 
@@ -155,12 +154,14 @@ export default function Prescriptions() {
     
     const formData = new FormData(event.currentTarget);
     const prescription = {
-      patient: formData.get("patient"),
-      medication: formData.get("medication"),
-      dosage: formData.get("dosage"),
+      patient: formData.get("patient") as string,
+      patientId: (formData.get("patient") as string).split('-')[0],
+      medication: formData.get("medication") as string,
+      medicationId: (formData.get("medication") as string).split('-')[0],
+      dosage: formData.get("dosage") as string,
       quantity: Number(formData.get("quantity")),
-      doctor: formData.get("doctor"),
-      instructions: formData.get("instructions"),
+      doctor: formData.get("doctor") as string,
+      instructions: formData.get("instructions") as string,
       date: new Date().toISOString().split('T')[0],
       status: "En attente" as const
     };
