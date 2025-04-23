@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -180,7 +179,9 @@ export default function Suppliers() {
                     <TableCell>{supplier.phone}</TableCell>
                     <TableCell>{supplier.address}</TableCell>
                     <TableCell>
-                      <Badge variant={supplier.status === "Actif" ? "success" : "secondary"}>
+                      <Badge 
+                        variant={supplier.status === "Actif" ? "default" : "secondary"}
+                      >
                         {supplier.status}
                       </Badge>
                     </TableCell>
