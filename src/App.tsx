@@ -13,6 +13,9 @@ import Prescriptions from "./pages/Prescriptions";
 import Orders from "./pages/Orders";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import Suppliers from "./pages/Suppliers";
+import Pharmacists from "./pages/Pharmacists";
+import Doctors from "./pages/Doctors";
 import AuthService from "./api/services/AuthService";
 
 const queryClient = new QueryClient();
