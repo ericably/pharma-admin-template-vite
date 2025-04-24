@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,15 +11,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Pharmacist } from "@/api/services/PharmacistService";
 
 interface PharmacistFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (pharmacist: Omit<Pharmacist, '@id' | 'id'>) => void;
+  initialData?: Pharmacist;
 }
 
-export function PharmacistForm({ isOpen, onClose, onSubmit }: PharmacistFormProps) {
+export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: PharmacistFormProps) {
   const [formData, setFormData] = useState<Omit<Pharmacist, '@id' | 'id'>>({
     name: "",
     email: "",
@@ -28,9 +30,29 @@ export function PharmacistForm({ isOpen, onClose, onSubmit }: PharmacistFormProp
     status: "Actif"
   });
 
+  const isEditing = !!initialData;
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name,
+        email: initialData.email,
+        phone: initialData.phone,
+        licenseNumber: initialData.licenseNumber,
+        status: initialData.status
+      });
+    }
+  }, [initialData]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
+    if (!isEditing) {
+      resetForm();
+    }
+  };
+
+  const resetForm = () => {
     setFormData({
       name: "",
       email: "",
@@ -48,13 +70,20 @@ export function PharmacistForm({ isOpen, onClose, onSubmit }: PharmacistFormProp
     }));
   };
 
+  const handleStatusChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      status: value as "Actif" | "Inactif"
+    }));
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Ajouter un Pharmacien</DialogTitle>
+          <DialogTitle>{isEditing ? "Modifier" : "Ajouter"} un Pharmacien</DialogTitle>
           <DialogDescription>
-            Ajoutez les informations du nouveau pharmacien.
+            {isEditing ? "Modifiez les informations du pharmacien." : "Ajoutez les informations du nouveau pharmacien."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -100,9 +129,24 @@ export function PharmacistForm({ isOpen, onClose, onSubmit }: PharmacistFormProp
                 required
               />
             </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="status" className="text-right">Statut</Label>
+              <Select 
+                value={formData.status} 
+                onValueChange={handleStatusChange}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Sélectionnez un statut" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Actif">Actif</SelectItem>
+                  <SelectItem value="Inactif">Inactif</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
-            <Button type="submit">Ajouter</Button>
+            <Button type="submit">{isEditing ? "Enregistrer" : "Ajouter"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
