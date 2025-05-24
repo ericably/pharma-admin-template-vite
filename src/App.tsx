@@ -13,6 +13,9 @@ import Prescriptions from "./pages/Prescriptions";
 import Orders from "./pages/Orders";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import Suppliers from "./pages/Suppliers";
+import Pharmacists from "./pages/Pharmacists";
+import Doctors from "./pages/Doctors";
 import AuthService from "./api/services/AuthService";
 
 const queryClient = new QueryClient();
@@ -73,6 +76,9 @@ const App = () => {
               <Route path="patients" element={<Patients />} />
               <Route path="prescriptions" element={<Prescriptions />} />
               <Route path="orders" element={<Orders />} />
+              <Route path="suppliers" element={<Suppliers />} />
+              <Route path="pharmacists" element={<Pharmacists />} />
+              <Route path="doctors" element={<Doctors />} />
               <Route path="reports" element={<div>Page des Rapports</div>} />
               <Route path="settings" element={<div>Page des Paramètres</div>} />
             </Route>

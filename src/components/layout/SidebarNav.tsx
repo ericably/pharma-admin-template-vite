@@ -10,7 +10,9 @@ import {
   BarChart4, 
   Settings, 
   LogOut,
-  Menu
+  Menu,
+  UserRound,  // Added for Doctors
+  Hospital    // Added for Pharmacists
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React, { useState } from "react";
@@ -27,6 +29,8 @@ const navigation: NavigationItem[] = [
   { name: "Patients", href: "/patients", icon: Users },
   { name: "Prescriptions", href: "/prescriptions", icon: ClipboardList },
   { name: "Commandes", href: "/orders", icon: ShoppingBag },
+  { name: "Pharmaciens", href: "/pharmacists", icon: Hospital },
+  { name: "Docteurs", href: "/doctors", icon: UserRound },
   { name: "Rapports", href: "/reports", icon: BarChart4 },
   { name: "Paramètres", href: "/settings", icon: Settings },
 ];

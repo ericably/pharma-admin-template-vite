@@ -379,6 +379,41 @@ export default function Inventory() {
     setStatusFilter(filter);
   };
 
+  const handleStockUpdate = async (medicationId: number, newStock: number) => {
+    try {
+      await MedicationService.updateMedication(medicationId, { stock: newStock });
+
+      const updatedMedications = medications.map(med =>
+        med.id === medicationId ? { ...med, stock: newStock } : med
+      );
+
+      setMedications(updatedMedications);
+
+      toast({
+        title: "Stock mis à jour",
+        description: "Le stock a été mis à jour avec succès",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la mise à jour du stock",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const LowStockAlert = ({ stock }: { stock: number }) => {
+    if (stock <= 10) {
+      return (
+        <div className="text-red-500 text-sm flex items-center">
+          <AlertCircle className="h-4 w-4 mr-1" />
+          Stock bas
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -559,6 +594,12 @@ export default function Inventory() {
                     <TableCell>{medication.category}</TableCell>
                     <TableCell>{medication.dosage}</TableCell>
                     <TableCell className="text-right">{medication.stockQuantity}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex flex-col items-end">
+                        {medication.stockQuantity}
+                        <LowStockAlert stock={medication.stockQuantity} />
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right">{medication.price.toFixed(2)}€</TableCell>
                     <TableCell>
                       {new Date(medication.expirationDate).toLocaleDateString("fr-FR")}
