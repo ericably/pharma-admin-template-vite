@@ -13,7 +13,7 @@ import {
   Menu
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import React, { useState } from "react";
 
 interface NavigationItem {
   name: string;
@@ -23,12 +23,12 @@ interface NavigationItem {
 
 const navigation: NavigationItem[] = [
   { name: "Dashboard", href: "/", icon: Home },
-  { name: "Inventory", href: "/inventory", icon: Pill },
+  { name: "Inventaire", href: "/inventory", icon: Pill },
   { name: "Patients", href: "/patients", icon: Users },
   { name: "Prescriptions", href: "/prescriptions", icon: ClipboardList },
-  { name: "Orders", href: "/orders", icon: ShoppingBag },
-  { name: "Reports", href: "/reports", icon: BarChart4 },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Commandes", href: "/orders", icon: ShoppingBag },
+  { name: "Rapports", href: "/reports", icon: BarChart4 },
+  { name: "Paramètres", href: "/settings", icon: Settings },
 ];
 
 export function SidebarNav() {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import {
   Table,
   TableBody,
@@ -50,111 +50,62 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import MedicationService, { Medication } from "@/api/services/MedicationService";
-
-const sampleMedications: Medication[] = [
-  { 
-    id: 1, 
-    name: "Amoxicillin", 
-    category: "Antibiotic", 
-    dosage: "500mg", 
-    stock: 15,
-    supplier: "Pharma Wholesale Inc.",
-    price: 12.99,
-    status: "Low Stock" 
-  },
-  { 
-    id: 2, 
-    name: "Lisinopril", 
-    category: "Antihypertensive", 
-    dosage: "10mg", 
-    stock: 28,
-    supplier: "MedSource Supply",
-    price: 8.50,
-    status: "Low Stock" 
-  },
-  { 
-    id: 3, 
-    name: "Atorvastatin", 
-    category: "Statin", 
-    dosage: "20mg", 
-    stock: 32,
-    supplier: "HealthMed Suppliers",
-    price: 15.75,
-    status: "Low Stock" 
-  },
-  { 
-    id: 4, 
-    name: "Metformin", 
-    category: "Antidiabetic", 
-    dosage: "1000mg", 
-    stock: 65,
-    supplier: "Pharma Wholesale Inc.",
-    price: 9.25,
-    status: "In Stock" 
-  },
-  { 
-    id: 5, 
-    name: "Omeprazole", 
-    category: "Proton Pump Inhibitor", 
-    dosage: "20mg", 
-    stock: 78,
-    supplier: "MedSource Supply",
-    price: 7.99,
-    status: "In Stock" 
-  },
-  { 
-    id: 6, 
-    name: "Sertraline", 
-    category: "SSRI", 
-    dosage: "50mg", 
-    stock: 52,
-    supplier: "HealthMed Suppliers",
-    price: 11.50,
-    status: "In Stock" 
-  },
-  { 
-    id: 7, 
-    name: "Ibuprofen", 
-    category: "NSAID", 
-    dosage: "400mg", 
-    stock: 95,
-    supplier: "Pharma Wholesale Inc.",
-    price: 5.25,
-    status: "In Stock" 
-  },
-  { 
-    id: 8, 
-    name: "Cetirizine", 
-    category: "Antihistamine", 
-    dosage: "10mg", 
-    stock: 42,
-    supplier: "MedSource Supply",
-    price: 6.75,
-    status: "In Stock" 
-  }
-];
+import PatientService, {Patient} from "@/api/services/PatientService.ts";
+import {useForm} from "react-hook-form";
 
 export default function Inventory() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [medications, setMedications] = useState<Medication[]>(sampleMedications);
+  const [medications, setMedications] = useState<Medication[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [selectedMedication, setSelectedMedication] = useState<null | Medication>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [newMedication, setNewMedication] = useState<Omit<Medication, '@id' | 'id' | 'createdAt' | 'updatedAt'>>({
     name: "",
     category: "",
     description: "",
     dosage: "",
-    stock: 0,
+    stockQuantity: 0,
     price: 0,
     supplier: "",
-    status: ""
+    status: "",
+    expirationDate: "",
   });
   const [editMedication, setEditMedication] = useState<Medication | null>(null);
+
+  useEffect(() => {
+    const fetchMedications = async () => {
+      try {
+        const response = await MedicationService.getAllMedications();
+
+        if (response.items && Array.isArray(response.items)) {
+          setMedications(response.items);
+        } else {
+          console.error('Unexpected response format:', response);
+          toast({
+            title: "Error",
+            description: "Data format from API is unexpected.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch patients:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load patient data.",
+          variant: "destructive",
+        });
+      } finally {
+      }
+    };
+
+    fetchMedications();
+  }, []);
+
 
   const filteredMedications = medications.filter(medication => {
     const matchesSearch = 
@@ -184,7 +135,7 @@ export default function Inventory() {
     const { id, value } = e.target;
     setNewMedication(prev => ({
       ...prev,
-      [id]: id === "stock" || id === "price" ? parseFloat(value) : value
+      [id]: id === "stockQuantity" || id === "price" ? parseFloat(value) : value
     }));
   };
 
@@ -193,7 +144,7 @@ export default function Inventory() {
     if (editMedication) {
       setEditMedication(prev => ({
         ...prev!,
-        [id]: id === "stock" || id === "price" ? parseFloat(value) : value
+        [id]: id === "stockQuantity" || id === "price" ? parseFloat(value) : value
       }));
     }
   };
@@ -209,7 +160,7 @@ export default function Inventory() {
         return;
       }
 
-      const status = newMedication.stock <= 20 ? "Low Stock" : "In Stock";
+      const status = newMedication.stockQuantity <= 20 ? "Low Stock" : "In Stock";
 
       const medicationToAdd = {
         ...newMedication,
@@ -235,7 +186,7 @@ export default function Inventory() {
         name: "",
         category: "",
         dosage: "",
-        stock: 0,
+        stockQuantity: 0,
         price: 0,
         supplier: "",
         description: "",
@@ -252,11 +203,61 @@ export default function Inventory() {
     }
   };
 
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      category: "",
+      dosage: "",
+      stockQuantity: 0,
+      price: 0,
+      supplier: "",
+      description: "",
+      status: "",
+      expirationDate:""
+    }
+  });
+
+  const handleCreateMedication = async (data: any) => {
+    setIsLoading(true);
+    try {
+      // Create new patient with "Active" status
+      const newMedication: Omit<Medication, '@id' | 'id'> = {
+        ...data,
+        status: "Active"
+      };
+      console.log('newMedication', newMedication);
+
+      const createdMedication = await MedicationService.createMedication(newMedication);
+
+      // Add the new patient to the local state
+      setMedications(prevMedications => [createdMedication, ...prevMedications]);
+
+      toast({
+        title: "Succès",
+        description: "Medication added successfully",
+        variant: "default",
+      });
+
+      // Reset form and close dialog
+      form.reset();
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Error adding medication:", error);
+      toast({
+        title: "Erreur",
+        description: "Failed to add medication. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleEditMedication = async () => {
     if (!editMedication || !editMedication.id) return;
 
     try {
-      const status = editMedication.stock <= 20 ? "Low Stock" : "In Stock";
+      const status = editMedication.stockQuantity <= 20 ? "Low Stock" : "In Stock";
       const medicationToUpdate = {
         ...editMedication,
         status,
@@ -341,7 +342,7 @@ export default function Inventory() {
           `"${med.name}"`,
           `"${med.category}"`,
           `"${med.dosage}"`,
-          med.stock,
+          med.stockQuantity,
           med.price.toFixed(2),
           `"${med.supplier || ''}"`,
           `"${med.status}"`
@@ -435,91 +436,100 @@ export default function Inventory() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Add New Medication</DialogTitle>
-                  <DialogDescription>
-                    Fill in the details to add a new medication to inventory.
-                  </DialogDescription>
+                  <DialogTitle>Ajouter un nouveau médicament</DialogTitle>
+                  <DialogDescription>Complétez les détails pour ajouter un nouveau médicament à l'inventaire.</DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
-                      Name
-                    </Label>
-                    <Input
-                      id="name"
-                      placeholder="Medication name"
-                      className="col-span-3"
-                      value={newMedication.name}
-                      onChange={handleInputChange}
-                    />
+
+                <form onSubmit={form.handleSubmit(handleCreateMedication)}>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="name" className="text-right">
+                        Name
+                      </Label>
+                      <Input
+                          id="name"
+                          placeholder="Nom médicament"
+                          className="col-span-3"
+                          {...form.register("name", { required: true })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="category" className="text-right">
+                        Category
+                      </Label>
+                      <Input
+                          id="category"
+                          placeholder="Medication catégorie"
+                          className="col-span-3"
+                          {...form.register("category", { required: true })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="dosage" className="text-right">
+                        Dosage
+                      </Label>
+                      <Input
+                          id="dosage"
+                          placeholder="e.g., 500mg"
+                          className="col-span-3"
+                          {...form.register("dosage", { required: true })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="stockQuantity" className="text-right">
+                        Stock
+                      </Label>
+                      <Input
+                          id="stockQuantity"
+                          type="number"
+                          placeholder="Stock initial"
+                          className="col-span-3"
+                          {...form.register("stockQuantity", { required: true })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="price" className="text-right">
+                        Prix
+                      </Label>
+                      <Input
+                          id="price"
+                          type="number"
+                          step="0.01"
+                          placeholder="prix unitaire"
+                          className="col-span-3"
+                          {...form.register("price", { required: true })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="supplier" className="text-right">
+                        Date d'expiration
+                      </Label>
+                      <Input
+                          id="expirationDate"
+                          type="date"
+                          placeholder="Date d'expiration"
+                          className="col-span-3"
+                          {...form.register("expirationDate", { required: true })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="supplier" className="text-right">
+                        Fournisseur
+                      </Label>
+                      <Input
+                          id="supplier"
+                          placeholder="Nom du fournisseur"
+                          className="col-span-3"
+                          {...form.register("supplier", { required: true })}
+                      />
+                    </div>
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="category" className="text-right">
-                      Category
-                    </Label>
-                    <Input
-                      id="category"
-                      placeholder="Medication category"
-                      className="col-span-3"
-                      value={newMedication.category}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="dosage" className="text-right">
-                      Dosage
-                    </Label>
-                    <Input
-                      id="dosage"
-                      placeholder="e.g., 500mg"
-                      className="col-span-3"
-                      value={newMedication.dosage}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="stock" className="text-right">
-                      Stock
-                    </Label>
-                    <Input
-                      id="stock"
-                      type="number"
-                      placeholder="Initial stock"
-                      className="col-span-3"
-                      value={newMedication.stock || ""}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="price" className="text-right">
-                      Price
-                    </Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      step="0.01"
-                      placeholder="Unit price"
-                      className="col-span-3"
-                      value={newMedication.price || ""}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="supplier" className="text-right">
-                      Supplier
-                    </Label>
-                    <Input
-                      id="supplier"
-                      placeholder="Supplier name"
-                      className="col-span-3"
-                      value={newMedication.supplier}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="button" onClick={handleAddMedication}>Save Medication</Button>
-                </DialogFooter>
+                  <DialogFooter>
+                    <Button type="submit" disabled={isLoading}>
+                      {isLoading ? "Enregistrement..." : "Ajouter un médicament"}
+                    </Button>
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
           </div>
@@ -529,12 +539,13 @@ export default function Inventory() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
+                <TableHead>Id</TableHead>
+                <TableHead>Nom</TableHead>
+                <TableHead>Catégorie</TableHead>
                 <TableHead>Dosage</TableHead>
-                <TableHead className="text-right">Stock</TableHead>
-                <TableHead className="text-right">Price</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead>Prix</TableHead>
+                <TableHead>Date expiration</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-[80px]">Actions</TableHead>
               </TableRow>
@@ -547,8 +558,11 @@ export default function Inventory() {
                     <TableCell>{medication.name}</TableCell>
                     <TableCell>{medication.category}</TableCell>
                     <TableCell>{medication.dosage}</TableCell>
-                    <TableCell className="text-right">{medication.stock}</TableCell>
-                    <TableCell className="text-right">${medication.price.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">{medication.stockQuantity}</TableCell>
+                    <TableCell className="text-right">{medication.price.toFixed(2)}€</TableCell>
+                    <TableCell>
+                      {new Date(medication.expirationDate).toLocaleDateString("fr-FR")}
+                    </TableCell>
                     <TableCell>{getStockStatusBadge(medication.status)}</TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -613,7 +627,7 @@ export default function Inventory() {
               </div>
               <div className="grid grid-cols-3 items-center gap-4">
                 <Label className="text-right font-medium">Stock:</Label>
-                <div className="col-span-2">{selectedMedication.stock}</div>
+                <div className="col-span-2">{selectedMedication.stockQuantity}</div>
               </div>
               <div className="grid grid-cols-3 items-center gap-4">
                 <Label className="text-right font-medium">Price:</Label>
@@ -694,15 +708,15 @@ export default function Inventory() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="stock" className="text-right">
+                <Label htmlFor="stockQuantity" className="text-right">
                   Stock
                 </Label>
                 <Input
-                  id="stock"
+                  id="stockQuantity"
                   type="number"
                   placeholder="Stock quantity"
                   className="col-span-3"
-                  value={editMedication.stock || ""}
+                  value={editMedication.stockQuantity || ""}
                   onChange={handleEditInputChange}
                 />
               </div>

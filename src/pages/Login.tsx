@@ -60,7 +60,7 @@ export default function Login() {
     <div className="flex items-center justify-center min-h-screen bg-muted/30">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold text-pharmacy-600">PharmaSys Admin</CardTitle>
+          <CardTitle className="text-2xl font-bold text-pharmacy-600">PharmaTogo Admin</CardTitle>
           <CardDescription>
             Enter your credentials to access your pharmacy dashboard
           </CardDescription>

@@ -363,9 +363,9 @@ export default function Patients() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Patient Management</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Gestion des patients</h1>
         <p className="text-muted-foreground mt-2">
-          View and manage patient information, prescriptions, and records.
+          Visualiser et gérer les informations sur les patients
         </p>
       </div>
 
@@ -577,10 +577,10 @@ export default function Patients() {
         </div>
 
         <div className="mt-4 text-sm text-muted-foreground">
-          Showing {filteredPatients.length} {filteredPatients.length === 1 ? 'patient' : 'patients'}
+          Affichage {filteredPatients.length} {filteredPatients.length === 1 ? 'patient' : 'patients'}
           {currentFilter !== "all" && (
             <>
-              {' '}• Filter: {currentFilter === "active" ? "Active" : currentFilter === "inactive" ? "Inactive" : "With Insurance"}
+              {' '}• Filter: {currentFilter === "active" ? "Actif" : currentFilter === "inactive" ? "Inactif" : "Avec assurance"}
             </>
           )}
         </div>

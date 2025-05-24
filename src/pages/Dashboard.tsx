@@ -63,7 +63,7 @@ export default function Dashboard() {
 
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Total Medications"
+          title="Total "
           value="1,234"
           icon={Pill}
           iconColor="text-blue-600"
