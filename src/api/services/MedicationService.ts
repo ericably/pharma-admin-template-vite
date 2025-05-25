@@ -1,7 +1,6 @@
 
 import apiClient from '../apiClient';
 
-// Type definitions
 export interface Medication {
   '@id'?: string;
   id?: number;
@@ -10,33 +9,66 @@ export interface Medication {
   description?: string;
   dosage: string;
   stock: number;
-  supplier: string; // Changed from optional to required to match component usage
+  supplier: string;
   price: number;
-  status: string; // Changed from optional to required to match component usage
+  status: string;
   createdAt?: string;
   updatedAt?: string;
 }
 
 class MedicationService {
   private endpoint = '/medications';
+  private mockMedications: Medication[] = [
+    {
+      id: 1,
+      name: 'Paracétamol',
+      category: 'Analgésique',
+      description: 'Pour soulager la douleur légère à modérée',
+      dosage: '500mg',
+      stock: 50,
+      supplier: 'Pharma France',
+      price: 3.50,
+      status: 'Actif',
+      createdAt: '2023-01-01T00:00:00',
+      updatedAt: '2023-01-01T00:00:00'
+    },
+    {
+      id: 2,
+      name: 'Amoxicilline',
+      category: 'Antibiotique',
+      description: 'Antibiotique à large spectre',
+      dosage: '250mg',
+      stock: 8,
+      supplier: 'MediPharma',
+      price: 7.20,
+      status: 'Actif',
+      createdAt: '2023-01-01T00:00:00',
+      updatedAt: '2023-01-01T00:00:00'
+    }
+  ];
 
-  // Get all medications with pagination
   async getAllMedications(page = 1, itemsPerPage = 30, filters?: Record<string, any>) {
-    return apiClient.getCollection<Medication>(this.endpoint, page, itemsPerPage, filters);
+    return Promise.resolve({
+      items: this.mockMedications,
+      totalItems: this.mockMedications.length,
+      itemsPerPage,
+      totalPages: 1,
+      currentPage: page
+    });
   }
 
-  // Get a single medication by ID
   async getMedicationById(id: number) {
-    return apiClient.get<Medication>(`${this.endpoint}/${id}`);
+    const medication = this.mockMedications.find(m => m.id === id);
+    if (!medication) {
+      return Promise.reject(new Error("Medication not found"));
+    }
+    return Promise.resolve(medication);
   }
 
-  // Create a new medication
   async createMedication(medication: Omit<Medication, '@id' | 'id'>) {
-    // For testing purposes, we'll use sample data since the API is not connected
     console.log('Création du médicament:', medication);
     
-    // Mock successful response
-    const mockResponse = {
+    const newMedication = {
       ...medication,
       id: Math.floor(1000 + Math.random() * 9000),
       '@id': `/medications/${Math.floor(1000 + Math.random() * 9000)}`,
@@ -44,107 +76,48 @@ class MedicationService {
       updatedAt: new Date().toISOString()
     };
     
-    return Promise.resolve(mockResponse);
+    this.mockMedications.push(newMedication);
     
-    // When API is ready, uncomment this:
-    // return apiClient.post<Medication>(this.endpoint, medication);
+    return Promise.resolve(newMedication);
   }
 
-  // Update an existing medication
   async updateMedication(id: number, medication: Partial<Medication>) {
-    // For testing purposes
     console.log('Mise à jour du médicament:', id, medication);
     
-    // Mock successful response
-    const mockResponse = {
+    const index = this.mockMedications.findIndex(m => m.id === id);
+    if (index === -1) {
+      return Promise.reject(new Error("Medication not found"));
+    }
+    
+    this.mockMedications[index] = {
+      ...this.mockMedications[index],
       ...medication,
-      id,
-      '@id': `/medications/${id}`,
       updatedAt: new Date().toISOString()
     };
     
-    return Promise.resolve(mockResponse as Medication);
-    
-    // When API is ready, uncomment this:
-    // return apiClient.patch<Medication>(`${this.endpoint}/${id}`, medication);
+    return Promise.resolve(this.mockMedications[index]);
   }
 
-  // Delete a medication
   async deleteMedication(id: number) {
-    // For testing purposes
     console.log('Suppression du médicament:', id);
     
-    // Mock successful response
-    return Promise.resolve({});
+    const index = this.mockMedications.findIndex(m => m.id === id);
+    if (index === -1) {
+      return Promise.reject(new Error("Medication not found"));
+    }
     
-    // When API is ready, uncomment this:
-    // return apiClient.delete(`${this.endpoint}/${id}`);
+    const deleted = this.mockMedications.splice(index, 1)[0];
+    return Promise.resolve(deleted);
   }
 
-  // Get medications with low stock
   async getLowStockMedications() {
-    // For testing purposes
-    const mockResponse = [
-      {
-        id: 1,
-        '@id': '/medications/1',
-        name: 'Paracétamol',
-        category: 'Analgésique',
-        description: 'Pour soulager la douleur légère à modérée',
-        dosage: '500mg',
-        stock: 5,
-        supplier: 'Pharma France',
-        price: 3.50,
-        status: 'Actif',
-        createdAt: '2023-01-01T00:00:00',
-        updatedAt: '2023-01-01T00:00:00'
-      },
-      {
-        id: 2,
-        '@id': '/medications/2',
-        name: 'Amoxicilline',
-        category: 'Antibiotique',
-        description: 'Antibiotique à large spectre',
-        dosage: '250mg',
-        stock: 8,
-        supplier: 'MediPharma',
-        price: 7.20,
-        status: 'Actif',
-        createdAt: '2023-01-01T00:00:00',
-        updatedAt: '2023-01-01T00:00:00'
-      }
-    ];
-    
-    return Promise.resolve(mockResponse);
-    
-    // When API is ready, uncomment this:
-    // return apiClient.get<Medication[]>(`${this.endpoint}/low-stock`);
+    const lowStockMedications = this.mockMedications.filter(m => m.stock < 10);
+    return Promise.resolve(lowStockMedications);
   }
 
-  // Get medications by category
   async getMedicationsByCategory(category: string) {
-    // For testing purposes
-    const mockResponse = [
-      {
-        id: 1,
-        '@id': '/medications/1',
-        name: 'Paracétamol',
-        category: category,
-        description: 'Pour soulager la douleur légère à modérée',
-        dosage: '500mg',
-        stock: 50,
-        supplier: 'Pharma France',
-        price: 3.50,
-        status: 'Actif',
-        createdAt: '2023-01-01T00:00:00',
-        updatedAt: '2023-01-01T00:00:00'
-      }
-    ];
-    
-    return Promise.resolve(mockResponse);
-    
-    // When API is ready, uncomment this:
-    // return apiClient.get<Medication[]>(`${this.endpoint}?category=${category}`);
+    const medicationsByCategory = this.mockMedications.filter(m => m.category === category);
+    return Promise.resolve(medicationsByCategory);
   }
 }
 

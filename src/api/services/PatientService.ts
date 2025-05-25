@@ -1,7 +1,6 @@
 
 import apiClient from '../apiClient';
 
-// Type definitions
 export interface Patient {
   '@id'?: string;
   id?: string;
@@ -18,60 +17,10 @@ export interface Patient {
 
 class PatientService {
   private endpoint = '/patients';
-
-  // Get all patients with pagination
-  async getAllPatients(page = 1, itemsPerPage = 30, filters?: Record<string, any>) {
-    // For testing purposes
-    const mockResponse = {
-      'hydra:member': [
-        {
-          id: 'P-1001',
-          '@id': '/patients/P-1001',
-          name: 'Jean Dupont',
-          email: 'jean.dupont@example.com',
-          phone: '01-23-45-67-89',
-          dob: '1975-03-15',
-          address: '123 Rue Principale, Paris',
-          insurance: 'CPAM',
-          status: 'Actif',
-          createdAt: '2022-01-15T10:30:00',
-          updatedAt: '2022-01-15T10:30:00'
-        },
-        {
-          id: 'P-1002',
-          '@id': '/patients/P-1002',
-          name: 'Marie Martin',
-          email: 'marie.martin@example.com',
-          phone: '06-78-90-12-34',
-          dob: '1982-07-22',
-          address: '456 Avenue des Champs, Lyon',
-          insurance: 'MGEN',
-          status: 'Actif',
-          createdAt: '2022-02-20T14:45:00',
-          updatedAt: '2022-02-20T14:45:00'
-        }
-      ],
-      'hydra:totalItems': 2
-    };
-    
-    return Promise.resolve({
-      items: mockResponse['hydra:member'],
-      totalItems: mockResponse['hydra:totalItems'],
-      itemsPerPage,
-      totalPages: Math.ceil((mockResponse['hydra:totalItems'] || 0) / itemsPerPage),
-      currentPage: page,
-    });
-    
-    // When API is ready, uncomment this:
-    // return apiClient.getCollection<Patient>(this.endpoint, page, itemsPerPage, filters);
-  }
-
-  // Get a single patient by ID
-  async getPatientById(id: string) {
-    // For testing purposes
-    const mockResponse = {
-      id,
-      '@id': `/patients/${id}`,
+  private mockPatients: Patient[] = [
+    {
+      id: 'P-1001',
+      '@id': '/patients/P-1001',
       name: 'Jean Dupont',
       email: 'jean.dupont@example.com',
       phone: '01-23-45-67-89',
@@ -81,21 +30,44 @@ class PatientService {
       status: 'Actif',
       createdAt: '2022-01-15T10:30:00',
       updatedAt: '2022-01-15T10:30:00'
-    };
-    
-    return Promise.resolve(mockResponse);
-    
-    // When API is ready, uncomment this:
-    // return apiClient.get<Patient>(`${this.endpoint}/${id}`);
+    },
+    {
+      id: 'P-1002',
+      '@id': '/patients/P-1002',
+      name: 'Marie Martin',
+      email: 'marie.martin@example.com',
+      phone: '06-78-90-12-34',
+      dob: '1982-07-22',
+      address: '456 Avenue des Champs, Lyon',
+      insurance: 'MGEN',
+      status: 'Actif',
+      createdAt: '2022-02-20T14:45:00',
+      updatedAt: '2022-02-20T14:45:00'
+    }
+  ];
+
+  async getAllPatients(page = 1, itemsPerPage = 30, filters?: Record<string, any>) {
+    return Promise.resolve({
+      items: this.mockPatients,
+      totalItems: this.mockPatients.length,
+      itemsPerPage,
+      totalPages: Math.ceil(this.mockPatients.length / itemsPerPage),
+      currentPage: page,
+    });
   }
 
-  // Create a new patient
+  async getPatientById(id: string) {
+    const patient = this.mockPatients.find(p => p.id === id);
+    if (!patient) {
+      return Promise.reject(new Error("Patient not found"));
+    }
+    return Promise.resolve(patient);
+  }
+
   async createPatient(patient: Omit<Patient, '@id' | 'id'>) {
-    // For testing purposes
     console.log('Création de patient:', patient);
     
-    // Mock successful response
-    const mockResponse = {
+    const newPatient = {
       ...patient,
       id: `P-${Math.floor(1000 + Math.random() * 9000)}`,
       '@id': `/patients/${Math.floor(1000 + Math.random() * 9000)}`,
@@ -103,46 +75,42 @@ class PatientService {
       updatedAt: new Date().toISOString()
     };
     
-    return Promise.resolve(mockResponse);
+    this.mockPatients.push(newPatient);
     
-    // When API is ready, uncomment this:
-    // return apiClient.post<Patient>(this.endpoint, patient);
+    return Promise.resolve(newPatient);
   }
 
-  // Update an existing patient
   async updatePatient(id: string, patient: Partial<Patient>) {
-    // For testing purposes
     console.log('Mise à jour de patient:', id, patient);
     
-    // Mock successful response
-    const mockResponse = {
+    const index = this.mockPatients.findIndex(p => p.id === id);
+    if (index === -1) {
+      return Promise.reject(new Error("Patient not found"));
+    }
+    
+    this.mockPatients[index] = {
+      ...this.mockPatients[index],
       ...patient,
-      id,
-      '@id': `/patients/${id}`,
       updatedAt: new Date().toISOString()
     };
     
-    return Promise.resolve(mockResponse as Patient);
-    
-    // When API is ready, uncomment this:
-    // return apiClient.patch<Patient>(`${this.endpoint}/${id}`, patient);
+    return Promise.resolve(this.mockPatients[index]);
   }
 
-  // Delete a patient
   async deletePatient(id: string) {
-    // For testing purposes
     console.log('Suppression de patient:', id);
     
-    // Mock successful response
-    return Promise.resolve({});
+    const index = this.mockPatients.findIndex(p => p.id === id);
+    if (index === -1) {
+      return Promise.reject(new Error("Patient not found"));
+    }
     
-    // When API is ready, uncomment this:
-    // return apiClient.delete(`${this.endpoint}/${id}`);
+    const deleted = this.mockPatients.splice(index, 1)[0];
+    return Promise.resolve(deleted);
   }
 
-  // Get patient prescriptions
   async getPatientPrescriptions(id: string) {
-    // For testing purposes
+    // Mock prescriptions for a patient
     const mockResponse = [
       {
         id: 'RX-0001',
@@ -160,36 +128,16 @@ class PatientService {
     ];
     
     return Promise.resolve(mockResponse);
-    
-    // When API is ready, uncomment this:
-    // return apiClient.get<any[]>(`${this.endpoint}/${id}/prescriptions`);
   }
 
-  // Search patients
   async searchPatients(query: string) {
-    // For testing purposes
-    const mockResponse = [
-      {
-        id: 'P-1001',
-        '@id': '/patients/P-1001',
-        name: 'Jean Dupont',
-        email: 'jean.dupont@example.com',
-        phone: '01-23-45-67-89',
-        dob: '1975-03-15',
-        address: '123 Rue Principale, Paris',
-        insurance: 'CPAM',
-        status: 'Actif'
-      }
-    ].filter(patient => 
+    const filteredPatients = this.mockPatients.filter(patient => 
       patient.name.toLowerCase().includes(query.toLowerCase()) ||
       patient.email.toLowerCase().includes(query.toLowerCase()) ||
       patient.phone.includes(query)
     );
     
-    return Promise.resolve(mockResponse);
-    
-    // When API is ready, uncomment this:
-    // return apiClient.get<Patient[]>(`${this.endpoint}/search?query=${query}`);
+    return Promise.resolve(filteredPatients);
   }
 }
 
