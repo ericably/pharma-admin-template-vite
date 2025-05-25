@@ -381,10 +381,10 @@ export default function Inventory() {
 
   const handleStockUpdate = async (medicationId: number, newStock: number) => {
     try {
-      await MedicationService.updateMedication(medicationId, { stock: newStock });
+      await MedicationService.updateMedication(medicationId, { stockQuantity: newStock });
 
       const updatedMedications = medications.map(med =>
-        med.id === medicationId ? { ...med, stock: newStock } : med
+        med.id === medicationId ? { ...med, stockQuantity: newStock } : med
       );
 
       setMedications(updatedMedications);
@@ -593,7 +593,6 @@ export default function Inventory() {
                     <TableCell>{medication.name}</TableCell>
                     <TableCell>{medication.category}</TableCell>
                     <TableCell>{medication.dosage}</TableCell>
-                    <TableCell className="text-right">{medication.stockQuantity}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex flex-col items-end">
                         {medication.stockQuantity}

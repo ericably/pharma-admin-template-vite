@@ -156,7 +156,7 @@ const PatientDetails = ({
                 id="dob"
                 name="dob"
                 type="date"
-                value={patientData.dob}
+                value={patientData.birthdate}
                 onChange={handleInputChange}
                 disabled={mode === "view"}
                 required
