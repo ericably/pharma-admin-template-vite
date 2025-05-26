@@ -38,7 +38,8 @@ export default function Pharmacists() {
   // Filter pharmacists based on search query
   const filteredPharmacists = pharmacists.filter(
     (pharmacist) =>
-      pharmacist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pharmacist.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pharmacist.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       pharmacist.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       pharmacist.licenseNumber.toLowerCase().includes(searchQuery.toLowerCase())
   );

@@ -4,7 +4,9 @@ import apiClient from '../apiClient';
 export interface Pharmacist {
   '@id'?: string;
   id?: number;
-  name: string;
+  lastName: string;
+  firstName: string;
+  pharmacy: string;
   email: string;
   phone: string;
   licenseNumber: string;
@@ -15,72 +17,34 @@ export interface Pharmacist {
 
 class PharmacistService {
   private endpoint = '/pharmacists';
-  private mockPharmacists: Pharmacist[] = [
-    {
-      id: 1,
-      name: "Dr. Marie Dupont",
-      email: "marie.dupont@pharmacie.com",
-      phone: "01 23 45 67 89",
-      licenseNumber: "PH123456",
-      status: "Actif"
-    },
-    {
-      id: 2,
-      name: "Dr. Pierre Martin",
-      email: "pierre.martin@pharmacie.com",
-      phone: "01 98 76 54 32",
-      licenseNumber: "PH789012",
-      status: "Actif"
-    }
-  ];
 
-  async getAllPharmacists(page = 1, itemsPerPage = 30) {
-    return Promise.resolve({
-      items: this.mockPharmacists,
-      totalItems: this.mockPharmacists.length,
-      itemsPerPage,
-      totalPages: 1,
-      currentPage: page
-    });
+  async getAllPharmacists(page = 1, itemsPerPage = 30, filters?: Record<string, any>) {
+    try {
+      const response = await apiClient.getCollection<Pharmacist>(this.endpoint, page, itemsPerPage, filters);
+      // Ensure we're returning the data in the expected format
+      return {
+        items: response.items, // This should contain the array of pharmacists from 'hydra:member'
+        totalItems: response.totalItems,
+        itemsPerPage,
+        totalPages: response.totalPages,
+        currentPage: response.currentPage,
+      };
+    } catch (error) {
+      console.error('Error fetching pharmacists:', error);
+      throw error;
+    }
   }
 
   async createPharmacist(pharmacist: Omit<Pharmacist, '@id' | 'id'>) {
-    const newPharmacist = {
-      ...pharmacist,
-      id: Math.floor(1000 + Math.random() * 9000),
-      '@id': `/pharmacists/${Math.floor(1000 + Math.random() * 9000)}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    this.mockPharmacists.push(newPharmacist);
-    
-    return Promise.resolve(newPharmacist);
+    return apiClient.post<Pharmacist>(this.endpoint, pharmacist);
   }
-  
-  async updatePharmacist(id: number, pharmacist: Partial<Pharmacist>) {
-    const index = this.mockPharmacists.findIndex(p => p.id === id);
-    if (index === -1) {
-      return Promise.reject(new Error("Pharmacist not found"));
-    }
-    
-    this.mockPharmacists[index] = {
-      ...this.mockPharmacists[index],
-      ...pharmacist,
-      updatedAt: new Date().toISOString()
-    };
-    
-    return Promise.resolve(this.mockPharmacists[index]);
+
+  async updatePharmacist(id: string, pharmacist: Partial<Pharmacist>) {
+    return apiClient.put<Pharmacist>(`${this.endpoint}/${id}`, pharmacist);
   }
-  
-  async deletePharmacist(id: number) {
-    const index = this.mockPharmacists.findIndex(p => p.id === id);
-    if (index === -1) {
-      return Promise.reject(new Error("Pharmacist not found"));
-    }
-    
-    const deleted = this.mockPharmacists.splice(index, 1)[0];
-    return Promise.resolve(deleted);
+
+  async deletePharmacist(id: string) {
+    return apiClient.delete(`${this.endpoint}/${id}`);
   }
 }
 

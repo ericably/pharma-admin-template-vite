@@ -43,7 +43,7 @@ export function PharmacistsList({ pharmacists, onEdit, onDelete }: PharmacistsLi
           ) : (
             pharmacists.map((pharmacist) => (
               <TableRow key={pharmacist.id}>
-                <TableCell>{pharmacist.name}</TableCell>
+                <TableCell>{pharmacist.lastName}</TableCell>
                 <TableCell>{pharmacist.email}</TableCell>
                 <TableCell>{pharmacist.phone}</TableCell>
                 <TableCell>{pharmacist.licenseNumber}</TableCell>

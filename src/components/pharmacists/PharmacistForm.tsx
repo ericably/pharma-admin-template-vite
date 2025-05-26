@@ -23,10 +23,14 @@ interface PharmacistFormProps {
 
 export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: PharmacistFormProps) {
   const [formData, setFormData] = useState<Omit<Pharmacist, '@id' | 'id'>>({
-    name: "",
+    lastName: "",
     email: "",
     phone: "",
     licenseNumber: "",
+    createdAt: "",
+    firstName: "",
+    pharmacy: "",
+    updatedAt: "",
     status: "Actif"
   });
 
@@ -35,7 +39,11 @@ export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: Pharm
   useEffect(() => {
     if (initialData) {
       setFormData({
-        name: initialData.name,
+        createdAt: "",
+        firstName: "",
+        pharmacy: "",
+        updatedAt: "",
+        lastName: initialData.lastName,
         email: initialData.email,
         phone: initialData.phone,
         licenseNumber: initialData.licenseNumber,
@@ -54,7 +62,11 @@ export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: Pharm
 
   const resetForm = () => {
     setFormData({
-      name: "",
+      lastName: "",
+      createdAt: "",
+      firstName: "",
+      pharmacy: "/api/pharmacies/1",
+      updatedAt: "",
       email: "",
       phone: "",
       licenseNumber: "",
@@ -89,11 +101,21 @@ export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: Pharm
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">Nom</Label>
+              <Label htmlFor="lastName" className="text-right">Nom</Label>
               <Input
-                id="name"
+                id="lastName"
                 className="col-span-3"
-                value={formData.name}
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="firstName" className="text-right">Prénom</Label>
+              <Input
+                id="firstName"
+                className="col-span-3"
+                value={formData.firstName}
                 onChange={handleChange}
                 required
               />
