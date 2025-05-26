@@ -1,70 +1,58 @@
 
-import React, { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { Search, Plus } from "lucide-react";
+import { DoctorsList } from "@/components/doctors/DoctorsList";
+import { DoctorForm } from "@/components/doctors/DoctorForm";
 import DoctorService, { Doctor } from "@/api/services/DoctorService";
-import { Plus, Search, Edit, Trash2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function Doctors() {
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newDoctor, setNewDoctor] = useState<Omit<Doctor, '@id' | 'id'>>({
-    name: "",
-    email: "",
-    phone: "",
-    speciality: "",
-    licenseNumber: "",
-    status: "Actif"
-  });
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setNewDoctor(prev => ({
-      ...prev,
-      [id]: value
-    }));
-  };
+  const { data: doctorsData, refetch } = useQuery({
+    queryKey: ['doctors'],
+    queryFn: () => DoctorService.getAllDoctors()
+  });
 
-  const handleAddDoctor = async () => {
+  const doctors = doctorsData?.items || [];
+
+  // Filter doctors based on search query
+  const filteredDoctors = doctors.filter(
+    (doctor) =>
+      doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doctor.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doctor.speciality.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doctor.licenseNumber.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleAddDoctor = async (doctor: Omit<Doctor, '@id' | 'id'>) => {
     try {
-      const response = await DoctorService.createDoctor(newDoctor);
-      setDoctors([response, ...doctors]);
+      await DoctorService.createDoctor(doctor);
       toast({
         title: "Succès",
         description: "Médecin ajouté avec succès",
       });
       setIsDialogOpen(false);
-      setNewDoctor({
-        name: "",
-        email: "",
-        phone: "",
-        speciality: "",
-        licenseNumber: "",
-        status: "Actif"
-      });
+      refetch();
     } catch (error) {
       toast({
         title: "Erreur",
@@ -72,6 +60,70 @@ export default function Doctors() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleEdit = (doctor: Doctor) => {
+    setSelectedDoctor(doctor);
+    setIsEditing(true);
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = (doctor: Doctor) => {
+    setSelectedDoctor(doctor);
+    setIsConfirmDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedDoctor?.id) return;
+    
+    try {
+      await DoctorService.deleteDoctor(selectedDoctor.id);
+      toast({
+        title: "Succès",
+        description: "Médecin supprimé avec succès",
+      });
+      setIsConfirmDeleteOpen(false);
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la suppression du médecin",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditSubmit = async (doctorData: Omit<Doctor, '@id' | 'id'>) => {
+    if (!selectedDoctor?.id) return;
+    
+    try {
+      await DoctorService.updateDoctor(selectedDoctor.id, doctorData);
+      toast({
+        title: "Succès",
+        description: "Médecin modifié avec succès",
+      });
+      setIsDialogOpen(false);
+      setIsEditing(false);
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la modification du médecin",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleOpenDialog = () => {
+    setIsEditing(false);
+    setSelectedDoctor(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setIsEditing(false);
+    setSelectedDoctor(null);
   };
 
   return (
@@ -95,123 +147,40 @@ export default function Doctors() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Nouveau Médecin
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Ajouter un Médecin</DialogTitle>
-                <DialogDescription>
-                  Ajoutez les informations du nouveau médecin.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">Nom</Label>
-                  <Input
-                    id="name"
-                    className="col-span-3"
-                    value={newDoctor.name}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="email" className="text-right">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    className="col-span-3"
-                    value={newDoctor.email}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="phone" className="text-right">Téléphone</Label>
-                  <Input
-                    id="phone"
-                    className="col-span-3"
-                    value={newDoctor.phone}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="speciality" className="text-right">Spécialité</Label>
-                  <Input
-                    id="speciality"
-                    className="col-span-3"
-                    value={newDoctor.speciality}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="licenseNumber" className="text-right">N° Licence</Label>
-                  <Input
-                    id="licenseNumber"
-                    className="col-span-3"
-                    value={newDoctor.licenseNumber}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleAddDoctor}>Ajouter</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={handleOpenDialog}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouveau Médecin
+          </Button>
         </div>
 
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nom</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Téléphone</TableHead>
-                <TableHead>Spécialité</TableHead>
-                <TableHead>N° Licence</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {doctors.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-6">
-                    Aucun médecin trouvé
-                  </TableCell>
-                </TableRow>
-              ) : (
-                doctors.map((doctor) => (
-                  <TableRow key={doctor.id}>
-                    <TableCell>{doctor.name}</TableCell>
-                    <TableCell>{doctor.email}</TableCell>
-                    <TableCell>{doctor.phone}</TableCell>
-                    <TableCell>{doctor.speciality}</TableCell>
-                    <TableCell>{doctor.licenseNumber}</TableCell>
-                    <TableCell>
-                      <Badge variant={doctor.status === "Actif" ? "default" : "secondary"}>
-                        {doctor.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right space-x-2">
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        <DoctorsList 
+          doctors={filteredDoctors}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       </Card>
+
+      <DoctorForm 
+        isOpen={isDialogOpen}
+        onClose={handleCloseDialog}
+        onSubmit={isEditing ? handleEditSubmit : handleAddDoctor}
+        initialData={isEditing ? selectedDoctor || undefined : undefined}
+      />
+
+      <AlertDialog open={isConfirmDeleteOpen} onOpenChange={setIsConfirmDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce médecin ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Supprimer</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

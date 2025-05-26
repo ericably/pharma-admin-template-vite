@@ -13,48 +13,48 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
-import type { Pharmacist } from "@/api/services/PharmacistService";
+import type { Doctor } from "@/api/services/DoctorService";
 
-interface PharmacistFormProps {
+interface DoctorFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (pharmacist: Omit<Pharmacist, '@id' | 'id'>) => void;
-  initialData?: Pharmacist;
+  onSubmit: (doctor: Omit<Doctor, '@id' | 'id'>) => void;
+  initialData?: Doctor;
 }
 
-export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: PharmacistFormProps) {
+export function DoctorForm({ isOpen, onClose, onSubmit, initialData }: DoctorFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const isEditing = !!initialData;
 
   const form = useForm({
     defaultValues: {
-      lastName: "",
-      firstName: "",
+      name: "",
       email: "",
       phone: "",
+      speciality: "",
       licenseNumber: "",
-      status: true
+      status: "Actif" as "Actif" | "Inactif"
     }
   });
 
   useEffect(() => {
     if (initialData) {
       form.reset({
-        lastName: initialData.lastName,
-        firstName: initialData.firstName,
+        name: initialData.name,
         email: initialData.email,
         phone: initialData.phone,
+        speciality: initialData.speciality,
         licenseNumber: initialData.licenseNumber,
         status: initialData.status
       });
     } else {
       form.reset({
-        lastName: "",
-        firstName: "",
+        name: "",
         email: "",
         phone: "",
+        speciality: "",
         licenseNumber: "",
-        status: true
+        status: "Actif"
       });
     }
   }, [initialData, form]);
@@ -71,27 +71,27 @@ export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: Pharm
     }
   };
 
-  const handleStatusChange = (value: boolean) => {
-    form.setValue("status", value as true | false);
+  const handleStatusChange = (value: string) => {
+    form.setValue("status", value as "Actif" | "Inactif");
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Modifier" : "Ajouter"} un Pharmacien</DialogTitle>
+          <DialogTitle>{isEditing ? "Modifier" : "Ajouter"} un Médecin</DialogTitle>
           <DialogDescription>
-            {isEditing ? "Modifiez les informations du pharmacien." : "Ajoutez les informations du nouveau pharmacien."}
+            {isEditing ? "Modifiez les informations du médecin." : "Ajoutez les informations du nouveau médecin."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(handleSubmit)}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="lastName" className="text-right">Nom</Label>
+              <Label htmlFor="name" className="text-right">Nom</Label>
               <Input
-                id="lastName"
+                id="name"
                 className="col-span-3"
-                {...form.register("lastName", { required: true })}
+                {...form.register("name", { required: true })}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -112,6 +112,14 @@ export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: Pharm
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="speciality" className="text-right">Spécialité</Label>
+              <Input
+                id="speciality"
+                className="col-span-3"
+                {...form.register("speciality", { required: true })}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="licenseNumber" className="text-right">N° Licence</Label>
               <Input
                 id="licenseNumber"
@@ -122,15 +130,15 @@ export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: Pharm
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="status" className="text-right">Statut</Label>
               <Select 
-                value={form.watch("status")}
+                value={form.watch("status")} 
                 onValueChange={handleStatusChange}
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Sélectionnez un statut" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">Actif</SelectItem>
-                  <SelectItem value="0">Inactif</SelectItem>
+                  <SelectItem value="Actif">Actif</SelectItem>
+                  <SelectItem value="Inactif">Inactif</SelectItem>
                 </SelectContent>
               </Select>
             </div>

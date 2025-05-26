@@ -10,15 +10,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
-import type { Pharmacist } from "@/api/services/PharmacistService";
+import type { Doctor } from "@/api/services/DoctorService";
 
-interface PharmacistsListProps {
-  pharmacists: Pharmacist[];
-  onEdit: (pharmacist: Pharmacist) => void;
-  onDelete: (pharmacist: Pharmacist) => void;
+interface DoctorsListProps {
+  doctors: Doctor[];
+  onEdit: (doctor: Doctor) => void;
+  onDelete: (doctor: Doctor) => void;
 }
 
-export function PharmacistsList({ pharmacists, onEdit, onDelete }: PharmacistsListProps) {
+export function DoctorsList({ doctors, onEdit, onDelete }: DoctorsListProps) {
   return (
     <div className="rounded-md border">
       <Table>
@@ -27,35 +27,37 @@ export function PharmacistsList({ pharmacists, onEdit, onDelete }: PharmacistsLi
             <TableHead>Nom</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Téléphone</TableHead>
+            <TableHead>Spécialité</TableHead>
             <TableHead>N° Licence</TableHead>
             <TableHead>Statut</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {pharmacists.length === 0 ? (
+          {doctors.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-6">
-                Aucun pharmacien trouvé
+              <TableCell colSpan={7} className="text-center py-6">
+                Aucun médecin trouvé
               </TableCell>
             </TableRow>
           ) : (
-            pharmacists.map((pharmacist) => (
-              <TableRow key={pharmacist.id}>
-                <TableCell className="font-medium">{pharmacist.lastName}</TableCell>
-                <TableCell>{pharmacist.email}</TableCell>
-                <TableCell>{pharmacist.phone}</TableCell>
-                <TableCell>{pharmacist.licenseNumber}</TableCell>
+            doctors.map((doctor) => (
+              <TableRow key={doctor.id}>
+                <TableCell className="font-medium">{doctor.name}</TableCell>
+                <TableCell>{doctor.email}</TableCell>
+                <TableCell>{doctor.phone}</TableCell>
+                <TableCell>{doctor.speciality}</TableCell>
+                <TableCell>{doctor.licenseNumber}</TableCell>
                 <TableCell>
-                  <Badge variant={pharmacist.status === true ? "default" : "secondary"}>
-                    {pharmacist.status}
+                  <Badge variant={doctor.status === "Actif" ? "default" : "secondary"}>
+                    {doctor.status}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right space-x-2">
-                  <Button variant="ghost" size="sm" onClick={() => onEdit(pharmacist)}>
+                  <Button variant="ghost" size="sm" onClick={() => onEdit(doctor)}>
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => onDelete(pharmacist)}>
+                  <Button variant="ghost" size="sm" onClick={() => onDelete(doctor)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TableCell>

@@ -10,7 +10,7 @@ export interface Pharmacist {
   email: string;
   phone: string;
   licenseNumber: string;
-  status: 'Actif' | 'Inactif';
+  status: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
