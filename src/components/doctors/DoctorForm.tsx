@@ -13,16 +13,16 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
-import type { Pharmacist } from "@/api/services/PharmacistService";
+import type { Doctor } from "@/api/services/DoctorService";
 
-interface PharmacistFormProps {
+interface DoctorFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (pharmacist: Omit<Pharmacist, '@id' | 'id'>) => void;
-  initialData?: Pharmacist;
+  onSubmit: (doctor: Omit<Doctor, '@id' | 'id'>) => void;
+  initialData?: Doctor;
 }
 
-export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: PharmacistFormProps) {
+export function DoctorForm({ isOpen, onClose, onSubmit, initialData }: DoctorFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const isEditing = !!initialData;
 
@@ -31,6 +31,7 @@ export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: Pharm
       name: "",
       email: "",
       phone: "",
+      speciality: "",
       licenseNumber: "",
       status: "Actif" as "Actif" | "Inactif"
     }
@@ -42,6 +43,7 @@ export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: Pharm
         name: initialData.name,
         email: initialData.email,
         phone: initialData.phone,
+        speciality: initialData.speciality,
         licenseNumber: initialData.licenseNumber,
         status: initialData.status
       });
@@ -50,6 +52,7 @@ export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: Pharm
         name: "",
         email: "",
         phone: "",
+        speciality: "",
         licenseNumber: "",
         status: "Actif"
       });
@@ -76,9 +79,9 @@ export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: Pharm
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Modifier" : "Ajouter"} un Pharmacien</DialogTitle>
+          <DialogTitle>{isEditing ? "Modifier" : "Ajouter"} un Médecin</DialogTitle>
           <DialogDescription>
-            {isEditing ? "Modifiez les informations du pharmacien." : "Ajoutez les informations du nouveau pharmacien."}
+            {isEditing ? "Modifiez les informations du médecin." : "Ajoutez les informations du nouveau médecin."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(handleSubmit)}>
@@ -106,6 +109,14 @@ export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: Pharm
                 id="phone"
                 className="col-span-3"
                 {...form.register("phone", { required: true })}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="speciality" className="text-right">Spécialité</Label>
+              <Input
+                id="speciality"
+                className="col-span-3"
+                {...form.register("speciality", { required: true })}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
