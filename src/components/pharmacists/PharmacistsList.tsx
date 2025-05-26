@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -43,7 +42,7 @@ export function PharmacistsList({ pharmacists, onEdit, onDelete }: PharmacistsLi
           ) : (
             pharmacists.map((pharmacist) => (
               <TableRow key={pharmacist.id}>
-                <TableCell>{pharmacist.name}</TableCell>
+                <TableCell className="font-medium">{pharmacist.name}</TableCell>
                 <TableCell>{pharmacist.email}</TableCell>
                 <TableCell>{pharmacist.phone}</TableCell>
                 <TableCell>{pharmacist.licenseNumber}</TableCell>

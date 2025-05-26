@@ -43,7 +43,7 @@ export function DoctorsList({ doctors, onEdit, onDelete }: DoctorsListProps) {
           ) : (
             doctors.map((doctor) => (
               <TableRow key={doctor.id}>
-                <TableCell>{doctor.name}</TableCell>
+                <TableCell className="font-medium">{doctor.name}</TableCell>
                 <TableCell>{doctor.email}</TableCell>
                 <TableCell>{doctor.phone}</TableCell>
                 <TableCell>{doctor.speciality}</TableCell>
