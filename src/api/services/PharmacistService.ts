@@ -3,7 +3,7 @@ import apiClient from '../apiClient';
 
 export interface Pharmacist {
   '@id'?: string;
-  id?: number;
+  id?: string;
   lastName: string;
   firstName: string;
   pharmacy: string;

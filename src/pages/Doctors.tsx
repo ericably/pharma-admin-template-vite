@@ -38,7 +38,8 @@ export default function Doctors() {
   // Filter doctors based on search query
   const filteredDoctors = doctors.filter(
     (doctor) =>
-      doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doctor.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doctor.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doctor.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doctor.speciality.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doctor.licenseNumber.toLowerCase().includes(searchQuery.toLowerCase())

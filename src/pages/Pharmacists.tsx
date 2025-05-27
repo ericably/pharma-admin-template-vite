@@ -2,30 +2,31 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import {
+  ChevronDown,
+  Plus,
+  Search,
+  FileDown
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Search, Plus } from "lucide-react";
-import { PharmacistsList } from "@/components/pharmacists/PharmacistsList";
-import { PharmacistForm } from "@/components/pharmacists/PharmacistForm";
+import { useToast } from "@/hooks/use-toast";
 import PharmacistService, { Pharmacist } from "@/api/services/PharmacistService";
 import { useQuery } from "@tanstack/react-query";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { PharmacistForm } from "@/components/pharmacists/PharmacistForm";
+import { PharmacistsList } from "@/components/pharmacists/PharmacistsList";
 
 export default function Pharmacists() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentFilter, setCurrentFilter] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [selectedPharmacist, setSelectedPharmacist] = useState<Pharmacist | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+
   const { toast } = useToast();
 
   const { data: pharmacistsData, refetch } = useQuery({
@@ -35,103 +36,201 @@ export default function Pharmacists() {
 
   const pharmacists = pharmacistsData?.items || [];
 
-  // Filter pharmacists based on search query
-  const filteredPharmacists = pharmacists.filter(
-    (pharmacist) =>
+  const filteredPharmacists = pharmacists.filter(pharmacist => {
+    const matchesSearch =
       pharmacist.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       pharmacist.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (pharmacist.id && pharmacist.id.toString().toLowerCase().includes(searchQuery.toLowerCase())) ||
       pharmacist.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pharmacist.licenseNumber.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      pharmacist.phone.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pharmacist.licenseNumber.toLowerCase().includes(searchQuery.toLowerCase());
 
-  const handleAddPharmacist = async (pharmacist: Omit<Pharmacist, '@id' | 'id'>) => {
+    if (!matchesSearch) return false;
+
+    switch (currentFilter) {
+      case "active":
+        return pharmacist.status === true;
+      case "inactive":
+        return pharmacist.status === false;
+      case "license":
+        return pharmacist.licenseNumber !== undefined && pharmacist.licenseNumber !== "";
+      case "all":
+      default:
+        return true;
+    }
+  });
+
+  const handleCreatePharmacist = async (data: Omit<Pharmacist, '@id' | 'id'>) => {
     try {
-      await PharmacistService.createPharmacist(pharmacist);
+      await PharmacistService.createPharmacist(data);
+
       toast({
         title: "Succès",
-        description: "Pharmacien ajouté avec succès",
+        description: "Le pharmacien a été ajouté avec succès.",
+        variant: "default",
       });
+
       setIsDialogOpen(false);
       refetch();
     } catch (error) {
+      console.error("Error creating pharmacist:", error);
       toast({
         title: "Erreur",
-        description: "Erreur lors de l'ajout du pharmacien",
+        description: "Une erreur s'est produite lors de l'ajout du pharmacien.",
         variant: "destructive",
       });
     }
   };
 
-  const handleEdit = (pharmacist: Pharmacist) => {
+  const handleUpdatePharmacist = async (data: Omit<Pharmacist, '@id' | 'id'>) => {
+    if (!selectedPharmacist?.id) return;
+    
+    try {
+      await PharmacistService.updatePharmacist(selectedPharmacist.id, data);
+
+      toast({
+        title: "Succès",
+        description: "Le pharmacien a été modifié avec succès.",
+        variant: "default",
+      });
+
+      setIsDialogOpen(false);
+      setSelectedPharmacist(null);
+      refetch();
+    } catch (error) {
+      console.error("Error updating pharmacist:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de la modification du pharmacien.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewPharmacist = (pharmacist: Pharmacist) => {
     setSelectedPharmacist(pharmacist);
-    setIsEditing(true);
+    toast({
+      title: "Détails du pharmacien",
+      description: `Affichage des détails de ${pharmacist.lastName}`,
+    });
+  };
+
+  const handleEditPharmacist = (pharmacist: Pharmacist) => {
+    setSelectedPharmacist(pharmacist);
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (pharmacist: Pharmacist) => {
-    setSelectedPharmacist(pharmacist);
-    setIsConfirmDeleteOpen(true);
+  const handleDeletePharmacist = async (pharmacist: Pharmacist) => {
+    if (!pharmacist.id) return;
+    
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce pharmacien ?")) {
+      try {
+        await PharmacistService.deletePharmacist(pharmacist.id);
+
+        toast({
+          title: "Succès",
+          description: "Le pharmacien a été supprimé avec succès.",
+          variant: "default",
+        });
+
+        refetch();
+      } catch (error) {
+        console.error("Error deleting pharmacist:", error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur s'est produite lors de la suppression du pharmacien.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
-  const confirmDelete = async () => {
-    if (!selectedPharmacist?.id) return;
-    
+  const handleExportPharmacists = () => {
     try {
-      await PharmacistService.deletePharmacist(selectedPharmacist.id);
-      toast({
-        title: "Succès",
-        description: "Pharmacien supprimé avec succès",
+      const headers = ["ID", "Nom", "Email", "Téléphone", "N° Licence", "Statut"];
+      const csvRows = [headers];
+
+      filteredPharmacists.forEach(pharmacist => {
+        const row = [
+          pharmacist.id?.toString() || '',
+          pharmacist.lastName,
+          pharmacist.firstName,
+          pharmacist.email,
+          pharmacist.phone,
+          pharmacist.licenseNumber,
+          pharmacist.status ? 'Actif' : 'Inactif'
+        ];
+        csvRows.push(row);
       });
-      setIsConfirmDeleteOpen(false);
-      refetch();
-    } catch (error) {
+
+      const csvContent = csvRows.map(row =>
+        row.map(cell =>
+          typeof cell === 'string' && cell.includes(',')
+            ? `"${cell}"`
+            : cell
+        ).join(',')
+      ).join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `pharmacists_export_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+
+      link.click();
+      document.body.removeChild(link);
+
       toast({
-        title: "Erreur",
-        description: "Erreur lors de la suppression du pharmacien",
+        title: "Export réussi",
+        description: `${filteredPharmacists.length} pharmaciens exportés avec succès.`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error exporting pharmacists:", error);
+      toast({
+        title: "Erreur d'exportation",
+        description: "Une erreur s'est produite lors de l'exportation des pharmaciens.",
         variant: "destructive",
       });
     }
   };
 
-  const handleEditSubmit = async (pharmacistData: Omit<Pharmacist, '@id' | 'id'>) => {
-    if (!selectedPharmacist?.id) return;
-    
-    try {
-      await PharmacistService.updatePharmacist(selectedPharmacist.id, pharmacistData);
-      toast({
-        title: "Succès",
-        description: "Pharmacien modifié avec succès",
-      });
-      setIsDialogOpen(false);
-      setIsEditing(false);
-      refetch();
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Erreur lors de la modification du pharmacien",
-        variant: "destructive",
-      });
-    }
+  const handleFilterChange = (filter: string) => {
+    setCurrentFilter(filter);
+
+    const filterLabels: {[key: string]: string} = {
+      "all": "Tous les Pharmaciens",
+      "active": "Pharmaciens Actifs",
+      "inactive": "Pharmaciens Inactifs",
+      "license": "Pharmaciens avec Licence"
+    };
+
+    toast({
+      title: "Filtre Appliqué",
+      description: `Affichage : ${filterLabels[filter]}.`,
+      variant: "default",
+    });
   };
 
   const handleOpenDialog = () => {
-    setIsEditing(false);
     setSelectedPharmacist(null);
     setIsDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
-    setIsEditing(false);
     setSelectedPharmacist(null);
   };
+
+  const handleFormSubmit = selectedPharmacist ? handleUpdatePharmacist : handleCreatePharmacist;
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Gestion des Pharmaciens</h1>
         <p className="text-muted-foreground mt-2">
-          Gérez les pharmaciens de votre établissement.
+          Gérez les informations des pharmaciens, leurs licences et leur statut.
         </p>
       </div>
 
@@ -147,40 +246,63 @@ export default function Pharmacists() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button onClick={handleOpenDialog}>
-            <Plus className="mr-2 h-4 w-4" />
-            Nouveau Pharmacien
-          </Button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex">
+                  Filtrer
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleFilterChange("all")}>
+                  Tous les Pharmaciens
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange("active")}>
+                  Pharmaciens Actifs
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange("inactive")}>
+                  Pharmaciens Inactifs
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange("license")}>
+                  Par Licence
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" onClick={handleExportPharmacists}>
+              <FileDown className="mr-2 h-4 w-4" />
+              Exporter
+            </Button>
+            <Button onClick={handleOpenDialog}>
+              <Plus className="mr-2 h-4 w-4" />
+              Ajouter Pharmacien
+            </Button>
+          </div>
         </div>
 
-        <PharmacistsList 
+        <PharmacistsList
           pharmacists={filteredPharmacists}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
+          onEdit={handleEditPharmacist}
+          onDelete={handleDeletePharmacist}
+          onView={handleViewPharmacist}
         />
+
+        <div className="mt-4 text-sm text-muted-foreground">
+          Affichage de {filteredPharmacists.length} {filteredPharmacists.length === 1 ? 'pharmacien' : 'pharmaciens'}
+          {currentFilter !== "all" && (
+            <>
+              {' '}• Filtre: {currentFilter === "active" ? "Actifs" : currentFilter === "inactive" ? "Inactifs" : "Avec Licence"}
+            </>
+          )}
+        </div>
       </Card>
 
-      <PharmacistForm 
+      <PharmacistForm
         isOpen={isDialogOpen}
         onClose={handleCloseDialog}
-        onSubmit={isEditing ? handleEditSubmit : handleAddPharmacist}
-        initialData={isEditing ? selectedPharmacist || undefined : undefined}
+        onSubmit={handleFormSubmit}
+        initialData={selectedPharmacist || undefined}
       />
-
-      <AlertDialog open={isConfirmDeleteOpen} onOpenChange={setIsConfirmDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer ce pharmacien ? Cette action est irréversible.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Supprimer</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
