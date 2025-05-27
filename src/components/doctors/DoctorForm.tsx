@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useForm } from "react-hook-form";
 import type { Doctor } from "@/api/services/DoctorService";
 
@@ -33,7 +33,7 @@ export function DoctorForm({ isOpen, onClose, onSubmit, initialData }: DoctorFor
       phone: "",
       speciality: "",
       licenseNumber: "",
-      status: "Actif" as "Actif" | "Inactif"
+      status: true
     }
   });
 
@@ -54,7 +54,7 @@ export function DoctorForm({ isOpen, onClose, onSubmit, initialData }: DoctorFor
         phone: "",
         speciality: "",
         licenseNumber: "",
-        status: "Actif"
+        status: true
       });
     }
   }, [initialData, form]);
@@ -71,8 +71,8 @@ export function DoctorForm({ isOpen, onClose, onSubmit, initialData }: DoctorFor
     }
   };
 
-  const handleStatusChange = (value: string) => {
-    form.setValue("status", value as "Actif" | "Inactif");
+  const handleStatusChange = (checked: boolean) => {
+    form.setValue("status", checked);
   };
 
   return (
@@ -128,19 +128,17 @@ export function DoctorForm({ isOpen, onClose, onSubmit, initialData }: DoctorFor
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">Statut</Label>
-              <Select 
-                value={form.watch("status")} 
-                onValueChange={handleStatusChange}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Sélectionnez un statut" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Actif">Actif</SelectItem>
-                  <SelectItem value="Inactif">Inactif</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="status" className="text-right">Actif</Label>
+              <div className="col-span-3 flex items-center space-x-2">
+                <Switch
+                  id="status"
+                  checked={form.watch("status")}
+                  onCheckedChange={handleStatusChange}
+                />
+                <Label htmlFor="status" className="text-sm">
+                  {form.watch("status") ? "Actif" : "Inactif"}
+                </Label>
+              </div>
             </div>
           </div>
           <DialogFooter>

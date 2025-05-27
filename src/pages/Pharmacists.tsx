@@ -1,13 +1,5 @@
 
-import { useState, useEffect } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -16,43 +8,24 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   ChevronDown, 
   Plus, 
   Search, 
-  FileDown, 
-  MoreVertical,
-  Edit,
-  Trash2,
-  FilePlus,
-  FileText,
-  Eye
+  FileDown
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import PharmacistService, { Pharmacist } from "@/api/services/PharmacistService";
 import { useQuery } from "@tanstack/react-query";
+import { PharmacistForm } from "@/components/pharmacists/PharmacistForm";
+import { PharmacistsList } from "@/components/pharmacists/PharmacistsList";
 
 export default function Pharmacists() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentFilter, setCurrentFilter] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedPharmacist, setSelectedPharmacist] = useState<Pharmacist | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
   
   const { toast } = useToast();
 
@@ -63,16 +36,6 @@ export default function Pharmacists() {
 
   const pharmacists = pharmacistsData?.items || [];
   
-  const form = useForm({
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      licenseNumber: "",
-      status: "Actif" as "Actif" | "Inactif"
-    }
-  });
-
   const filteredPharmacists = pharmacists.filter(pharmacist => {
     const matchesSearch = 
       pharmacist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -85,9 +48,9 @@ export default function Pharmacists() {
     
     switch (currentFilter) {
       case "active":
-        return pharmacist.status === "Actif";
+        return pharmacist.status === true;
       case "inactive":
-        return pharmacist.status === "Inactif";
+        return pharmacist.status === false;
       case "license":
         return pharmacist.licenseNumber !== undefined && pharmacist.licenseNumber !== "";
       case "all":
@@ -95,27 +58,10 @@ export default function Pharmacists() {
         return true;
     }
   });
-  
-  const getStatusBadge = (status: string) => {
-    switch(status) {
-      case "Actif":
-        return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Actif</Badge>;
-      case "Inactif":
-        return <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">Inactif</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
 
-  const handleCreatePharmacist = async (data: any) => {
-    setIsLoading(true);
+  const handleCreatePharmacist = async (data: Omit<Pharmacist, '@id' | 'id'>) => {
     try {
-      const newPharmacist: Omit<Pharmacist, '@id' | 'id'> = {
-        ...data,
-        status: data.status || "Actif"
-      };
-      
-      await PharmacistService.createPharmacist(newPharmacist);
+      await PharmacistService.createPharmacist(data);
       
       toast({
         title: "Succès",
@@ -123,7 +69,6 @@ export default function Pharmacists() {
         variant: "default",
       });
       
-      form.reset();
       setIsDialogOpen(false);
       refetch();
     } catch (error) {
@@ -133,8 +78,31 @@ export default function Pharmacists() {
         description: "Une erreur s'est produite lors de l'ajout du pharmacien.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
+    }
+  };
+
+  const handleUpdatePharmacist = async (data: Omit<Pharmacist, '@id' | 'id'>) => {
+    if (!selectedPharmacist?.id) return;
+    
+    try {
+      await PharmacistService.updatePharmacist(selectedPharmacist.id, data);
+      
+      toast({
+        title: "Succès",
+        description: "Le pharmacien a été modifié avec succès.",
+        variant: "default",
+      });
+      
+      setIsDialogOpen(false);
+      setSelectedPharmacist(null);
+      refetch();
+    } catch (error) {
+      console.error("Error updating pharmacist:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de la modification du pharmacien.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -148,50 +116,15 @@ export default function Pharmacists() {
 
   const handleEditPharmacist = (pharmacist: Pharmacist) => {
     setSelectedPharmacist(pharmacist);
-    setIsEditing(true);
-    form.reset({
-      name: pharmacist.name,
-      email: pharmacist.email,
-      phone: pharmacist.phone,
-      licenseNumber: pharmacist.licenseNumber,
-      status: pharmacist.status
-    });
     setIsDialogOpen(true);
   };
 
-  const handleUpdatePharmacist = async (data: any) => {
-    if (!selectedPharmacist?.id) return;
+  const handleDeletePharmacist = async (pharmacist: Pharmacist) => {
+    if (!pharmacist.id) return;
     
-    setIsLoading(true);
-    try {
-      await PharmacistService.updatePharmacist(selectedPharmacist.id, data);
-      
-      toast({
-        title: "Succès",
-        description: "Le pharmacien a été modifié avec succès.",
-        variant: "default",
-      });
-      
-      setIsDialogOpen(false);
-      setIsEditing(false);
-      setSelectedPharmacist(null);
-      refetch();
-    } catch (error) {
-      console.error("Error updating pharmacist:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur s'est produite lors de la modification du pharmacien.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDeletePharmacist = async (id: number) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer ce pharmacien ?")) {
       try {
-        await PharmacistService.deletePharmacist(id);
+        await PharmacistService.deletePharmacist(pharmacist.id);
         
         toast({
           title: "Succès",
@@ -223,7 +156,7 @@ export default function Pharmacists() {
           pharmacist.email,
           pharmacist.phone,
           pharmacist.licenseNumber,
-          pharmacist.status
+          pharmacist.status ? 'Actif' : 'Inactif'
         ];
         csvRows.push(row);
       });
@@ -279,23 +212,16 @@ export default function Pharmacists() {
   };
 
   const handleOpenDialog = () => {
-    setIsEditing(false);
     setSelectedPharmacist(null);
-    form.reset({
-      name: "",
-      email: "",
-      phone: "",
-      licenseNumber: "",
-      status: "Actif"
-    });
     setIsDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
-    setIsEditing(false);
     setSelectedPharmacist(null);
   };
+
+  const handleFormSubmit = selectedPharmacist ? handleUpdatePharmacist : handleCreatePharmacist;
 
   return (
     <div className="space-y-6">
@@ -345,166 +271,19 @@ export default function Pharmacists() {
               <FileDown className="mr-2 h-4 w-4" />
               Exporter
             </Button>
-            <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-              <DialogTrigger asChild>
-                <Button onClick={handleOpenDialog}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Ajouter Pharmacien
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[550px]">
-                <DialogHeader>
-                  <DialogTitle>{isEditing ? "Modifier" : "Ajouter"} un Pharmacien</DialogTitle>
-                  <DialogDescription>
-                    {isEditing ? "Modifiez les informations du pharmacien." : "Ajoutez les informations du nouveau pharmacien."}
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={form.handleSubmit(isEditing ? handleUpdatePharmacist : handleCreatePharmacist)}>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="name" className="text-right">
-                        Nom Complet
-                      </Label>
-                      <Input
-                        id="name"
-                        placeholder="Nom du pharmacien"
-                        className="col-span-3"
-                        {...form.register("name", { required: true })}
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="email" className="text-right">
-                        Email
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="pharmacien@example.com"
-                        className="col-span-3"
-                        {...form.register("email", { required: true })}
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="phone" className="text-right">
-                        Téléphone
-                      </Label>
-                      <Input
-                        id="phone"
-                        placeholder="01 23 45 67 89"
-                        className="col-span-3"
-                        {...form.register("phone", { required: true })}
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="licenseNumber" className="text-right">
-                        N° Licence
-                      </Label>
-                      <Input
-                        id="licenseNumber"
-                        placeholder="PH123456"
-                        className="col-span-3"
-                        {...form.register("licenseNumber", { required: true })}
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="status" className="text-right">
-                        Statut
-                      </Label>
-                      <Select 
-                        value={form.watch("status")} 
-                        onValueChange={(value: "Actif" | "Inactif") => form.setValue("status", value)}
-                      >
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Sélectionnez un statut" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Actif">Actif</SelectItem>
-                          <SelectItem value="Inactif">Inactif</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit" disabled={isLoading}>
-                      {isLoading ? "Enregistrement..." : (isEditing ? "Enregistrer" : "Ajouter Pharmacien")}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
+            <Button onClick={handleOpenDialog}>
+              <Plus className="mr-2 h-4 w-4" />
+              Ajouter Pharmacien
+            </Button>
           </div>
         </div>
 
-        <div className="rounded-md border overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Nom</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Téléphone</TableHead>
-                <TableHead>N° Licence</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="w-[80px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredPharmacists.length > 0 ? (
-                filteredPharmacists.map((pharmacist) => (
-                  <TableRow key={pharmacist.id}>
-                    <TableCell className="font-medium">{pharmacist.id}</TableCell>
-                    <TableCell>{pharmacist.name}</TableCell>
-                    <TableCell>{pharmacist.email}</TableCell>
-                    <TableCell>{pharmacist.phone}</TableCell>
-                    <TableCell>{pharmacist.licenseNumber}</TableCell>
-                    <TableCell>{getStatusBadge(pharmacist.status)}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Ouvrir le menu</span>
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewPharmacist(pharmacist)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Voir Détails
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditPharmacist(pharmacist)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Modifier
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <FilePlus className="mr-2 h-4 w-4" />
-                            Nouvelle Ordonnance
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <FileText className="mr-2 h-4 w-4" />
-                            Voir Historique
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-red-600" 
-                            onClick={() => handleDeletePharmacist(pharmacist.id || 0)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Supprimer
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                    Aucun pharmacien trouvé correspondant à vos critères
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        <PharmacistsList
+          pharmacists={filteredPharmacists}
+          onEdit={handleEditPharmacist}
+          onDelete={handleDeletePharmacist}
+          onView={handleViewPharmacist}
+        />
         
         <div className="mt-4 text-sm text-muted-foreground">
           Affichage de {filteredPharmacists.length} {filteredPharmacists.length === 1 ? 'pharmacien' : 'pharmaciens'}
@@ -515,6 +294,13 @@ export default function Pharmacists() {
           )}
         </div>
       </Card>
+
+      <PharmacistForm
+        isOpen={isDialogOpen}
+        onClose={handleCloseDialog}
+        onSubmit={handleFormSubmit}
+        initialData={selectedPharmacist || undefined}
+      />
     </div>
   );
 }

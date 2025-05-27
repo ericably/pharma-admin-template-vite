@@ -8,7 +8,7 @@ export interface Pharmacist {
   email: string;
   phone: string;
   licenseNumber: string;
-  status: 'Actif' | 'Inactif';
+  status: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -22,7 +22,7 @@ class PharmacistService {
       email: "marie.dupont@pharmacie.com",
       phone: "01 23 45 67 89",
       licenseNumber: "PH123456",
-      status: "Actif"
+      status: true
     },
     {
       id: 2,
@@ -30,7 +30,7 @@ class PharmacistService {
       email: "pierre.martin@pharmacie.com",
       phone: "01 98 76 54 32",
       licenseNumber: "PH789012",
-      status: "Actif"
+      status: true
     }
   ];
 

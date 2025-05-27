@@ -9,7 +9,7 @@ export interface Doctor {
   phone: string;
   speciality: string;
   licenseNumber: string;
-  status: 'Actif' | 'Inactif';
+  status: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -24,7 +24,7 @@ class DoctorService {
       phone: "01 23 45 67 89",
       speciality: "Généraliste",
       licenseNumber: "MD123456",
-      status: "Actif"
+      status: true
     },
     {
       id: 2,
@@ -33,7 +33,7 @@ class DoctorService {
       phone: "01 98 76 54 32",
       speciality: "Cardiologue",
       licenseNumber: "MD789012",
-      status: "Actif"
+      status: true
     }
   ];
 
