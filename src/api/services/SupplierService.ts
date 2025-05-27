@@ -8,7 +8,9 @@ export interface Supplier {
   email: string;
   phone: string;
   address: string;
-  status: 'Actif' | 'Inactif';
+  category: string;
+  licenseNumber: string;
+  status: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -22,7 +24,9 @@ class SupplierService {
       email: "contact@pharmawholesale.com",
       phone: "01 23 45 67 89",
       address: "123 Rue du Commerce, 75001 Paris",
-      status: "Actif"
+      category: "Distributeur",
+      licenseNumber: "SUP123456",
+      status: true
     },
     {
       id: 2,
@@ -30,7 +34,9 @@ class SupplierService {
       email: "info@medsource.com",
       phone: "01 98 76 54 32",
       address: "456 Avenue des Distributeurs, 69001 Lyon",
-      status: "Actif"
+      category: "Grossiste",
+      licenseNumber: "SUP789012",
+      status: true
     },
     {
       id: 3,
@@ -38,7 +44,9 @@ class SupplierService {
       email: "contact@healthmed.com",
       phone: "01 45 67 89 01",
       address: "789 Boulevard des Fournisseurs, 33000 Bordeaux",
-      status: "Actif"
+      category: "Fabricant",
+      licenseNumber: "SUP345678",
+      status: false
     }
   ];
 
