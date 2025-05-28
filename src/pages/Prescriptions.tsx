@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -46,8 +47,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import PrescriptionService from "@/api/services/PrescriptionService";
+import PatientService, { Patient } from "@/api/services/PatientService";
+import MedicationService, { Medication } from "@/api/services/MedicationService";
 
 const prescriptions = [
   { 
@@ -125,7 +129,39 @@ const prescriptions = [
 export default function Prescriptions() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    patient: "",
+    medication: "",
+    dosage: "",
+    quantity: "",
+    doctor: "",
+    instructions: ""
+  });
+  
   const { toast } = useToast();
+
+  // Fetch patients from database
+  const { data: patientsData } = useQuery({
+    queryKey: ['patients'],
+    queryFn: () => PatientService.getAllPatients()
+  });
+
+  // Fetch medications from database
+  const { data: medicationsData } = useQuery({
+    queryKey: ['medications'],
+    queryFn: () => MedicationService.getAllMedications()
+  });
+
+  const patients = patientsData?.items || [];
+  const medications = medicationsData?.items || [];
+
+  // Filter only active patients
+  const activePatients = patients.filter(patient => patient.status === 'Actif');
+  
+  // Filter only active medications with stock > 0
+  const availableMedications = medications.filter(medication => 
+    medication.status === 'Actif' && medication.stock > 0
+  );
 
   const filteredPrescriptions = prescriptions.filter(prescription => 
     prescription.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -149,25 +185,44 @@ export default function Prescriptions() {
     }
   };
 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
-    const formData = new FormData(event.currentTarget);
-    const patientValue = formData.get("patient") as string || '';
-    const medicationValue = formData.get("medication") as string || '';
-    
-    const patientId = patientValue ? patientValue.split('-')[0] : '';
-    const medicationId = medicationValue ? medicationValue.split('-')[0] : '';
-    
+    if (!formData.patient || !formData.medication || !formData.dosage || !formData.quantity || !formData.doctor) {
+      toast({
+        title: "Champs requis",
+        description: "Veuillez remplir tous les champs obligatoires.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Find selected patient and medication
+    const selectedPatient = activePatients.find(p => p.id === formData.patient);
+    const selectedMedication = availableMedications.find(m => m.id?.toString() === formData.medication);
+
+    if (!selectedPatient || !selectedMedication) {
+      toast({
+        title: "Erreur",
+        description: "Patient ou médicament introuvable.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const prescription = {
-      patient: patientValue,
-      patientId: patientId,
-      medication: medicationValue,
-      medicationId: medicationId,
-      dosage: formData.get("dosage") as string || '',
-      quantity: Number(formData.get("quantity")) || 0,
-      doctor: formData.get("doctor") as string || '',
-      instructions: formData.get("instructions") as string || '',
+      patient: selectedPatient.name,
+      patientId: selectedPatient.id || '',
+      medication: `${selectedMedication.name} ${selectedMedication.dosage}`,
+      medicationId: selectedMedication.id?.toString() || '',
+      dosage: formData.dosage,
+      quantity: Number(formData.quantity),
+      doctor: formData.doctor,
+      instructions: formData.instructions,
       date: new Date().toISOString().split('T')[0],
       status: "En attente" as const
     };
@@ -179,12 +234,30 @@ export default function Prescriptions() {
         description: "L'ordonnance a été créée avec succès.",
       });
       setIsDialogOpen(false);
+      setFormData({
+        patient: "",
+        medication: "",
+        dosage: "",
+        quantity: "",
+        doctor: "",
+        instructions: ""
+      });
     } catch (error) {
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la création de l'ordonnance.",
         variant: "destructive",
       });
+    }
+  };
+
+  const getStockBadge = (stock: number) => {
+    if (stock === 0) {
+      return <Badge variant="destructive" className="ml-1">Rupture</Badge>;
+    } else if (stock < 10) {
+      return <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200 ml-1">Stock Faible ({stock})</Badge>;
+    } else {
+      return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 ml-1">En Stock ({stock})</Badge>;
     }
   };
 
@@ -249,66 +322,99 @@ export default function Prescriptions() {
                       <Label htmlFor="patient" className="text-right">
                         Patient
                       </Label>
-                      <Select>
+                      <Select 
+                        value={formData.patient} 
+                        onValueChange={(value) => handleInputChange('patient', value)}
+                      >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Select patient" />
+                          <SelectValue placeholder="Sélectionner un patient" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="john-smith">John Smith</SelectItem>
-                          <SelectItem value="mary-johnson">Mary Johnson</SelectItem>
-                          <SelectItem value="robert-brown">Robert Brown</SelectItem>
-                          <SelectItem value="jennifer-williams">Jennifer Williams</SelectItem>
+                          {activePatients.length === 0 ? (
+                            <SelectItem value="no-patients" disabled>
+                              Aucun patient actif trouvé
+                            </SelectItem>
+                          ) : (
+                            activePatients.map(patient => (
+                              <SelectItem key={patient.id} value={patient.id || ''}>
+                                {patient.name} - {patient.email}
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="medication" className="text-right">
-                        Medication
+                        Médicament
                       </Label>
-                      <Select>
+                      <Select 
+                        value={formData.medication} 
+                        onValueChange={(value) => handleInputChange('medication', value)}
+                      >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Select medication" />
+                          <SelectValue placeholder="Sélectionner un médicament" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="amoxicillin-500mg">Amoxicillin 500mg</SelectItem>
-                          <SelectItem value="lisinopril-10mg">Lisinopril 10mg</SelectItem>
-                          <SelectItem value="atorvastatin-20mg">Atorvastatin 20mg</SelectItem>
-                          <SelectItem value="metformin-1000mg">Metformin 1000mg</SelectItem>
+                          {availableMedications.length === 0 ? (
+                            <SelectItem value="no-medications" disabled>
+                              Aucun médicament disponible en stock
+                            </SelectItem>
+                          ) : (
+                            availableMedications.map(medication => (
+                              <SelectItem key={medication.id} value={medication.id?.toString() || ''}>
+                                <div className="flex items-center justify-between w-full">
+                                  <span>{medication.name} {medication.dosage}</span>
+                                  {getStockBadge(medication.stock)}
+                                </div>
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="dosage" className="text-right">
-                        Dosage
+                        Posologie
                       </Label>
                       <Input
                         id="dosage"
-                        placeholder="e.g., 1 tablet 3x daily"
+                        name="dosage"
+                        placeholder="ex: 1 comprimé 3x par jour"
                         className="col-span-3"
+                        value={formData.dosage}
+                        onChange={(e) => handleInputChange('dosage', e.target.value)}
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="quantity" className="text-right">
-                        Quantity
+                        Quantité
                       </Label>
                       <Input
                         id="quantity"
+                        name="quantity"
                         type="number"
+                        min="1"
                         className="col-span-3"
+                        value={formData.quantity}
+                        onChange={(e) => handleInputChange('quantity', e.target.value)}
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="doctor" className="text-right">
-                        Doctor
+                        Médecin
                       </Label>
-                      <Select>
+                      <Select 
+                        value={formData.doctor} 
+                        onValueChange={(value) => handleInputChange('doctor', value)}
+                      >
                         <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Select doctor" />
+                          <SelectValue placeholder="Sélectionner un médecin" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="dr-howard-lee">Dr. Howard Lee</SelectItem>
-                          <SelectItem value="dr-sarah-chen">Dr. Sarah Chen</SelectItem>
-                          <SelectItem value="dr-james-wilson">Dr. James Wilson</SelectItem>
+                          <SelectItem value="Dr. Howard Lee">Dr. Howard Lee</SelectItem>
+                          <SelectItem value="Dr. Sarah Chen">Dr. Sarah Chen</SelectItem>
+                          <SelectItem value="Dr. James Wilson">Dr. James Wilson</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -318,8 +424,11 @@ export default function Prescriptions() {
                       </Label>
                       <Input
                         id="instructions"
-                        placeholder="Additional instructions"
+                        name="instructions"
+                        placeholder="Instructions supplémentaires"
                         className="col-span-3"
+                        value={formData.instructions}
+                        onChange={(e) => handleInputChange('instructions', e.target.value)}
                       />
                     </div>
                   </div>
