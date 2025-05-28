@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
@@ -12,7 +11,8 @@ import {
   LogOut,
   Menu,
   UserRound,  // Added for Doctors
-  Hospital    // Added for Pharmacists
+  Hospital,   // Added for Pharmacists
+  Truck       // Added for Suppliers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React, { useState } from "react";
@@ -31,6 +31,7 @@ const navigation: NavigationItem[] = [
   { name: "Commandes", href: "/orders", icon: ShoppingBag },
   { name: "Pharmaciens", href: "/pharmacists", icon: Hospital },
   { name: "Docteurs", href: "/doctors", icon: UserRound },
+  { name: "Fournisseurs", href: "/suppliers", icon: Truck },
   { name: "Rapports", href: "/reports", icon: BarChart4 },
   { name: "Paramètres", href: "/settings", icon: Settings },
 ];

@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -151,10 +150,10 @@ const PatientDetails = ({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="dob">Date de naissance</Label>
+              <Label htmlFor="birthdate">Date de naissance</Label>
               <Input
-                id="dob"
-                name="dob"
+                id="birthdate"
+                name="birthdate"
                 type="date"
                 value={patientData.birthdate}
                 onChange={handleInputChange}
