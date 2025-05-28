@@ -402,16 +402,26 @@ export default function Inventory() {
     }
   };
 
-  const LowStockAlert = ({ stock }: { stock: number }) => {
-    if (stock <= 10) {
+  const StockAlert = ({ stock }: { stock: number }) => {
+    if (stock === 0) {
       return (
         <div className="text-red-500 text-sm flex items-center">
+          <AlertCircle className="h-4 w-4 mr-1" />
+          Stock épuisé
+        </div>
+      );
+    }
+    if (stock <= 10) {
+      return (
+        <div className="text-gray-500 text-sm flex items-center">
           <AlertCircle className="h-4 w-4 mr-1" />
           Stock bas
         </div>
       );
     }
-    return null;
+    return (
+        <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">En stock</Badge>
+    );
   };
 
   return (
@@ -594,16 +604,13 @@ export default function Inventory() {
                     <TableCell>{medication.category}</TableCell>
                     <TableCell>{medication.dosage}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex flex-col items-end">
-                        {medication.stockQuantity}
-                        <LowStockAlert stock={medication.stockQuantity} />
-                      </div>
+                      <div className="flex flex-col items-end">{medication.stockQuantity}</div>
                     </TableCell>
                     <TableCell className="text-right">{medication.price.toFixed(2)}€</TableCell>
                     <TableCell>
                       {new Date(medication.expirationDate).toLocaleDateString("fr-FR")}
                     </TableCell>
-                    <TableCell>{getStockStatusBadge(medication.status)}</TableCell>
+                    <TableCell><StockAlert stock={medication.stockQuantity} /></TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
