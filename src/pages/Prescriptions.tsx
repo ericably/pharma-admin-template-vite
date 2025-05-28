@@ -143,6 +143,7 @@ const prescriptions = [
 
 export default function Prescriptions() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     patient: "",
@@ -180,12 +181,16 @@ export default function Prescriptions() {
     medication.status === 'Actif' && medication.stock > 0
   );
 
-  const filteredPrescriptions = prescriptions.filter(prescription => 
-    prescription.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    prescription.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    prescription.medication.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    prescription.doctor.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPrescriptions = prescriptions.filter(prescription => {
+    const matchesSearch = prescription.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      prescription.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      prescription.medication.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      prescription.doctor.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || prescription.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
   
   const getStatusBadge = (status: string) => {
     switch(status) {
@@ -318,11 +323,21 @@ export default function Prescriptions() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem>All Prescriptions</DropdownMenuItem>
-                <DropdownMenuItem>Pending</DropdownMenuItem>
-                <DropdownMenuItem>Filled</DropdownMenuItem>
-                <DropdownMenuItem>Ready for Pickup</DropdownMenuItem>
-                <DropdownMenuItem>Delivered</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+                  All Prescriptions
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter("Pending")}>
+                  Pending
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter("Filled")}>
+                  Filled
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter("Ready for Pickup")}>
+                  Ready for Pickup
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter("Delivered")}>
+                  Delivered
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button variant="outline">
