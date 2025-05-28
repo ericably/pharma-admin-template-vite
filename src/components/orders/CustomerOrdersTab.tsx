@@ -51,15 +51,6 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import CustomerOrderService, { CustomerOrder, CustomerOrderItem } from "@/api/services/CustomerOrderService";
-import { useForm } from "react-hook-form";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 
 // Sample patients for demo
 const patients = [
@@ -94,19 +85,17 @@ export default function CustomerOrdersTab() {
   const [selectedMedication, setSelectedMedication] = useState("");
   const [quantity, setQuantity] = useState<number>(1);
   const [dosage, setDosage] = useState("");
-  const { toast } = useToast();
   
-  const form = useForm<Omit<CustomerOrder, "@id" | "id">>({
-    defaultValues: {
-      patient: "",
-      patientId: "",
-      orderDate: new Date().toISOString().split('T')[0],
-      items: [],
-      totalAmount: 0,
-      status: "En attente",
-      notes: ""
-    }
+  // Form state with controlled values
+  const [formData, setFormData] = useState({
+    patientId: "",
+    doctor: "",
+    notes: "",
+    orderDate: new Date().toISOString().split('T')[0],
+    status: "En attente" as CustomerOrder['status']
   });
+  
+  const { toast } = useToast();
   
   useEffect(() => {
     fetchOrders();
@@ -171,7 +160,9 @@ export default function CustomerOrdersTab() {
   };
 
   // Submit order form
-  const onSubmit = async (data: Omit<CustomerOrder, "@id" | "id">) => {
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     if (orderItems.length === 0) {
       toast({
         title: "No Items Added",
@@ -181,15 +172,28 @@ export default function CustomerOrdersTab() {
       return;
     }
 
-    const selectedPatient = patients.find(p => p.id === data.patientId);
+    if (!formData.patientId) {
+      toast({
+        title: "Patient Required",
+        description: "Please select a patient",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const selectedPatient = patients.find(p => p.id === formData.patientId);
     if (!selectedPatient) return;
 
     try {
       const newOrder: Omit<CustomerOrder, "@id" | "id"> = {
-        ...data,
         patient: selectedPatient.name,
+        patientId: formData.patientId,
+        orderDate: formData.orderDate,
         items: orderItems,
         totalAmount: calculateTotal(orderItems),
+        status: formData.status,
+        doctor: formData.doctor,
+        notes: formData.notes
       };
 
       const createdOrder = await CustomerOrderService.createCustomerOrder(newOrder);
@@ -200,8 +204,15 @@ export default function CustomerOrdersTab() {
         description: "Customer order created successfully",
       });
       
+      // Reset form
       setOrderItems([]);
-      form.reset();
+      setFormData({
+        patientId: "",
+        doctor: "",
+        notes: "",
+        orderDate: new Date().toISOString().split('T')[0],
+        status: "En attente"
+      });
       setOpenDialog(false);
     } catch (error) {
       console.error("Error creating customer order:", error);
@@ -305,195 +316,171 @@ export default function CustomerOrdersTab() {
                   Créer une nouvelle commande pour un patient.
                 </DialogDescription>
               </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="patientId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <FormLabel className="text-right">Patient</FormLabel>
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger className="col-span-3">
-                              <SelectValue placeholder="Select patient" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {patients.map(patient => (
-                                <SelectItem key={patient.id} value={patient.id}>
-                                  {patient.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </FormItem>
-                    )}
+              <form onSubmit={onSubmit} className="space-y-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">Patient</Label>
+                  <Select
+                    value={formData.patientId}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, patientId: value }))}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select patient" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {patients.map(patient => (
+                        <SelectItem key={patient.id} value={patient.id}>
+                          {patient.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">Doctor</Label>
+                  <Select
+                    value={formData.doctor}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, doctor: value }))}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select doctor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {doctors.map(doctor => (
+                        <SelectItem key={doctor.id} value={doctor.name}>
+                          {doctor.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4 align-top">
+                  <Label className="text-right pt-2">Notes</Label>
+                  <Textarea
+                    placeholder="Special instructions or notes"
+                    className="col-span-3"
+                    value={formData.notes}
+                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                   />
-                  <FormField
-                    control={form.control}
-                    name="doctor"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <FormLabel className="text-right">Doctor</FormLabel>
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger className="col-span-3">
-                              <SelectValue placeholder="Select doctor" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {doctors.map(doctor => (
-                                <SelectItem key={doctor.id} value={doctor.name}>
-                                  {doctor.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="grid grid-cols-4 items-center gap-4 align-top">
-                          <FormLabel className="text-right pt-2">Notes</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Special instructions or notes"
-                              className="col-span-3"
-                              {...field}
-                            />
-                          </FormControl>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right col-span-4 font-semibold">
-                      Medications
-                    </Label>
-                  </div>
-                  
-                  {/* Display current order items */}
-                  {orderItems.length > 0 && (
-                    <div className="border rounded-md p-3">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="text-xs text-muted-foreground">
-                            <th className="text-left p-1">Medication</th>
-                            <th className="text-left p-1">Dosage</th>
-                            <th className="text-center p-1">Qty</th>
-                            <th className="text-right p-1">Price</th>
-                            <th className="text-right p-1">Total</th>
-                            <th className="w-10"></th>
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right col-span-4 font-semibold">
+                    Medications
+                  </Label>
+                </div>
+                
+                {/* Display current order items */}
+                {orderItems.length > 0 && (
+                  <div className="border rounded-md p-3">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="text-xs text-muted-foreground">
+                          <th className="text-left p-1">Medication</th>
+                          <th className="text-left p-1">Dosage</th>
+                          <th className="text-center p-1">Qty</th>
+                          <th className="text-right p-1">Price</th>
+                          <th className="text-right p-1">Total</th>
+                          <th className="w-10"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orderItems.map((item, index) => (
+                          <tr key={index} className="border-t">
+                            <td className="py-2">{item.medication}</td>
+                            <td className="py-2 text-sm text-muted-foreground">{item.dosage}</td>
+                            <td className="text-center">{item.quantity}</td>
+                            <td className="text-right">€{item.unitPrice.toFixed(2)}</td>
+                            <td className="text-right">€{(item.quantity * item.unitPrice).toFixed(2)}</td>
+                            <td>
+                              <Button 
+                                type="button"
+                                variant="ghost" 
+                                size="sm"
+                                className="h-7 w-7 p-0"
+                                onClick={() => removeOrderItem(index)}
+                              >
+                                <XCircle className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {orderItems.map((item, index) => (
-                            <tr key={index} className="border-t">
-                              <td className="py-2">{item.medication}</td>
-                              <td className="py-2 text-sm text-muted-foreground">{item.dosage}</td>
-                              <td className="text-center">{item.quantity}</td>
-                              <td className="text-right">€{item.unitPrice.toFixed(2)}</td>
-                              <td className="text-right">€{(item.quantity * item.unitPrice).toFixed(2)}</td>
-                              <td>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  className="h-7 w-7 p-0"
-                                  onClick={() => removeOrderItem(index)}
-                                >
-                                  <XCircle className="h-4 w-4 text-red-500" />
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                          <tr className="border-t font-medium">
-                            <td colSpan={4} className="py-2 text-right">Total:</td>
-                            <td className="text-right">€{calculateTotal(orderItems).toFixed(2)}</td>
-                            <td></td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                  
-                  {/* Add new order item */}
-                  <div className="grid grid-cols-12 items-end gap-2">
-                    <div className="col-span-4">
-                      <Label className="text-sm">Medication</Label>
-                      <Select
-                        value={selectedMedication}
-                        onValueChange={setSelectedMedication}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select medication" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {medications.map(med => (
-                            <SelectItem key={med.id} value={med.id}>{med.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="col-span-3">
-                      <Label className="text-sm">Dosage</Label>
-                      <Input 
-                        placeholder="e.g., 1x daily" 
-                        value={dosage} 
-                        onChange={(e) => setDosage(e.target.value)}
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <Label className="text-sm">Quantity</Label>
-                      <Input 
-                        type="number" 
-                        placeholder="Qty" 
-                        value={quantity} 
-                        onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
-                        min={1}
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <Label className="text-sm">Price</Label>
-                      <Input 
-                        type="text" 
-                        value={selectedMedication 
-                          ? `€${medications.find(m => m.id === selectedMedication)?.price.toFixed(2) || "0.00"}`
-                          : ""
-                        } 
-                        readOnly 
-                        placeholder="Price" 
-                      />
-                    </div>
-                    <div className="col-span-1">
-                      <Button 
-                        type="button"
-                        variant="ghost" 
-                        size="sm" 
-                        className="px-2"
-                        onClick={addOrderItem}
-                      >
-                        <Plus className="h-5 w-5" />
-                      </Button>
-                    </div>
+                        ))}
+                        <tr className="border-t font-medium">
+                          <td colSpan={4} className="py-2 text-right">Total:</td>
+                          <td className="text-right">€{calculateTotal(orderItems).toFixed(2)}</td>
+                          <td></td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                  
-                  <DialogFooter className="mt-4">
-                    <Button type="submit">Create Order</Button>
-                  </DialogFooter>
-                </form>
-              </Form>
+                )}
+                
+                {/* Add new order item */}
+                <div className="grid grid-cols-12 items-end gap-2">
+                  <div className="col-span-4">
+                    <Label className="text-sm">Medication</Label>
+                    <Select
+                      value={selectedMedication}
+                      onValueChange={setSelectedMedication}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select medication" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {medications.map(med => (
+                          <SelectItem key={med.id} value={med.id}>{med.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="col-span-3">
+                    <Label className="text-sm">Dosage</Label>
+                    <Input 
+                      placeholder="e.g., 1x daily" 
+                      value={dosage} 
+                      onChange={(e) => setDosage(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-sm">Quantity</Label>
+                    <Input 
+                      type="number" 
+                      placeholder="Qty" 
+                      value={quantity} 
+                      onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
+                      min={1}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-sm">Price</Label>
+                    <Input 
+                      type="text" 
+                      value={selectedMedication 
+                        ? `€${medications.find(m => m.id === selectedMedication)?.price.toFixed(2) || "0.00"}`
+                        : ""
+                      } 
+                      readOnly 
+                      placeholder="Price" 
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    <Button 
+                      type="button"
+                      variant="ghost" 
+                      size="sm" 
+                      className="px-2"
+                      onClick={addOrderItem}
+                    >
+                      <Plus className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </div>
+                
+                <DialogFooter className="mt-4">
+                  <Button type="submit">Create Order</Button>
+                </DialogFooter>
+              </form>
             </DialogContent>
           </Dialog>
         </div>
