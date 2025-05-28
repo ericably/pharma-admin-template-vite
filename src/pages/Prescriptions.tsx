@@ -41,13 +41,6 @@ import {
   X
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Command,
   CommandEmpty,
@@ -66,6 +59,7 @@ import { useQuery } from "@tanstack/react-query";
 import PrescriptionService from "@/api/services/PrescriptionService";
 import PatientService, { Patient } from "@/api/services/PatientService";
 import MedicationService, { Medication } from "@/api/services/MedicationService";
+import DoctorService, { Doctor } from "@/api/services/DoctorService";
 import { cn } from "@/lib/utils";
 
 const prescriptions = [
@@ -155,6 +149,7 @@ export default function Prescriptions() {
   });
   const [openPatientCombobox, setOpenPatientCombobox] = useState(false);
   const [openMedicationCombobox, setOpenMedicationCombobox] = useState(false);
+  const [openDoctorCombobox, setOpenDoctorCombobox] = useState(false);
   
   const { toast } = useToast();
 
@@ -170,8 +165,15 @@ export default function Prescriptions() {
     queryFn: () => MedicationService.getAllMedications()
   });
 
+  // Fetch doctors from database
+  const { data: doctorsData } = useQuery({
+    queryKey: ['doctors'],
+    queryFn: () => DoctorService.getAllDoctors()
+  });
+
   const patients = patientsData?.items || [];
   const medications = medicationsData?.items || [];
+  const doctors = doctorsData?.items || [];
 
   // Filter only active patients
   const activePatients = patients.filter(patient => patient.status === 'Actif');
@@ -180,6 +182,9 @@ export default function Prescriptions() {
   const availableMedications = medications.filter(medication => 
     medication.status === 'Actif' && medication.stock > 0
   );
+
+  // Filter only active doctors
+  const activeDoctors = doctors.filter(doctor => doctor.status === true);
 
   const filteredPrescriptions = prescriptions.filter(prescription => {
     const matchesSearch = prescription.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -223,14 +228,15 @@ export default function Prescriptions() {
       return;
     }
 
-    // Find selected patient and medication
+    // Find selected patient, medication and doctor
     const selectedPatient = activePatients.find(p => p.id === formData.patient);
     const selectedMedication = availableMedications.find(m => m.id?.toString() === formData.medication);
+    const selectedDoctor = activeDoctors.find(d => d.id?.toString() === formData.doctor);
 
-    if (!selectedPatient || !selectedMedication) {
+    if (!selectedPatient || !selectedMedication || !selectedDoctor) {
       toast({
         title: "Erreur",
-        description: "Patient ou médicament introuvable.",
+        description: "Patient, médicament ou médecin introuvable.",
         variant: "destructive",
       });
       return;
@@ -243,7 +249,7 @@ export default function Prescriptions() {
       medicationId: selectedMedication.id?.toString() || '',
       dosage: formData.dosage,
       quantity: Number(formData.quantity),
-      doctor: formData.doctor,
+      doctor: selectedDoctor.name,
       instructions: formData.instructions,
       date: new Date().toISOString().split('T')[0],
       status: "En attente" as const
@@ -291,6 +297,11 @@ export default function Prescriptions() {
   const getSelectedMedicationName = () => {
     const medication = availableMedications.find(m => m.id?.toString() === formData.medication);
     return medication ? `${medication.name} ${medication.dosage}` : "Sélectionner un médicament";
+  };
+
+  const getSelectedDoctorName = () => {
+    const doctor = activeDoctors.find(d => d.id?.toString() === formData.doctor);
+    return doctor ? `${doctor.name} - ${doctor.speciality}` : "Sélectionner un médecin";
   };
 
   return (
@@ -490,19 +501,52 @@ export default function Prescriptions() {
                       <Label htmlFor="doctor" className="text-right">
                         Médecin
                       </Label>
-                      <Select 
-                        value={formData.doctor} 
-                        onValueChange={(value) => handleInputChange('doctor', value)}
-                      >
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Sélectionner un médecin" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Dr. Howard Lee">Dr. Howard Lee</SelectItem>
-                          <SelectItem value="Dr. Sarah Chen">Dr. Sarah Chen</SelectItem>
-                          <SelectItem value="Dr. James Wilson">Dr. James Wilson</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="col-span-3">
+                        <Popover open={openDoctorCombobox} onOpenChange={setOpenDoctorCombobox}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={openDoctorCombobox}
+                              className="w-full justify-between"
+                            >
+                              {getSelectedDoctorName()}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0">
+                            <Command>
+                              <CommandInput placeholder="Rechercher un médecin..." />
+                              <CommandList>
+                                <CommandEmpty>Aucun médecin trouvé.</CommandEmpty>
+                                <CommandGroup>
+                                  {activeDoctors.map((doctor) => (
+                                    <CommandItem
+                                      key={doctor.id}
+                                      value={`${doctor.name} ${doctor.speciality}`}
+                                      onSelect={() => {
+                                        handleInputChange('doctor', doctor.id?.toString() || '');
+                                        setOpenDoctorCombobox(false);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          formData.doctor === doctor.id?.toString() ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      <div className="flex flex-col">
+                                        <span className="font-medium">{doctor.name}</span>
+                                        <span className="text-sm text-muted-foreground">{doctor.speciality}</span>
+                                      </div>
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="instructions" className="text-right">
