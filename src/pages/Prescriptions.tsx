@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -55,85 +56,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
-import PrescriptionService from "@/api/services/PrescriptionService";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import PrescriptionService, { Prescription } from "@/api/services/PrescriptionService";
 import PatientService, { Patient } from "@/api/services/PatientService";
 import MedicationService, { Medication } from "@/api/services/MedicationService";
 import DoctorService, { Doctor } from "@/api/services/DoctorService";
 import { cn } from "@/lib/utils";
-
-const prescriptions = [
-  { 
-    id: "RX-0001", 
-    patient: "John Smith", 
-    medication: "Amoxicillin 500mg",
-    dosage: "1 tablet 3x daily",
-    quantity: 30,
-    doctor: "Dr. Howard Lee",
-    date: "2023-05-15",
-    status: "Pending" 
-  },
-  { 
-    id: "RX-0002", 
-    patient: "Mary Johnson", 
-    medication: "Lisinopril 10mg",
-    dosage: "1 tablet daily",
-    quantity: 30,
-    doctor: "Dr. Sarah Chen",
-    date: "2023-05-14",
-    status: "Filled" 
-  },
-  { 
-    id: "RX-0003", 
-    patient: "Robert Brown", 
-    medication: "Atorvastatin 20mg",
-    dosage: "1 tablet at bedtime",
-    quantity: 30,
-    doctor: "Dr. James Wilson",
-    date: "2023-05-13",
-    status: "Filled" 
-  },
-  { 
-    id: "RX-0004", 
-    patient: "Jennifer Williams", 
-    medication: "Metformin 1000mg",
-    dosage: "1 tablet 2x daily",
-    quantity: 60,
-    doctor: "Dr. Howard Lee",
-    date: "2023-05-13",
-    status: "Ready for Pickup" 
-  },
-  { 
-    id: "RX-0005", 
-    patient: "Michael Davis", 
-    medication: "Sertraline 50mg",
-    dosage: "1 tablet daily",
-    quantity: 30,
-    doctor: "Dr. Sarah Chen",
-    date: "2023-05-12",
-    status: "Ready for Pickup" 
-  },
-  { 
-    id: "RX-0006", 
-    patient: "Sarah Miller", 
-    medication: "Omeprazole 20mg",
-    dosage: "1 capsule daily",
-    quantity: 30,
-    doctor: "Dr. James Wilson",
-    date: "2023-05-12",
-    status: "Delivered" 
-  },
-  { 
-    id: "RX-0007", 
-    patient: "James Wilson", 
-    medication: "Ibuprofen 400mg",
-    dosage: "1 tablet every 6 hours as needed",
-    quantity: 40,
-    doctor: "Dr. Howard Lee",
-    date: "2023-05-11",
-    status: "Delivered" 
-  }
-];
 
 export default function Prescriptions() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -152,6 +80,13 @@ export default function Prescriptions() {
   const [openDoctorCombobox, setOpenDoctorCombobox] = useState(false);
   
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch prescriptions from database
+  const { data: prescriptionsData, isLoading: prescriptionsLoading } = useQuery({
+    queryKey: ['prescriptions'],
+    queryFn: () => PrescriptionService.getAllPrescriptions()
+  });
 
   // Fetch patients from database
   const { data: patientsData } = useQuery({
@@ -171,6 +106,7 @@ export default function Prescriptions() {
     queryFn: () => DoctorService.getAllDoctors()
   });
 
+  const prescriptions = prescriptionsData?.items || [];
   const patients = patientsData?.items || [];
   const medications = medicationsData?.items || [];
   const doctors = doctorsData?.items || [];
@@ -188,7 +124,7 @@ export default function Prescriptions() {
 
   const filteredPrescriptions = prescriptions.filter(prescription => {
     const matchesSearch = prescription.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      prescription.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      prescription.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       prescription.medication.toLowerCase().includes(searchQuery.toLowerCase()) ||
       prescription.doctor.toLowerCase().includes(searchQuery.toLowerCase());
     
@@ -199,14 +135,14 @@ export default function Prescriptions() {
   
   const getStatusBadge = (status: string) => {
     switch(status) {
-      case "Pending":
-        return <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">Pending</Badge>;
-      case "Filled":
-        return <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">Filled</Badge>;
-      case "Ready for Pickup":
-        return <Badge variant="outline" className="bg-purple-50 text-purple-600 border-purple-200">Ready for Pickup</Badge>;
-      case "Delivered":
-        return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Delivered</Badge>;
+      case "En attente":
+        return <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">En attente</Badge>;
+      case "Préparé":
+        return <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">Préparé</Badge>;
+      case "Prêt pour retrait":
+        return <Badge variant="outline" className="bg-purple-50 text-purple-600 border-purple-200">Prêt pour retrait</Badge>;
+      case "Livré":
+        return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Livré</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -270,6 +206,8 @@ export default function Prescriptions() {
         doctor: "",
         instructions: ""
       });
+      // Refresh the prescriptions list
+      queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
     } catch (error) {
       toast({
         title: "Erreur",
@@ -307,9 +245,9 @@ export default function Prescriptions() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Prescription Management</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Gestion des Ordonnances</h1>
         <p className="text-muted-foreground mt-2">
-          Create, fill, and manage patient prescriptions.
+          Créer, préparer et gérer les ordonnances des patients.
         </p>
       </div>
 
@@ -319,7 +257,7 @@ export default function Prescriptions() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search prescriptions..."
+              placeholder="Rechercher des ordonnances..."
               className="pl-8 w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -329,31 +267,31 @@ export default function Prescriptions() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex">
-                  Filter
+                  Filtrer
                   <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem onClick={() => setStatusFilter("all")}>
-                  All Prescriptions
+                  Toutes les ordonnances
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("Pending")}>
-                  Pending
+                <DropdownMenuItem onClick={() => setStatusFilter("En attente")}>
+                  En attente
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("Filled")}>
-                  Filled
+                <DropdownMenuItem onClick={() => setStatusFilter("Préparé")}>
+                  Préparé
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("Ready for Pickup")}>
-                  Ready for Pickup
+                <DropdownMenuItem onClick={() => setStatusFilter("Prêt pour retrait")}>
+                  Prêt pour retrait
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("Delivered")}>
-                  Delivered
+                <DropdownMenuItem onClick={() => setStatusFilter("Livré")}>
+                  Livré
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button variant="outline">
               <FileDown className="mr-2 h-4 w-4" />
-              Export
+              Exporter
             </Button>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
@@ -577,60 +515,74 @@ export default function Prescriptions() {
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>Patient</TableHead>
-                <TableHead>Medication</TableHead>
-                <TableHead>Dosage</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead>Doctor</TableHead>
+                <TableHead>Médicament</TableHead>
+                <TableHead>Posologie</TableHead>
+                <TableHead>Quantité</TableHead>
+                <TableHead>Médecin</TableHead>
                 <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Statut</TableHead>
                 <TableHead className="w-[80px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPrescriptions.map((prescription) => (
-                <TableRow key={prescription.id}>
-                  <TableCell className="font-medium">{prescription.id}</TableCell>
-                  <TableCell>{prescription.patient}</TableCell>
-                  <TableCell>{prescription.medication}</TableCell>
-                  <TableCell>{prescription.dosage}</TableCell>
-                  <TableCell>{prescription.quantity}</TableCell>
-                  <TableCell>{prescription.doctor}</TableCell>
-                  <TableCell>{prescription.date}</TableCell>
-                  <TableCell>{getStatusBadge(prescription.status)}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Check className="mr-2 h-4 w-4" />
-                          Mark as Filled
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Printer className="mr-2 h-4 w-4" />
-                          Print
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <MailOpen className="mr-2 h-4 w-4" />
-                          Notify Patient
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {prescriptionsLoading ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-4">
+                    Chargement des ordonnances...
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : filteredPrescriptions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-4">
+                    Aucune ordonnance trouvée
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredPrescriptions.map((prescription) => (
+                  <TableRow key={prescription.id}>
+                    <TableCell className="font-medium">{prescription.id}</TableCell>
+                    <TableCell>{prescription.patient}</TableCell>
+                    <TableCell>{prescription.medication}</TableCell>
+                    <TableCell>{prescription.dosage}</TableCell>
+                    <TableCell>{prescription.quantity}</TableCell>
+                    <TableCell>{prescription.doctor}</TableCell>
+                    <TableCell>{prescription.date}</TableCell>
+                    <TableCell>{getStatusBadge(prescription.status)}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Voir les détails
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Modifier
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Check className="mr-2 h-4 w-4" />
+                            Marquer comme préparé
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Printer className="mr-2 h-4 w-4" />
+                            Imprimer
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <MailOpen className="mr-2 h-4 w-4" />
+                            Notifier le patient
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
