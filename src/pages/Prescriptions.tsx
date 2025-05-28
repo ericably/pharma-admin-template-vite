@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -37,7 +36,9 @@ import {
   Check,
   MailOpen,
   Printer,
-  Eye
+  Eye,
+  ChevronsUpDown,
+  X
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { 
@@ -47,11 +48,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import PrescriptionService from "@/api/services/PrescriptionService";
 import PatientService, { Patient } from "@/api/services/PatientService";
 import MedicationService, { Medication } from "@/api/services/MedicationService";
+import { cn } from "@/lib/utils";
 
 const prescriptions = [
   { 
@@ -137,6 +152,8 @@ export default function Prescriptions() {
     doctor: "",
     instructions: ""
   });
+  const [openPatientCombobox, setOpenPatientCombobox] = useState(false);
+  const [openMedicationCombobox, setOpenMedicationCombobox] = useState(false);
   
   const { toast } = useToast();
 
@@ -261,6 +278,16 @@ export default function Prescriptions() {
     }
   };
 
+  const getSelectedPatientName = () => {
+    const patient = activePatients.find(p => p.id === formData.patient);
+    return patient ? `${patient.name} - ${patient.email}` : "Sélectionner un patient";
+  };
+
+  const getSelectedMedicationName = () => {
+    const medication = availableMedications.find(m => m.id?.toString() === formData.medication);
+    return medication ? `${medication.name} ${medication.dosage}` : "Sélectionner un médicament";
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -322,56 +349,100 @@ export default function Prescriptions() {
                       <Label htmlFor="patient" className="text-right">
                         Patient
                       </Label>
-                      <Select 
-                        value={formData.patient} 
-                        onValueChange={(value) => handleInputChange('patient', value)}
-                      >
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Sélectionner un patient" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {activePatients.length === 0 ? (
-                            <SelectItem value="no-patients" disabled>
-                              Aucun patient actif trouvé
-                            </SelectItem>
-                          ) : (
-                            activePatients.map(patient => (
-                              <SelectItem key={patient.id} value={patient.id || ''}>
-                                {patient.name} - {patient.email}
-                              </SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
+                      <div className="col-span-3">
+                        <Popover open={openPatientCombobox} onOpenChange={setOpenPatientCombobox}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={openPatientCombobox}
+                              className="w-full justify-between"
+                            >
+                              {getSelectedPatientName()}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0">
+                            <Command>
+                              <CommandInput placeholder="Rechercher un patient..." />
+                              <CommandList>
+                                <CommandEmpty>Aucun patient trouvé.</CommandEmpty>
+                                <CommandGroup>
+                                  {activePatients.map((patient) => (
+                                    <CommandItem
+                                      key={patient.id}
+                                      value={`${patient.name} ${patient.email}`}
+                                      onSelect={() => {
+                                        handleInputChange('patient', patient.id || '');
+                                        setOpenPatientCombobox(false);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          formData.patient === patient.id ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {patient.name} - {patient.email}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="medication" className="text-right">
                         Médicament
                       </Label>
-                      <Select 
-                        value={formData.medication} 
-                        onValueChange={(value) => handleInputChange('medication', value)}
-                      >
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue placeholder="Sélectionner un médicament" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableMedications.length === 0 ? (
-                            <SelectItem value="no-medications" disabled>
-                              Aucun médicament disponible en stock
-                            </SelectItem>
-                          ) : (
-                            availableMedications.map(medication => (
-                              <SelectItem key={medication.id} value={medication.id?.toString() || ''}>
-                                <div className="flex items-center justify-between w-full">
-                                  <span>{medication.name} {medication.dosage}</span>
-                                  {getStockBadge(medication.stock)}
-                                </div>
-                              </SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
+                      <div className="col-span-3">
+                        <Popover open={openMedicationCombobox} onOpenChange={setOpenMedicationCombobox}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={openMedicationCombobox}
+                              className="w-full justify-between"
+                            >
+                              {getSelectedMedicationName()}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0">
+                            <Command>
+                              <CommandInput placeholder="Rechercher un médicament..." />
+                              <CommandList>
+                                <CommandEmpty>Aucun médicament trouvé.</CommandEmpty>
+                                <CommandGroup>
+                                  {availableMedications.map((medication) => (
+                                    <CommandItem
+                                      key={medication.id}
+                                      value={`${medication.name} ${medication.dosage}`}
+                                      onSelect={() => {
+                                        handleInputChange('medication', medication.id?.toString() || '');
+                                        setOpenMedicationCombobox(false);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          formData.medication === medication.id?.toString() ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      <div className="flex items-center justify-between w-full">
+                                        <span>{medication.name} {medication.dosage}</span>
+                                        {getStockBadge(medication.stock)}
+                                      </div>
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="dosage" className="text-right">
