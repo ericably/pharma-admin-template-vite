@@ -39,7 +39,7 @@ import {
   Printer,
   Eye,
   ChevronsUpDown,
-  X
+  ShoppingCart
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import {
@@ -57,10 +57,11 @@ import {
 } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import PrescriptionService, { Prescription } from "@/api/services/PrescriptionService";
+import PrescriptionService, { Prescription, PrescriptionItem } from "@/api/services/PrescriptionService";
 import PatientService, { Patient } from "@/api/services/PatientService";
 import MedicationService, { Medication } from "@/api/services/MedicationService";
 import DoctorService, { Doctor } from "@/api/services/DoctorService";
+import PrescriptionItemsForm from "@/components/prescriptions/PrescriptionItemsForm";
 import { cn } from "@/lib/utils";
 
 export default function Prescriptions() {
@@ -69,14 +70,13 @@ export default function Prescriptions() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     patient: "",
-    medication: "",
-    dosage: "",
-    quantity: "",
     doctor: "",
-    instructions: ""
+    notes: ""
   });
+  const [prescriptionItems, setPrescriptionItems] = useState<PrescriptionItem[]>([
+    { medication: "", medicationId: "", dosage: "", quantity: 1, instructions: "" }
+  ]);
   const [openPatientCombobox, setOpenPatientCombobox] = useState(false);
-  const [openMedicationCombobox, setOpenMedicationCombobox] = useState(false);
   const [openDoctorCombobox, setOpenDoctorCombobox] = useState(false);
   
   const { toast } = useToast();
@@ -125,7 +125,7 @@ export default function Prescriptions() {
   const filteredPrescriptions = prescriptions.filter(prescription => {
     const matchesSearch = prescription.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
       prescription.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      prescription.medication.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      prescription.items.some(item => item.medication.toLowerCase().includes(searchQuery.toLowerCase())) ||
       prescription.doctor.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === "all" || prescription.status === statusFilter;
@@ -155,24 +155,37 @@ export default function Prescriptions() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
-    if (!formData.patient || !formData.medication || !formData.dosage || !formData.quantity || !formData.doctor) {
+    if (!formData.patient || !formData.doctor || prescriptionItems.length === 0) {
       toast({
         title: "Champs requis",
-        description: "Veuillez remplir tous les champs obligatoires.",
+        description: "Veuillez remplir tous les champs obligatoires et ajouter au moins un médicament.",
         variant: "destructive",
       });
       return;
     }
 
-    // Find selected patient, medication and doctor
+    // Validate all prescription items
+    const invalidItems = prescriptionItems.filter(item => 
+      !item.medicationId || !item.dosage || item.quantity <= 0
+    );
+
+    if (invalidItems.length > 0) {
+      toast({
+        title: "Médicaments incomplets",
+        description: "Veuillez compléter tous les médicaments (médicament, posologie, quantité).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Find selected patient and doctor
     const selectedPatient = activePatients.find(p => p.id === formData.patient);
-    const selectedMedication = availableMedications.find(m => m.id?.toString() === formData.medication);
     const selectedDoctor = activeDoctors.find(d => d.id?.toString() === formData.doctor);
 
-    if (!selectedPatient || !selectedMedication || !selectedDoctor) {
+    if (!selectedPatient || !selectedDoctor) {
       toast({
         title: "Erreur",
-        description: "Patient, médicament ou médecin introuvable.",
+        description: "Patient ou médecin introuvable.",
         variant: "destructive",
       });
       return;
@@ -181,12 +194,9 @@ export default function Prescriptions() {
     const prescription = {
       patient: selectedPatient.name,
       patientId: selectedPatient.id || '',
-      medication: `${selectedMedication.name} ${selectedMedication.dosage}`,
-      medicationId: selectedMedication.id?.toString() || '',
-      dosage: formData.dosage,
-      quantity: Number(formData.quantity),
+      items: prescriptionItems,
       doctor: selectedDoctor.name,
-      instructions: formData.instructions,
+      notes: formData.notes,
       date: new Date().toISOString().split('T')[0],
       status: "En attente" as const
     };
@@ -200,12 +210,12 @@ export default function Prescriptions() {
       setIsDialogOpen(false);
       setFormData({
         patient: "",
-        medication: "",
-        dosage: "",
-        quantity: "",
         doctor: "",
-        instructions: ""
+        notes: ""
       });
+      setPrescriptionItems([
+        { medication: "", medicationId: "", dosage: "", quantity: 1, instructions: "" }
+      ]);
       // Refresh the prescriptions list
       queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
     } catch (error) {
@@ -217,24 +227,27 @@ export default function Prescriptions() {
     }
   };
 
-  const getStockBadge = (stock: number) => {
-    if (stock === 0) {
-      return <Badge variant="destructive" className="ml-1">Rupture</Badge>;
-    } else if (stock < 10) {
-      return <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200 ml-1">Stock Faible ({stock})</Badge>;
-    } else {
-      return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 ml-1">En Stock ({stock})</Badge>;
+  const convertToOrder = async (prescriptionId: string) => {
+    try {
+      await PrescriptionService.convertToCustomerOrder(prescriptionId);
+      toast({
+        title: "Commande créée",
+        description: "L'ordonnance a été convertie en commande avec succès.",
+      });
+      // Refresh the customer orders (if needed)
+      queryClient.invalidateQueries({ queryKey: ['customer-orders'] });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la conversion en commande.",
+        variant: "destructive",
+      });
     }
   };
 
   const getSelectedPatientName = () => {
     const patient = activePatients.find(p => p.id === formData.patient);
     return patient ? `${patient.name} - ${patient.email}` : "Sélectionner un patient";
-  };
-
-  const getSelectedMedicationName = () => {
-    const medication = availableMedications.find(m => m.id?.toString() === formData.medication);
-    return medication ? `${medication.name} ${medication.dosage}` : "Sélectionner un médicament";
   };
 
   const getSelectedDoctorName = () => {
@@ -300,20 +313,18 @@ export default function Prescriptions() {
                   Nouvelle Ordonnance
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[550px]">
+              <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Ajouter une Nouvelle Ordonnance</DialogTitle>
                   <DialogDescription>
-                    Créer une nouvelle ordonnance pour un patient.
+                    Créer une nouvelle ordonnance pour un patient avec plusieurs médicaments.
                   </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="patient" className="text-right">
-                        Patient
-                      </Label>
-                      <div className="col-span-3">
+                  <div className="grid gap-6 py-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="patient">Patient</Label>
                         <Popover open={openPatientCombobox} onOpenChange={setOpenPatientCombobox}>
                           <PopoverTrigger asChild>
                             <Button
@@ -356,90 +367,9 @@ export default function Prescriptions() {
                           </PopoverContent>
                         </Popover>
                       </div>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="medication" className="text-right">
-                        Médicament
-                      </Label>
-                      <div className="col-span-3">
-                        <Popover open={openMedicationCombobox} onOpenChange={setOpenMedicationCombobox}>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              role="combobox"
-                              aria-expanded={openMedicationCombobox}
-                              className="w-full justify-between"
-                            >
-                              {getSelectedMedicationName()}
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-full p-0">
-                            <Command>
-                              <CommandInput placeholder="Rechercher un médicament..." />
-                              <CommandList>
-                                <CommandEmpty>Aucun médicament trouvé.</CommandEmpty>
-                                <CommandGroup>
-                                  {availableMedications.map((medication) => (
-                                    <CommandItem
-                                      key={medication.id}
-                                      value={`${medication.name} ${medication.dosage}`}
-                                      onSelect={() => {
-                                        handleInputChange('medication', medication.id?.toString() || '');
-                                        setOpenMedicationCombobox(false);
-                                      }}
-                                    >
-                                      <Check
-                                        className={cn(
-                                          "mr-2 h-4 w-4",
-                                          formData.medication === medication.id?.toString() ? "opacity-100" : "opacity-0"
-                                        )}
-                                      />
-                                      <div className="flex items-center justify-between w-full">
-                                        <span>{medication.name} {medication.dosage}</span>
-                                        {getStockBadge(medication.stock)}
-                                      </div>
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="dosage" className="text-right">
-                        Posologie
-                      </Label>
-                      <Input
-                        id="dosage"
-                        name="dosage"
-                        placeholder="ex: 1 comprimé 3x par jour"
-                        className="col-span-3"
-                        value={formData.dosage}
-                        onChange={(e) => handleInputChange('dosage', e.target.value)}
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="quantity" className="text-right">
-                        Quantité
-                      </Label>
-                      <Input
-                        id="quantity"
-                        name="quantity"
-                        type="number"
-                        min="1"
-                        className="col-span-3"
-                        value={formData.quantity}
-                        onChange={(e) => handleInputChange('quantity', e.target.value)}
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="doctor" className="text-right">
-                        Médecin
-                      </Label>
-                      <div className="col-span-3">
+
+                      <div className="space-y-2">
+                        <Label htmlFor="doctor">Médecin</Label>
                         <Popover open={openDoctorCombobox} onOpenChange={setOpenDoctorCombobox}>
                           <PopoverTrigger asChild>
                             <Button
@@ -486,17 +416,21 @@ export default function Prescriptions() {
                         </Popover>
                       </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="instructions" className="text-right">
-                        Instructions
-                      </Label>
+
+                    <PrescriptionItemsForm
+                      items={prescriptionItems}
+                      medications={availableMedications}
+                      onItemsChange={setPrescriptionItems}
+                    />
+
+                    <div className="space-y-2">
+                      <Label htmlFor="notes">Notes</Label>
                       <Input
-                        id="instructions"
-                        name="instructions"
-                        placeholder="Instructions supplémentaires"
-                        className="col-span-3"
-                        value={formData.instructions}
-                        onChange={(e) => handleInputChange('instructions', e.target.value)}
+                        id="notes"
+                        name="notes"
+                        placeholder="Notes supplémentaires"
+                        value={formData.notes}
+                        onChange={(e) => handleInputChange('notes', e.target.value)}
                       />
                     </div>
                   </div>
@@ -515,9 +449,7 @@ export default function Prescriptions() {
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>Patient</TableHead>
-                <TableHead>Médicament</TableHead>
-                <TableHead>Posologie</TableHead>
-                <TableHead>Quantité</TableHead>
+                <TableHead>Médicaments</TableHead>
                 <TableHead>Médecin</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Statut</TableHead>
@@ -527,13 +459,13 @@ export default function Prescriptions() {
             <TableBody>
               {prescriptionsLoading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-4">
+                  <TableCell colSpan={7} className="text-center py-4">
                     Chargement des ordonnances...
                   </TableCell>
                 </TableRow>
               ) : filteredPrescriptions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-4">
+                  <TableCell colSpan={7} className="text-center py-4">
                     Aucune ordonnance trouvée
                   </TableCell>
                 </TableRow>
@@ -542,9 +474,19 @@ export default function Prescriptions() {
                   <TableRow key={prescription.id}>
                     <TableCell className="font-medium">{prescription.id}</TableCell>
                     <TableCell>{prescription.patient}</TableCell>
-                    <TableCell>{prescription.medication}</TableCell>
-                    <TableCell>{prescription.dosage}</TableCell>
-                    <TableCell>{prescription.quantity}</TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        {prescription.items.map((item, index) => (
+                          <div key={index} className="text-sm">
+                            <span className="font-medium">{item.medication}</span>
+                            <br />
+                            <span className="text-muted-foreground">
+                              {item.dosage} - Qté: {item.quantity}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </TableCell>
                     <TableCell>{prescription.doctor}</TableCell>
                     <TableCell>{prescription.date}</TableCell>
                     <TableCell>{getStatusBadge(prescription.status)}</TableCell>
@@ -568,6 +510,10 @@ export default function Prescriptions() {
                           <DropdownMenuItem>
                             <Check className="mr-2 h-4 w-4" />
                             Marquer comme préparé
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => convertToOrder(prescription.id || '')}>
+                            <ShoppingCart className="mr-2 h-4 w-4" />
+                            Convertir en commande
                           </DropdownMenuItem>
                           <DropdownMenuItem>
                             <Printer className="mr-2 h-4 w-4" />

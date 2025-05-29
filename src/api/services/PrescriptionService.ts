@@ -1,20 +1,25 @@
 
 import apiClient from '../apiClient';
 
-// Type definitions
+// Type definitions for prescription items
+export interface PrescriptionItem {
+  medication: string;
+  medicationId: string;
+  dosage: string;
+  quantity: number;
+  instructions?: string;
+}
+
 export interface Prescription {
   '@id'?: string;
   id?: string;
   patient: string;
   patientId: string;
-  medication: string;
-  medicationId: string;
-  dosage: string;
-  quantity: number;
+  items: PrescriptionItem[];
   doctor: string;
   date: string;
   status: 'En attente' | 'Préparé' | 'Prêt pour retrait' | 'Livré';
-  instructions?: string;
+  notes?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -32,14 +37,26 @@ class PrescriptionService {
           '@id': '/prescriptions/RX-0001',
           patient: 'Jean Dupont',
           patientId: 'P-1001',
-          medication: 'Amoxicilline 500mg',
-          medicationId: 'M-001',
-          dosage: '1 comprimé 3x par jour',
-          quantity: 30,
+          items: [
+            {
+              medication: 'Amoxicilline 500mg',
+              medicationId: 'M-001',
+              dosage: '1 comprimé 3x par jour',
+              quantity: 30,
+              instructions: 'Prendre avec de la nourriture'
+            },
+            {
+              medication: 'Paracétamol 500mg',
+              medicationId: 'M-002',
+              dosage: '1 comprimé si douleur',
+              quantity: 20,
+              instructions: 'Maximum 3 par jour'
+            }
+          ],
           doctor: 'Dr. Howard Lee',
           date: '2023-05-15',
           status: 'En attente',
-          instructions: 'Prendre avec de la nourriture',
+          notes: 'Traitement pour infection respiratoire',
           createdAt: '2023-05-15T10:30:00',
           updatedAt: '2023-05-15T10:30:00'
         },
@@ -48,14 +65,19 @@ class PrescriptionService {
           '@id': '/prescriptions/RX-0002',
           patient: 'Marie Martin',
           patientId: 'P-1002',
-          medication: 'Lisinopril 10mg',
-          medicationId: 'M-002',
-          dosage: '1 comprimé par jour',
-          quantity: 30,
+          items: [
+            {
+              medication: 'Lisinopril 10mg',
+              medicationId: 'M-003',
+              dosage: '1 comprimé par jour',
+              quantity: 30,
+              instructions: 'Prendre le matin'
+            }
+          ],
           doctor: 'Dr. Sarah Chen',
           date: '2023-05-14',
           status: 'Préparé',
-          instructions: 'Prendre le matin',
+          notes: 'Traitement hypertension',
           createdAt: '2023-05-14T09:20:00',
           updatedAt: '2023-05-14T15:45:00'
         }
@@ -83,14 +105,19 @@ class PrescriptionService {
       '@id': `/prescriptions/${id}`,
       patient: 'Jean Dupont',
       patientId: 'P-1001',
-      medication: 'Amoxicilline 500mg',
-      medicationId: 'M-001',
-      dosage: '1 comprimé 3x par jour',
-      quantity: 30,
+      items: [
+        {
+          medication: 'Amoxicilline 500mg',
+          medicationId: 'M-001',
+          dosage: '1 comprimé 3x par jour',
+          quantity: 30,
+          instructions: 'Prendre avec de la nourriture'
+        }
+      ],
       doctor: 'Dr. Howard Lee',
       date: '2023-05-15',
       status: 'En attente' as const,
-      instructions: 'Prendre avec de la nourriture',
+      notes: 'Traitement pour infection respiratoire',
       createdAt: '2023-05-15T10:30:00',
       updatedAt: '2023-05-15T10:30:00'
     };
@@ -161,14 +188,19 @@ class PrescriptionService {
         '@id': '/prescriptions/RX-0001',
         patient: 'Jean Dupont',
         patientId,
-        medication: 'Amoxicilline 500mg',
-        medicationId: 'M-001',
-        dosage: '1 comprimé 3x par jour',
-        quantity: 30,
+        items: [
+          {
+            medication: 'Amoxicilline 500mg',
+            medicationId: 'M-001',
+            dosage: '1 comprimé 3x par jour',
+            quantity: 30,
+            instructions: 'Prendre avec de la nourriture'
+          }
+        ],
         doctor: 'Dr. Howard Lee',
         date: '2023-05-15',
         status: 'En attente',
-        instructions: 'Prendre avec de la nourriture',
+        notes: 'Traitement pour infection respiratoire',
         createdAt: '2023-05-15T10:30:00',
         updatedAt: '2023-05-15T10:30:00'
       }
@@ -189,14 +221,19 @@ class PrescriptionService {
         '@id': '/prescriptions/RX-0002',
         patient: 'Marie Martin',
         patientId: 'P-1002',
-        medication: 'Lisinopril 10mg',
-        medicationId: 'M-002',
-        dosage: '1 comprimé par jour',
-        quantity: 30,
+        items: [
+          {
+            medication: 'Lisinopril 10mg',
+            medicationId: 'M-002',
+            dosage: '1 comprimé par jour',
+            quantity: 30,
+            instructions: 'Prendre le matin'
+          }
+        ],
         doctor: 'Dr. Sarah Chen',
         date: '2023-05-14',
         status,
-        instructions: 'Prendre le matin',
+        notes: 'Traitement hypertension',
         createdAt: '2023-05-14T09:20:00',
         updatedAt: '2023-05-14T15:45:00'
       }
@@ -225,6 +262,43 @@ class PrescriptionService {
     
     // When API is ready, uncomment this:
     // return apiClient.patch<Prescription>(`${this.endpoint}/${id}`, { status });
+  }
+
+  // Convert prescription to customer order
+  async convertToCustomerOrder(prescriptionId: string) {
+    console.log('Conversion d\'ordonnance en commande:', prescriptionId);
+    
+    // Get the prescription details
+    const prescription = await this.getPrescriptionById(prescriptionId);
+    
+    // Convert prescription items to order items
+    const orderItems = prescription.items.map(item => ({
+      medication: item.medication,
+      medicationId: item.medicationId,
+      quantity: item.quantity,
+      unitPrice: 1.50, // Mock price, should come from medication data
+      dosage: item.dosage,
+      instructions: item.instructions
+    }));
+
+    // Calculate total amount
+    const totalAmount = orderItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+
+    const customerOrder = {
+      patient: prescription.patient,
+      patientId: prescription.patientId,
+      prescriptionId: prescription.id,
+      orderDate: new Date().toISOString().split('T')[0],
+      items: orderItems,
+      totalAmount,
+      status: 'En attente' as const,
+      doctor: prescription.doctor,
+      notes: prescription.notes
+    };
+
+    // Import and use CustomerOrderService
+    const { default: CustomerOrderService } = await import('./CustomerOrderService');
+    return CustomerOrderService.createCustomerOrder(customerOrder);
   }
 }
 
