@@ -18,13 +18,14 @@ import { useToast } from "@/hooks/use-toast";
 import PatientService, { Patient } from "@/api/services/PatientService";
 import { useQuery } from "@tanstack/react-query";
 import { PatientsList } from "@/components/patients/PatientsList";
+import { PatientForm } from "@/components/patients/PatientForm";
 import PatientDetails from "@/components/patients/PatientDetails";
 
 export default function Patients() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentFilter, setCurrentFilter] = useState("all");
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [detailsMode, setDetailsMode] = useState<"view" | "edit">("view");
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { toast } = useToast();
@@ -58,16 +59,61 @@ export default function Patients() {
     }
   });
 
+  const handleCreatePatient = async (data: Omit<Patient, '@id' | 'id'>) => {
+    try {
+      await PatientService.createPatient(data);
+      
+      toast({
+        title: "Succès",
+        description: "Le patient a été ajouté avec succès.",
+        variant: "default",
+      });
+      
+      setIsFormOpen(false);
+      refetch();
+    } catch (error) {
+      console.error("Error creating patient:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de l'ajout du patient.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdatePatient = async (data: Omit<Patient, '@id' | 'id'>) => {
+    if (!selectedPatient?.id) return;
+    
+    try {
+      await PatientService.updatePatient(selectedPatient.id, data);
+      
+      toast({
+        title: "Succès",
+        description: "Le patient a été modifié avec succès.",
+        variant: "default",
+      });
+      
+      setIsFormOpen(false);
+      setSelectedPatient(null);
+      refetch();
+    } catch (error) {
+      console.error("Error updating patient:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de la modification du patient.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleViewPatient = (patient: Patient) => {
     setSelectedPatient(patient);
-    setDetailsMode("view");
     setIsDetailsOpen(true);
   };
 
   const handleEditPatient = (patient: Patient) => {
     setSelectedPatient(patient);
-    setDetailsMode("edit");
-    setIsDetailsOpen(true);
+    setIsFormOpen(true);
   };
 
   const handleDeletePatient = async (patient: Patient) => {
@@ -164,20 +210,22 @@ export default function Patients() {
     });
   };
 
-  const handleCreatePatient = () => {
+  const handleOpenForm = () => {
     setSelectedPatient(null);
-    setDetailsMode("edit");
-    setIsDetailsOpen(true);
+    setIsFormOpen(true);
   };
 
-  const handleCloseDialog = () => {
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setSelectedPatient(null);
+  };
+
+  const handleCloseDetails = () => {
     setIsDetailsOpen(false);
     setSelectedPatient(null);
   };
 
-  const handlePatientUpdate = () => {
-    refetch();
-  };
+  const handleFormSubmit = selectedPatient ? handleUpdatePatient : handleCreatePatient;
 
   return (
     <div className="space-y-6">
@@ -227,7 +275,7 @@ export default function Patients() {
               <FileDown className="mr-2 h-4 w-4" />
               Exporter
             </Button>
-            <Button onClick={handleCreatePatient}>
+            <Button onClick={handleOpenForm}>
               <Plus className="mr-2 h-4 w-4" />
               Ajouter Patient
             </Button>
@@ -251,12 +299,19 @@ export default function Patients() {
         </div>
       </Card>
 
+      <PatientForm
+        isOpen={isFormOpen}
+        onClose={handleCloseForm}
+        onSubmit={handleFormSubmit}
+        initialData={selectedPatient || undefined}
+      />
+
       <PatientDetails 
         patient={selectedPatient}
         isOpen={isDetailsOpen}
-        onClose={handleCloseDialog}
-        onUpdate={handlePatientUpdate}
-        mode={detailsMode}
+        onClose={handleCloseDetails}
+        onUpdate={refetch}
+        mode="view"
       />
     </div>
   );
