@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,53 +57,6 @@ export default function Patients() {
         return true;
     }
   });
-
-  const handleCreatePatient = async (data: Omit<Patient, '@id' | 'id'>) => {
-    try {
-      await PatientService.createPatient(data);
-      
-      toast({
-        title: "Succès",
-        description: "Le patient a été ajouté avec succès.",
-        variant: "default",
-      });
-      
-      setIsDetailsOpen(false);
-      refetch();
-    } catch (error) {
-      console.error("Error creating patient:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur s'est produite lors de l'ajout du patient.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleUpdatePatient = async (data: Omit<Patient, '@id' | 'id'>) => {
-    if (!selectedPatient?.id) return;
-    
-    try {
-      await PatientService.updatePatient(selectedPatient.id, data);
-      
-      toast({
-        title: "Succès",
-        description: "Le patient a été modifié avec succès.",
-        variant: "default",
-      });
-      
-      setIsDetailsOpen(false);
-      setSelectedPatient(null);
-      refetch();
-    } catch (error) {
-      console.error("Error updating patient:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur s'est produite lors de la modification du patient.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleViewPatient = (patient: Patient) => {
     setSelectedPatient(patient);
@@ -212,7 +164,7 @@ export default function Patients() {
     });
   };
 
-  const handleOpenDialog = () => {
+  const handleCreatePatient = () => {
     setSelectedPatient(null);
     setDetailsMode("edit");
     setIsDetailsOpen(true);
@@ -223,7 +175,7 @@ export default function Patients() {
     setSelectedPatient(null);
   };
 
-  const handlePatientUpdate = (updatedPatient: Patient) => {
+  const handlePatientUpdate = () => {
     refetch();
   };
 
@@ -275,7 +227,7 @@ export default function Patients() {
               <FileDown className="mr-2 h-4 w-4" />
               Exporter
             </Button>
-            <Button onClick={handleOpenDialog}>
+            <Button onClick={handleCreatePatient}>
               <Plus className="mr-2 h-4 w-4" />
               Ajouter Patient
             </Button>

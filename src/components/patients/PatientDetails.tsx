@@ -29,55 +29,96 @@ const PatientDetails = ({
   mode,
 }: PatientDetailsProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [patientData, setPatientData] = useState<Patient | null>(null);
+  const [patientData, setPatientData] = useState<Omit<Patient, '@id' | 'id'>>({
+    name: '',
+    email: '',
+    phone: '',
+    dob: '',
+    address: '',
+    insurance: '',
+    status: 'Actif'
+  });
   const { toast } = useToast();
 
-  // Update local state when patient prop changes - fixed with useEffect
+  // Update local state when patient prop changes
   useEffect(() => {
-    if (patient) {
-      setPatientData({ ...patient });
+    if (patient && mode === "view") {
+      setPatientData({
+        name: patient.name,
+        email: patient.email,
+        phone: patient.phone,
+        dob: patient.dob,
+        address: patient.address || '',
+        insurance: patient.insurance || '',
+        status: patient.status
+      });
+    } else if (patient && mode === "edit") {
+      setPatientData({
+        name: patient.name,
+        email: patient.email,
+        phone: patient.phone,
+        dob: patient.dob,
+        address: patient.address || '',
+        insurance: patient.insurance || '',
+        status: patient.status
+      });
+    } else if (!patient && mode === "edit") {
+      // Reset form for new patient
+      setPatientData({
+        name: '',
+        email: '',
+        phone: '',
+        dob: '',
+        address: '',
+        insurance: '',
+        status: 'Actif'
+      });
     }
-  }, [patient]);
+  }, [patient, mode]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (patientData) {
-      setPatientData({ ...patientData, [name]: value });
-    }
+    setPatientData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleStatusChange = (status: string) => {
-    if (patientData) {
-      setPatientData({ ...patientData, status });
-    }
+    setPatientData(prev => ({ ...prev, status }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!patientData || !patient?.id) return;
-
     setIsLoading(true);
     try {
-      const updatedPatient = await PatientService.updatePatient(
-        patient.id,
-        patientData
-      );
+      let result: Patient;
       
-      onUpdate(updatedPatient);
+      if (patient?.id) {
+        // Update existing patient
+        result = await PatientService.updatePatient(patient.id, patientData);
+        toast({
+          title: "Succès",
+          description: "Les informations du patient ont été mises à jour.",
+          variant: "default",
+        });
+      } else {
+        // Create new patient
+        result = await PatientService.createPatient(patientData);
+        toast({
+          title: "Succès",
+          description: "Le patient a été créé avec succès.",
+          variant: "default",
+        });
+      }
       
-      toast({
-        title: "Succès",
-        description: "Les informations du patient ont été mises à jour.",
-        variant: "default",
-      });
-      
+      onUpdate(result);
       onClose();
     } catch (error) {
-      console.error("Error updating patient:", error);
+      console.error("Error saving patient:", error);
       toast({
         title: "Erreur",
-        description: "Échec de la mise à jour des informations du patient.",
+        description: patient?.id 
+          ? "Échec de la mise à jour des informations du patient."
+          : "Échec de la création du patient.",
         variant: "destructive",
       });
     } finally {
@@ -85,33 +126,37 @@ const PatientDetails = ({
     }
   };
 
-  if (!patient || !patientData) return null;
+  const getTitle = () => {
+    if (mode === "view") return "Détails du patient";
+    return patient ? "Modifier le patient" : "Nouveau patient";
+  };
+
+  const getDescription = () => {
+    if (mode === "view") return "Consultez les informations du patient";
+    return patient ? "Modifiez les informations du patient" : "Ajoutez un nouveau patient";
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="sm:max-w-md overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>
-            {mode === "view" ? "Détails du patient" : "Modifier le patient"}
-          </SheetTitle>
-          <SheetDescription>
-            {mode === "view"
-              ? "Consultez les informations du patient"
-              : "Modifiez les informations du patient"}
-          </SheetDescription>
+          <SheetTitle>{getTitle()}</SheetTitle>
+          <SheetDescription>{getDescription()}</SheetDescription>
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="id">ID du patient</Label>
-              <Input
-                id="id"
-                name="id"
-                value={patientData.id || ""}
-                disabled
-              />
-            </div>
+            {patient?.id && (
+              <div className="grid gap-2">
+                <Label htmlFor="id">ID du patient</Label>
+                <Input
+                  id="id"
+                  name="id"
+                  value={patient.id || ""}
+                  disabled
+                />
+              </div>
+            )}
 
             <div className="grid gap-2">
               <Label htmlFor="name">Nom complet</Label>
@@ -168,7 +213,7 @@ const PatientDetails = ({
               <Input
                 id="address"
                 name="address"
-                value={patientData.address || ""}
+                value={patientData.address}
                 onChange={handleInputChange}
                 disabled={mode === "view"}
               />
@@ -179,27 +224,27 @@ const PatientDetails = ({
               <Input
                 id="insurance"
                 name="insurance"
-                value={patientData.insurance || ""}
+                value={patientData.insurance}
                 onChange={handleInputChange}
                 disabled={mode === "view"}
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="status">Statut</Label>
+              <Label>Statut</Label>
               <div className="flex gap-2">
                 <Button
                   type="button"
-                  variant={patientData.status === "Active" ? "default" : "outline"}
-                  onClick={() => handleStatusChange("Active")}
+                  variant={patientData.status === "Actif" ? "default" : "outline"}
+                  onClick={() => handleStatusChange("Actif")}
                   disabled={mode === "view"}
                 >
                   Actif
                 </Button>
                 <Button
                   type="button"
-                  variant={patientData.status === "Inactive" ? "default" : "outline"}
-                  onClick={() => handleStatusChange("Inactive")}
+                  variant={patientData.status === "Inactif" ? "default" : "outline"}
+                  onClick={() => handleStatusChange("Inactif")}
                   disabled={mode === "view"}
                 >
                   Inactif
@@ -214,7 +259,7 @@ const PatientDetails = ({
                 Annuler
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Enregistrement..." : "Enregistrer"}
+                {isLoading ? "Enregistrement..." : patient ? "Modifier" : "Créer"}
               </Button>
             </div>
           )}
