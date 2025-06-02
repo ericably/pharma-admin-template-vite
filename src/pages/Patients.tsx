@@ -19,14 +19,13 @@ import { useToast } from "@/hooks/use-toast";
 import PatientService, { Patient } from "@/api/services/PatientService";
 import { useQuery } from "@tanstack/react-query";
 import { PatientsList } from "@/components/patients/PatientsList";
-import PatientDetails from "@/components/patients/PatientDetails";
+import { PatientForm } from "@/components/patients/PatientForm";
 
 export default function Patients() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentFilter, setCurrentFilter] = useState("all");
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [detailsMode, setDetailsMode] = useState<"view" | "edit">("view");
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   
   const { toast } = useToast();
 
@@ -69,7 +68,7 @@ export default function Patients() {
         variant: "default",
       });
       
-      setIsDetailsOpen(false);
+      setIsFormOpen(false);
       refetch();
     } catch (error) {
       console.error("Error creating patient:", error);
@@ -93,7 +92,7 @@ export default function Patients() {
         variant: "default",
       });
       
-      setIsDetailsOpen(false);
+      setIsFormOpen(false);
       setSelectedPatient(null);
       refetch();
     } catch (error) {
@@ -106,16 +105,9 @@ export default function Patients() {
     }
   };
 
-  const handleViewPatient = (patient: Patient) => {
-    setSelectedPatient(patient);
-    setDetailsMode("view");
-    setIsDetailsOpen(true);
-  };
-
   const handleEditPatient = (patient: Patient) => {
     setSelectedPatient(patient);
-    setDetailsMode("edit");
-    setIsDetailsOpen(true);
+    setIsFormOpen(true);
   };
 
   const handleDeletePatient = async (patient: Patient) => {
@@ -212,20 +204,17 @@ export default function Patients() {
     });
   };
 
-  const handleOpenDialog = () => {
+  const handleOpenForm = () => {
     setSelectedPatient(null);
-    setDetailsMode("edit");
-    setIsDetailsOpen(true);
+    setIsFormOpen(true);
   };
 
-  const handleCloseDialog = () => {
-    setIsDetailsOpen(false);
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
     setSelectedPatient(null);
   };
 
-  const handlePatientUpdate = (updatedPatient: Patient) => {
-    refetch();
-  };
+  const handleFormSubmit = selectedPatient ? handleUpdatePatient : handleCreatePatient;
 
   return (
     <div className="space-y-6">
@@ -275,7 +264,7 @@ export default function Patients() {
               <FileDown className="mr-2 h-4 w-4" />
               Exporter
             </Button>
-            <Button onClick={handleOpenDialog}>
+            <Button onClick={handleOpenForm}>
               <Plus className="mr-2 h-4 w-4" />
               Ajouter Patient
             </Button>
@@ -286,7 +275,7 @@ export default function Patients() {
           patients={filteredPatients}
           onEdit={handleEditPatient}
           onDelete={handleDeletePatient}
-          onView={handleViewPatient}
+          onView={() => {}} // Simplified for now
         />
         
         <div className="mt-4 text-sm text-muted-foreground">
@@ -299,12 +288,11 @@ export default function Patients() {
         </div>
       </Card>
 
-      <PatientDetails 
-        patient={selectedPatient}
-        isOpen={isDetailsOpen}
-        onClose={handleCloseDialog}
-        onUpdate={handlePatientUpdate}
-        mode={detailsMode}
+      <PatientForm
+        isOpen={isFormOpen}
+        onClose={handleCloseForm}
+        onSubmit={handleFormSubmit}
+        initialData={selectedPatient || undefined}
       />
     </div>
   );
