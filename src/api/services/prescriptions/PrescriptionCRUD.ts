@@ -1,6 +1,6 @@
 
 import apiClient from '../../apiClient';
-import { ApiPrescription, Prescription } from '../../types/prescription';
+import { ApiPrescription, Prescription, ApiPlatformCollectionResponse } from '../../types/prescription';
 import { convertApiToUiFormat, convertUiToApiFormat } from '../../utils/prescriptionConverter';
 
 export class PrescriptionCRUD {
@@ -12,14 +12,15 @@ export class PrescriptionCRUD {
     console.log('📍 Endpoint:', this.endpoint);
     
     try {
-      const response = await apiClient.get<ApiPrescription[]>(this.endpoint);
+      const response = await apiClient.get<ApiPlatformCollectionResponse<ApiPrescription>>(this.endpoint);
       console.log('✅ API Response received:', response);
       console.log('📊 Response type:', typeof response);
-      console.log('📋 Is Array:', Array.isArray(response));
-      console.log('📏 Response length:', response?.length);
+      console.log('📋 Is Collection:', response?.['@type']);
+      console.log('📏 Total items:', response?.totalItems);
+      console.log('📏 Member length:', response?.member?.length);
       
-      if (!response) {
-        console.warn('⚠️ API returned null/undefined');
+      if (!response || !response.member) {
+        console.warn('⚠️ API returned null/undefined or no member array');
         return {
           items: [],
           totalItems: 0,
@@ -29,8 +30,8 @@ export class PrescriptionCRUD {
         };
       }
 
-      if (!Array.isArray(response)) {
-        console.warn('⚠️ API response is not an array:', response);
+      if (!Array.isArray(response.member)) {
+        console.warn('⚠️ API response member is not an array:', response.member);
         return {
           items: [],
           totalItems: 0,
@@ -41,7 +42,7 @@ export class PrescriptionCRUD {
       }
       
       console.log('🔄 Converting API data to UI format...');
-      const convertedPrescriptions = response.map((prescription, index) => {
+      const convertedPrescriptions = response.member.map((prescription, index) => {
         console.log(`Converting prescription ${index + 1}:`, prescription);
         return convertApiToUiFormat(prescription);
       });
@@ -50,9 +51,9 @@ export class PrescriptionCRUD {
       
       return {
         items: convertedPrescriptions,
-        totalItems: convertedPrescriptions.length,
+        totalItems: response.totalItems || convertedPrescriptions.length,
         itemsPerPage,
-        totalPages: Math.ceil(convertedPrescriptions.length / itemsPerPage),
+        totalPages: Math.ceil((response.totalItems || convertedPrescriptions.length) / itemsPerPage),
         currentPage: page,
       };
     } catch (error) {
