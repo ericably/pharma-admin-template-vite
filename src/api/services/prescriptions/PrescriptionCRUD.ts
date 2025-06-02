@@ -43,7 +43,6 @@ export class PrescriptionCRUD {
         currentPage: page,
       };
     } catch (error) {
-      console.error('Error fetching prescriptions:', error);
       throw error;
     }
   }
