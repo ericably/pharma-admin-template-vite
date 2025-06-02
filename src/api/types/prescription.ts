@@ -5,7 +5,7 @@ export interface ApiMedication {
   name: string;
   description: string;
   dosage: string;
-  price: string; // API returns string, not number
+  price: number; // API returns number in the real response
   expirationDate: string;
 }
 
@@ -18,7 +18,7 @@ export interface ApiPatient {
   address: string;
   insurance: string;
   prescriptions: string[];
-  status: boolean; // API returns boolean, not string
+  status: string; // API returns string "1" or "0", not boolean
 }
 
 export interface ApiPharmacist {
@@ -50,15 +50,14 @@ export interface ApiDoctor {
   licenseNumber: string;
   speciality: string;
   status: boolean;
-  pharmacy: ApiPharmacy;
-  prescriptions: string[];
+  prescriptions: any[]; // Mixed array of strings and objects in API response
 }
 
 export interface ApiPrescriptionItem {
   id: number;
   prescription: string;
   medication: ApiMedication;
-  dosage: string; // API has dosage directly, not posology
+  posology: string; // API uses posology, not dosage
   quantity: number;
   instructions: string;
 }
@@ -70,6 +69,15 @@ export interface ApiPrescription {
   items: ApiPrescriptionItem[];
   doctor: ApiDoctor;
   notes: string;
+}
+
+// API Platform collection response format
+export interface ApiPlatformCollectionResponse<T> {
+  '@context': string;
+  '@id': string;
+  '@type': string;
+  totalItems: number;
+  member: T[];
 }
 
 // UI types (adapted for existing interface compatibility)
