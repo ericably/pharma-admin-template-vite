@@ -5,7 +5,7 @@ export interface ApiMedication {
   name: string;
   description: string;
   dosage: string;
-  price: number;
+  price: string; // API returns string, not number
   expirationDate: string;
 }
 
@@ -17,8 +17,28 @@ export interface ApiPatient {
   phone: string;
   address: string;
   insurance: string;
-  status: string;
   prescriptions: string[];
+  status: boolean; // API returns boolean, not string
+}
+
+export interface ApiPharmacist {
+  id: number;
+  lastName: string;
+  firstName: string;
+  email: string;
+  phone: string;
+  licenseNumber: string;
+  status: boolean;
+  pharmacy: string;
+}
+
+export interface ApiPharmacy {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  pharmacists: ApiPharmacist[];
+  doctors: string[];
 }
 
 export interface ApiDoctor {
@@ -30,14 +50,15 @@ export interface ApiDoctor {
   licenseNumber: string;
   speciality: string;
   status: boolean;
-  prescriptions: any[];
+  pharmacy: ApiPharmacy;
+  prescriptions: string[];
 }
 
 export interface ApiPrescriptionItem {
   id: number;
   prescription: string;
   medication: ApiMedication;
-  posology: string;
+  dosage: string; // API has dosage directly, not posology
   quantity: number;
   instructions: string;
 }
