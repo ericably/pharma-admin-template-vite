@@ -2,23 +2,23 @@
 import { ApiPrescription, Prescription } from '../types/prescription';
 
 // Utility function to convert API data to UI format
-export const convertApiToUiFormat = (apiPrescription: ApiPrescription): Prescription => {
+export const convertApiToUiFormat = (apiPrescription: any): Prescription => {
   const converted = {
     id: `RX-${apiPrescription.id.toString().padStart(4, '0')}`,
-    '@id': `/prescriptions/RX-${apiPrescription.id}`,
+    '@id': apiPrescription['@id'],
     patient: `${apiPrescription.patient.firstName} ${apiPrescription.patient.lastName}`,
     patientId: apiPrescription.patient.id.toString(),
-    items: apiPrescription.items.map(item => ({
+    items: apiPrescription.items.map((item: any) => ({
       medication: `${item.medication.name} ${item.medication.dosage}`,
       medicationId: item.medication.id.toString(),
       dosage: item.posology,
       quantity: item.quantity,
-      instructions: item.instructions
+      instructions: item.instructions || ''
     })),
     doctor: `Dr. ${apiPrescription.doctor.firstName} ${apiPrescription.doctor.lastName}`,
     date: apiPrescription.issuedDate.split('T')[0],
     status: 'En attente' as const,
-    notes: apiPrescription.notes,
+    notes: apiPrescription.notes || '',
     createdAt: apiPrescription.issuedDate,
     updatedAt: apiPrescription.issuedDate
   };
