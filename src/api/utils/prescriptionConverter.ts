@@ -3,8 +3,6 @@ import { ApiPrescription, Prescription } from '../types/prescription';
 
 // Utility function to convert API data to UI format
 export const convertApiToUiFormat = (apiPrescription: ApiPrescription): Prescription => {
-  console.log('🔄 Converting API prescription:', apiPrescription);
-  
   const converted = {
     id: `RX-${apiPrescription.id.toString().padStart(4, '0')}`,
     '@id': `/prescriptions/RX-${apiPrescription.id}`,
@@ -13,7 +11,7 @@ export const convertApiToUiFormat = (apiPrescription: ApiPrescription): Prescrip
     items: apiPrescription.items.map(item => ({
       medication: `${item.medication.name} ${item.medication.dosage}`,
       medicationId: item.medication.id.toString(),
-      dosage: item.posology, // Using posology from API
+      dosage: item.posology,
       quantity: item.quantity,
       instructions: item.instructions
     })),
@@ -25,20 +23,17 @@ export const convertApiToUiFormat = (apiPrescription: ApiPrescription): Prescrip
     updatedAt: apiPrescription.issuedDate
   };
   
-  console.log('✅ Converted prescription:', converted);
   return converted;
 };
 
 // Convert UI format to API format for creation/updates
 export const convertUiToApiFormat = (prescription: Omit<Prescription, '@id' | 'id'>) => {
-  console.log('🔄 Converting UI prescription to API format:', prescription);
-  
   const apiData = {
     patient: prescription.patientId,
     doctor: prescription.doctor,
     items: prescription.items.map(item => ({
       medication: item.medicationId,
-      posology: item.dosage, // Using posology for API
+      posology: item.dosage,
       quantity: item.quantity,
       instructions: item.instructions || ''
     })),
@@ -46,6 +41,5 @@ export const convertUiToApiFormat = (prescription: Omit<Prescription, '@id' | 'i
     issuedDate: new Date().toISOString()
   };
   
-  console.log('✅ Converted to API format:', apiData);
   return apiData;
 };
