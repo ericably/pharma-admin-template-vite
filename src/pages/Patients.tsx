@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,14 +20,12 @@ import PatientService, { Patient } from "@/api/services/PatientService";
 import { useQuery } from "@tanstack/react-query";
 import { PatientsList } from "@/components/patients/PatientsList";
 import { PatientForm } from "@/components/patients/PatientForm";
-import PatientDetails from "@/components/patients/PatientDetails";
 
 export default function Patients() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentFilter, setCurrentFilter] = useState("all");
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { toast } = useToast();
 
@@ -104,11 +103,6 @@ export default function Patients() {
         variant: "destructive",
       });
     }
-  };
-
-  const handleViewPatient = (patient: Patient) => {
-    setSelectedPatient(patient);
-    setIsDetailsOpen(true);
   };
 
   const handleEditPatient = (patient: Patient) => {
@@ -220,11 +214,6 @@ export default function Patients() {
     setSelectedPatient(null);
   };
 
-  const handleCloseDetails = () => {
-    setIsDetailsOpen(false);
-    setSelectedPatient(null);
-  };
-
   const handleFormSubmit = selectedPatient ? handleUpdatePatient : handleCreatePatient;
 
   return (
@@ -286,7 +275,7 @@ export default function Patients() {
           patients={filteredPatients}
           onEdit={handleEditPatient}
           onDelete={handleDeletePatient}
-          onView={handleViewPatient}
+          onView={() => {}} // Simplified for now
         />
         
         <div className="mt-4 text-sm text-muted-foreground">
@@ -304,14 +293,6 @@ export default function Patients() {
         onClose={handleCloseForm}
         onSubmit={handleFormSubmit}
         initialData={selectedPatient || undefined}
-      />
-
-      <PatientDetails 
-        patient={selectedPatient}
-        isOpen={isDetailsOpen}
-        onClose={handleCloseDetails}
-        onUpdate={refetch}
-        mode="view"
       />
     </div>
   );
