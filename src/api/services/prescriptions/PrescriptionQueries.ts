@@ -4,7 +4,7 @@ import { ApiPrescription } from '../../types/prescription';
 import { convertApiToUiFormat } from '../../utils/prescriptionConverter';
 
 export class PrescriptionQueries {
-  private endpoint = '/api/prescriptions';
+  private endpoint = '/prescriptions';
 
   // Get prescriptions by patient
   async getPrescriptionsByPatient(patientId: string) {

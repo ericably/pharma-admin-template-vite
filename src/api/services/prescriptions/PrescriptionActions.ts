@@ -4,7 +4,7 @@ import { ApiPrescription, Prescription } from '../../types/prescription';
 import { convertApiToUiFormat } from '../../utils/prescriptionConverter';
 
 export class PrescriptionActions {
-  private endpoint = '/api/prescriptions';
+  private endpoint = '/prescriptions';
 
   // Update prescription status
   async updatePrescriptionStatus(id: string, status: Prescription['status']) {
