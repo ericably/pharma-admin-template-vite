@@ -39,7 +39,7 @@ export default function Patients() {
   
   const filteredPatients = patients.filter(patient => {
     const matchesSearch = 
-      patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      patient.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (patient.id && patient.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
       patient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       patient.phone.toLowerCase().includes(searchQuery.toLowerCase());
@@ -151,10 +151,10 @@ export default function Patients() {
       filteredPatients.forEach(patient => {
         const row = [
           patient.id?.toString() || '',
-          patient.name,
-          patient.email,
-          patient.phone,
-          patient.birthdate,
+          patient.fullName || '',
+          patient.email || '',
+          patient.phone || '',
+          patient.birthdate || '',
           patient.address || '',
           patient.insurance || '',
           patient.status

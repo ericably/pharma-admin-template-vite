@@ -1,27 +1,30 @@
 
 import apiClient from '../apiClient';
+import {Patient} from "@/api/services/PatientService.ts";
+import {Medication} from "@/api/services/MedicationService.ts";
+import {Doctor} from "@/api/services/DoctorService.ts";
 
 // Type definitions
 export interface CustomerOrderItem {
-  medication: string;
+  medication: Medication;
   medicationId: string;
   quantity: number;
   unitPrice: number;
-  dosage: string;
+  posology: string;
   instructions?: string;
 }
 
 export interface CustomerOrder {
   '@id'?: string;
   id?: string;
-  patient: string;
+  patient: Patient;
   patientId: string;
   prescriptionId?: string;
   orderDate: string;
   items: CustomerOrderItem[];
   totalAmount: number;
   status: 'En attente' | 'En préparation' | 'Prêt pour retrait' | 'Livré' | 'Annulé';
-  doctor?: string;
+  doctor?: Doctor;
   notes?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -31,72 +34,8 @@ class CustomerOrderService {
   private endpoint = '/customer-orders';
   
   // Mock data for demo
-  private mockOrders: CustomerOrder[] = [
-    {
-      id: 'CO-2023-001',
-      patient: 'Jean Dupont',
-      patientId: 'P-1001',
-      prescriptionId: 'RX-0001',
-      orderDate: '2023-05-15',
-      items: [
-        { 
-          medication: 'Amoxicilline 500mg', 
-          medicationId: 'M-001', 
-          quantity: 30, 
-          unitPrice: 0.85,
-          dosage: '1 comprimé 3x par jour',
-          instructions: 'Prendre avec de la nourriture'
-        }
-      ],
-      totalAmount: 25.50,
-      status: 'En préparation',
-      doctor: 'Dr. Howard Lee',
-      createdAt: '2023-05-15T10:30:00',
-      updatedAt: '2023-05-15T14:20:00'
-    },
-    {
-      id: 'CO-2023-002',
-      patient: 'Marie Martin',
-      patientId: 'P-1002',
-      prescriptionId: 'RX-0002',
-      orderDate: '2023-05-14',
-      items: [
-        { 
-          medication: 'Lisinopril 10mg', 
-          medicationId: 'M-002', 
-          quantity: 30, 
-          unitPrice: 0.45,
-          dosage: '1 comprimé par jour',
-          instructions: 'Prendre le matin'
-        }
-      ],
-      totalAmount: 13.50,
-      status: 'Prêt pour retrait',
-      doctor: 'Dr. Sarah Chen',
-      createdAt: '2023-05-14T09:20:00',
-      updatedAt: '2023-05-14T16:45:00'
-    },
-    {
-      id: 'CO-2023-003',
-      patient: 'Robert Brown',
-      patientId: 'P-1003',
-      orderDate: '2023-05-13',
-      items: [
-        { 
-          medication: 'Atorvastatin 20mg', 
-          medicationId: 'M-003', 
-          quantity: 30, 
-          unitPrice: 1.25,
-          dosage: '1 comprimé au coucher'
-        }
-      ],
-      totalAmount: 37.50,
-      status: 'Livré',
-      doctor: 'Dr. James Wilson',
-      createdAt: '2023-05-13T11:15:00',
-      updatedAt: '2023-05-13T18:30:00'
-    }
-  ];
+  // @ts-ignore
+  private mockOrders: CustomerOrder[] = [];
 
   async getAllCustomerOrders(page = 1, itemsPerPage = 30) {
     return Promise.resolve({

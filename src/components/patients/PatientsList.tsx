@@ -57,7 +57,7 @@ export function PatientsList({ patients, onEdit, onDelete, onView }: PatientsLis
             patients.map((patient) => (
               <TableRow key={patient.id}>
                 <TableCell className="font-medium">{patient.id}</TableCell>
-                <TableCell>{patient.name}</TableCell>
+                <TableCell>{patient.fullName}</TableCell>
                 <TableCell>{patient.email}</TableCell>
                 <TableCell>{patient.phone}</TableCell>
                 <TableCell>{patient.insurance}</TableCell>

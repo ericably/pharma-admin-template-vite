@@ -117,7 +117,7 @@ const PatientDetails = ({
               <Input
                 id="name"
                 name="name"
-                value={patientData.name}
+                value={patientData.fullName}
                 onChange={handleInputChange}
                 disabled={mode === "view"}
                 required

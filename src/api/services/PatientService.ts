@@ -5,7 +5,9 @@ import apiClient from '../apiClient';
 export interface Patient {
   '@id'?: string;
   id?: string;
-  name?: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
   phone?: string;
   birthdate?: string;
