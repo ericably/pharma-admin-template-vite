@@ -20,6 +20,7 @@ class ApiClient {
       ...options.headers,
     };
     this.defaultTimeout = options.defaultTimeout || 10000; // 10 seconds default
+    console.log('🚀 ApiClient initialized with baseUrl:', this.baseUrl);
   }
 
   // Set JWT token for authenticated requests
@@ -55,6 +56,9 @@ class ApiClient {
     params?: Record<string, any>
   ): Promise<T> {
     const url = this.buildUrl(endpoint, params);
+    console.log(`🌐 ${method} request to:`, url);
+    console.log('📤 Request headers:', this.headers);
+    if (data) console.log('📤 Request data:', data);
     
     const options: RequestInit = {
       method,
@@ -67,11 +71,16 @@ class ApiClient {
     }
 
     try {
+      console.log('⏳ Sending request...');
       const response = await fetch(url, options);
+      console.log('📥 Response status:', response.status, response.statusText);
+      console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
       
       // Handle HTTP errors
       if (!response.ok) {
+        console.error('❌ HTTP Error:', response.status, response.statusText);
         const errorData = await response.json().catch(() => null);
+        console.error('❌ Error data:', errorData);
         throw new Error(
           errorData?.['hydra:description'] || 
           errorData?.message || 
@@ -81,13 +90,18 @@ class ApiClient {
       
       // Check if response is empty
       const contentType = response.headers.get('Content-Type');
+      console.log('📋 Content-Type:', contentType);
+      
       if (contentType && contentType.includes('application/ld+json')) {
-        return await response.json() as T;
+        const jsonData = await response.json() as T;
+        console.log('✅ Parsed JSON response:', jsonData);
+        return jsonData;
       }
       
+      console.log('ℹ️ Empty response returned');
       return null as T;
     } catch (error) {
-      console.error('API request error:', error);
+      console.error('❌ API request error:', error);
       throw error;
     }
   }
