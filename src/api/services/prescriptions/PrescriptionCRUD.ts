@@ -9,7 +9,7 @@ export class PrescriptionCRUD {
   // Get all prescriptions with pagination
   async getAllPrescriptions(page = 1, itemsPerPage = 30, filters?: Record<string, any>) {
     try {
-      const response = await apiClient.get<ApiPlatformCollectionResponse<ApiPrescription>>(this.endpoint);
+      const response = await apiClient.get<any>(this.endpoint);
       
       if (!response || !response.member) {
         return {
@@ -31,7 +31,7 @@ export class PrescriptionCRUD {
         };
       }
       
-      const convertedPrescriptions = response.member.map(prescription => 
+      const convertedPrescriptions = response.member.map((prescription: any) => 
         convertApiToUiFormat(prescription)
       );
       
