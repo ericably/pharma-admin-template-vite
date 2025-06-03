@@ -56,9 +56,15 @@ class ApiClient {
   ): Promise<T> {
     const url = this.buildUrl(endpoint, params);
     
+    // Set appropriate headers based on method
+    const requestHeaders = { ...this.headers };
+    if (method === 'PATCH') {
+      requestHeaders['Content-Type'] = 'application/merge-patch+json';
+    }
+    
     const options: RequestInit = {
       method,
-      headers: this.headers,
+      headers: requestHeaders,
       signal: AbortSignal.timeout(this.defaultTimeout),
     };
 
@@ -82,7 +88,7 @@ class ApiClient {
       // Check if response is empty
       const contentType = response.headers.get('Content-Type');
       
-      if (contentType && contentType.includes('application/ld+json')) {
+      if (contentType && (contentType.includes('application/ld+json') || contentType.includes('application/json'))) {
         const jsonData = await response.json() as T;
         return jsonData;
       }
