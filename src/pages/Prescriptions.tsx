@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -68,6 +67,10 @@ export default function Prescriptions() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
+  const [editingPrescription, setEditingPrescription] = useState<Prescription | null>(null);
   const [formData, setFormData] = useState({
     patient: "",
     doctor: "",
@@ -75,7 +78,7 @@ export default function Prescriptions() {
   });
   // @ts-ignore
   const [prescriptionItems, setPrescriptionItems] = useState<PrescriptionItem[]>([
-    { medication: "", medicationId: "", dosage: "", quantity: 1, instructions: "" }
+    { id:"", medication: "", medicationId: "", dosage: "", quantity: 1, instructions: "" }
   ]);
   const [openPatientCombobox, setOpenPatientCombobox] = useState(false);
   const [openDoctorCombobox, setOpenDoctorCombobox] = useState(false);
@@ -167,7 +170,7 @@ export default function Prescriptions() {
 
     // Validate all prescription items
     const invalidItems = prescriptionItems.filter(item => 
-      !item.medicationId || !item.dosage || item.quantity <= 0
+      !item.id || !item.medicationId || !item.dosage || item.quantity <= 0
     );
 
     if (invalidItems.length > 0) {
@@ -244,6 +247,120 @@ export default function Prescriptions() {
         variant: "destructive",
       });
     }
+  };
+
+  const updatePrescriptionStatus = async (prescriptionId: string, newStatus: Prescription['status']) => {
+    try {
+      await PrescriptionService.updatePrescriptionStatus(prescriptionId, newStatus);
+      toast({
+        title: "Statut mis à jour",
+        description: `L'ordonnance a été marquée comme "${newStatus}".`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour du statut.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const viewPrescriptionDetails = (prescription: Prescription) => {
+    setSelectedPrescription(prescription);
+    setIsViewDialogOpen(true);
+  };
+
+  const editPrescription = (prescription: Prescription) => {
+    setEditingPrescription(prescription);
+    setFormData({
+      patient: prescription.patientId,
+      doctor: prescription.doctor.replace('Dr. ', ''),
+      notes: prescription.notes || ""
+    });
+    setPrescriptionItems(prescription.items);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    
+    if (!editingPrescription) return;
+
+    try {
+      console.log(prescriptionItems);
+      const updatedData = {
+        items: prescriptionItems,
+        notes: formData.notes
+      };
+
+      await PrescriptionService.updatePrescription(editingPrescription.id || '', updatedData);
+      toast({
+        title: "Ordonnance modifiée",
+        description: "L'ordonnance a été mise à jour avec succès.",
+      });
+      setIsEditDialogOpen(false);
+      setEditingPrescription(null);
+      queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la modification de l'ordonnance.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const printPrescription = (prescription: Prescription) => {
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Ordonnance ${prescription.id}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              .header { text-align: center; margin-bottom: 30px; }
+              .info { margin-bottom: 20px; }
+              .medications { margin-top: 20px; }
+              .medication { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>Ordonnance</h1>
+              <p>ID: ${prescription.id}</p>
+            </div>
+            <div class="info">
+              <p><strong>Patient:</strong> ${prescription.patient}</p>
+              <p><strong>Médecin:</strong> ${prescription.doctor}</p>
+              <p><strong>Date:</strong> ${prescription.date}</p>
+            </div>
+            <div class="medications">
+              <h3>Médicaments prescrits:</h3>
+              ${prescription.items.map(item => `
+                <div class="medication">
+                  <p><strong>${item.medication}</strong></p>
+                  <p>Posologie: ${item.dosage}</p>
+                  <p>Quantité: ${item.quantity}</p>
+                  ${item.instructions ? `<p>Instructions: ${item.instructions}</p>` : ''}
+                </div>
+              `).join('')}
+            </div>
+            ${prescription.notes ? `<div><h3>Notes:</h3><p>${prescription.notes}</p></div>` : ''}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  const notifyPatient = (prescription: Prescription) => {
+    toast({
+      title: "Notification envoyée",
+      description: `Le patient ${prescription.patient} a été notifié par email.`,
+    });
   };
 
   const getSelectedPatientName = () => {
@@ -479,12 +596,12 @@ export default function Prescriptions() {
                           <div key={index} className="text-sm">
                             <span className="font-medium">{item.medication}</span>
                             <br />
-                            <span className="text-muted-foreground">
-                              {item.dosage} - Qté: {item.quantity}
-                            </span>
+                            <span className="text-muted-foreground"> {item.dosage} - Qté: {item.quantity} </span>
+                            <br />
+                            <span className="text-muted-foreground"> Instructions: {item.instructions} </span>
                           </div>
                         ))}
-                        <br/>
+                        <br />
                         <span className="text-muted-foreground">NB: {prescription.notes}</span>
                       </div>
                     </TableCell>
@@ -500,15 +617,15 @@ export default function Prescriptions() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => viewPrescriptionDetails(prescription)}>
                             <Eye className="mr-2 h-4 w-4" />
                             Voir les détails
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => editPrescription(prescription)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Modifier
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updatePrescriptionStatus(prescription.id || '', 'Préparé')}>
                             <Check className="mr-2 h-4 w-4" />
                             Marquer comme préparé
                           </DropdownMenuItem>
@@ -516,11 +633,11 @@ export default function Prescriptions() {
                             <ShoppingCart className="mr-2 h-4 w-4" />
                             Convertir en commande
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => printPrescription(prescription)}>
                             <Printer className="mr-2 h-4 w-4" />
                             Imprimer
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => notifyPatient(prescription)}>
                             <MailOpen className="mr-2 h-4 w-4" />
                             Notifier le patient
                           </DropdownMenuItem>
@@ -533,6 +650,104 @@ export default function Prescriptions() {
             </TableBody>
           </Table>
         </div>
+
+        {/* View Prescription Details Dialog */}
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Détails de l'ordonnance {selectedPrescription?.id}</DialogTitle>
+            </DialogHeader>
+            {selectedPrescription && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="font-medium">Patient:</Label>
+                    <p>{selectedPrescription.patient}</p>
+                  </div>
+                  <div>
+                    <Label className="font-medium">Médecin:</Label>
+                    <p>{selectedPrescription.doctor}</p>
+                  </div>
+                  <div>
+                    <Label className="font-medium">Date:</Label>
+                    <p>{selectedPrescription.date}</p>
+                  </div>
+                  <div>
+                    <Label className="font-medium">Statut:</Label>
+                    <div className="mt-1">{getStatusBadge(selectedPrescription.status)}</div>
+                  </div>
+                </div>
+                <div>
+                  <Label className="font-medium">Médicaments:</Label>
+                  <div className="space-y-2 mt-2">
+                    {selectedPrescription.items.map((item, index) => (
+                      <div key={index} className="border rounded p-3">
+                        <p className="font-medium">{item.medication}</p>
+                        <p className="text-sm text-muted-foreground">Posologie: {item.dosage}</p>
+                        <p className="text-sm text-muted-foreground">Quantité: {item.quantity}</p>
+                        {item.instructions && (
+                          <p className="text-sm text-muted-foreground">Instructions: {item.instructions}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {selectedPrescription.notes && (
+                  <div>
+                    <Label className="font-medium">Notes:</Label>
+                    <p className="mt-1">{selectedPrescription.notes}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Prescription Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Modifier l'ordonnance {editingPrescription?.id}</DialogTitle>
+              <DialogDescription>
+                Modifier les médicaments et notes de l'ordonnance.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleEditSubmit}>
+              <div className="grid gap-6 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Patient (non modifiable)</Label>
+                    <Input value={editingPrescription?.patient || ''} disabled />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Médecin (non modifiable)</Label>
+                    <Input value={editingPrescription?.doctor || ''} disabled />
+                  </div>
+                </div>
+
+                <PrescriptionItemsForm
+                  items={prescriptionItems}
+                  medications={availableMedications}
+                  onItemsChange={setPrescriptionItems}
+                />
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-notes">Notes</Label>
+                  <Input
+                    id="edit-notes"
+                    name="notes"
+                    placeholder="Notes supplémentaires"
+                    value={formData.notes}
+                    onChange={(e) => handleInputChange('notes', e.target.value)}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit">Sauvegarder les modifications</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </Card>
     </div>
   );
