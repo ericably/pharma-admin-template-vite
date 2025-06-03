@@ -75,7 +75,7 @@ export default function Prescriptions() {
   });
   // @ts-ignore
   const [prescriptionItems, setPrescriptionItems] = useState<PrescriptionItem[]>([
-    { medication: "", medicationId: "", posology: "", quantity: 1, instructions: "" }
+    { medication: "", medicationId: "", dosage: "", quantity: 1, instructions: "" }
   ]);
   const [openPatientCombobox, setOpenPatientCombobox] = useState(false);
   const [openDoctorCombobox, setOpenDoctorCombobox] = useState(false);
@@ -124,7 +124,7 @@ export default function Prescriptions() {
   const activeDoctors = doctors.filter(doctor => doctor.status === true);
 
   const filteredPrescriptions = prescriptions.filter(prescription => {
-    const matchesSearch = prescription.patient.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch = prescription.patient.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       prescription.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       prescription.items.some(item => item.medication.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
       prescription.doctor.lastName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -167,7 +167,7 @@ export default function Prescriptions() {
 
     // Validate all prescription items
     const invalidItems = prescriptionItems.filter(item => 
-      !item.medicationId || !item.posology || item.quantity <= 0
+      !item.medicationId || !item.dosage || item.quantity <= 0
     );
 
     if (invalidItems.length > 0) {
@@ -448,7 +448,6 @@ export default function Prescriptions() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
                 <TableHead>Patient</TableHead>
                 <TableHead>Médicaments</TableHead>
                 <TableHead>Médecin</TableHead>
@@ -460,36 +459,37 @@ export default function Prescriptions() {
             <TableBody>
               {prescriptionsLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-4">
+                  <TableCell colSpan={6} className="text-center py-4">
                     Chargement des ordonnances...
                   </TableCell>
                 </TableRow>
               ) : filteredPrescriptions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-4">
+                  <TableCell colSpan={6} className="text-center py-4">
                     Aucune ordonnance trouvée
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredPrescriptions.map((prescription) => (
                   <TableRow key={prescription.id}>
-                    <TableCell className="font-medium">{prescription.id}</TableCell>
-                    <TableCell>{prescription.patient.lastName} {prescription.patient.firstName}</TableCell>
+                    <TableCell>{prescription.patient}</TableCell>
                     <TableCell>
                       <div className="space-y-1">
                         {prescription.items.map((item, index) => (
                           <div key={index} className="text-sm">
-                            <span className="font-medium">{item.medication.name}</span>
+                            <span className="font-medium">{item.medication}</span>
                             <br />
                             <span className="text-muted-foreground">
-                              {item.posology} - Qté: {item.quantity}
+                              {item.dosage} - Qté: {item.quantity}
                             </span>
                           </div>
                         ))}
+                        <br/>
+                        <span className="text-muted-foreground">NB: {prescription.notes}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{prescription.doctor.lastName} {prescription.doctor.firstName}</TableCell>
-                    <TableCell>{prescription.issuedDate }</TableCell>
+                    <TableCell>{prescription.doctor}</TableCell>
+                    <TableCell>{prescription.date }</TableCell>
                     <TableCell>{getStatusBadge(prescription.status)}</TableCell>
                     <TableCell>
                       <DropdownMenu>

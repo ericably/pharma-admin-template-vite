@@ -4,7 +4,7 @@ import { ApiPrescription, Prescription } from '../types/prescription';
 // Utility function to convert API data to UI format
 export const convertApiToUiFormat = (apiPrescription: any): Prescription => {
   const converted = {
-    id: `RX-${apiPrescription.id.toString().padStart(4, '0')}`,
+    id: apiPrescription.id.toString(),
     '@id': apiPrescription['@id'],
     patient: `${apiPrescription.patient.firstName} ${apiPrescription.patient.lastName}`,
     patientId: apiPrescription.patient.id.toString(),

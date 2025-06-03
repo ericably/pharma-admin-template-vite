@@ -10,6 +10,7 @@ export class PrescriptionCRUD {
   async getAllPrescriptions(page = 1, itemsPerPage = 30, filters?: Record<string, any>) {
     try {
       const response = await apiClient.get<any>(this.endpoint);
+      console.log('Response from API:', response);
       
       if (!response || !response.member) {
         return {
@@ -34,6 +35,8 @@ export class PrescriptionCRUD {
       const convertedPrescriptions = response.member.map((prescription: any) => 
         convertApiToUiFormat(prescription)
       );
+
+      console.log('Converted prescriptions:', convertedPrescriptions);
       
       return {
         items: convertedPrescriptions,
