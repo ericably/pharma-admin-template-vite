@@ -1,7 +1,7 @@
 
 import apiClient from '../../apiClient';
 import { ApiPrescription, Prescription, ApiPlatformCollectionResponse } from '../../types/prescription';
-import { convertApiToUiFormat, convertUiToApiFormat } from '../../utils/prescriptionConverter';
+import { convertApiToUiFormat, convertUiToApiFormat, convertUiToApiFormatForUpdate } from '../../utils/prescriptionConverter';
 
 export class PrescriptionCRUD {
   private endpoint = '/prescriptions';
@@ -62,9 +62,9 @@ export class PrescriptionCRUD {
 
   // Update an existing prescription
   async updatePrescription(id: string, prescription: Partial<Prescription>) {
-    console.log(`Updating prescription with ID: ${id}`, prescription);
-    const response = await apiClient.patch<ApiPrescription>(`${this.endpoint}/${id}`, prescription);
-    console.log(response);
+    const apiData = convertUiToApiFormatForUpdate(prescription);
+    console.log(`Updating prescription with ID ${id} using data:`, apiData);
+    const response = await apiClient.patch<ApiPrescription>(`${this.endpoint}/${id}`, apiData);
     return convertApiToUiFormat(response);
   }
 
