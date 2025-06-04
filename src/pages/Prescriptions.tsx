@@ -274,13 +274,9 @@ export default function Prescriptions() {
   const editPrescription = (prescription: Prescription) => {
     setEditingPrescription(prescription);
     
-    // Find the doctor ID from the doctor name
-    const doctorName = prescription.doctor.replace('Dr. ', '');
-    const selectedDoctor = activeDoctors.find(d => d.name === doctorName);
-    
     setFormData({
       patient: prescription.patientId,
-      doctor: selectedDoctor?.id?.toString() || '',
+      doctor: prescription.doctorId, // Use doctorId directly from prescription data
       notes: prescription.notes || ""
     });
     setPrescriptionItems(prescription.items);
@@ -296,17 +292,16 @@ export default function Prescriptions() {
       console.log(prescriptionItems);
       const updatedData = {
         patientId: editingPrescription.patientId,
+        doctorId: editingPrescription.doctorId, // Include doctorId in the data
         items: prescriptionItems,
         notes: formData.notes
       };
 
       console.log('Sending update data:', updatedData);
-      console.log('Doctor ID:', formData.doctor);
 
       await PrescriptionService.updatePrescription(
         editingPrescription.id || '', 
-        updatedData, 
-        formData.doctor
+        updatedData
       );
       
       toast({

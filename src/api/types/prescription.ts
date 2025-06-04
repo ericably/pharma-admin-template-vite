@@ -95,6 +95,7 @@ export interface Prescription {
   id?: string;
   patient: string;
   patientId: string;
+  doctorId: string; // Add doctorId to the UI prescription type
   items: PrescriptionItem[];
   doctor: string;
   date: string;

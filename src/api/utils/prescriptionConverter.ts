@@ -8,6 +8,7 @@ export const convertApiToUiFormat = (apiPrescription: any): Prescription => {
     '@id': apiPrescription['@id'],
     patient: `${apiPrescription.patient.firstName} ${apiPrescription.patient.lastName}`,
     patientId: apiPrescription.patient.id.toString(),
+    doctorId: apiPrescription.doctor.id.toString(), // Add doctorId here
     items: apiPrescription.items.map((item: any) => ({
       id: item.id, // Add item ID
       medication: `${item.medication.name} ${item.medication.dosage}`,
@@ -55,8 +56,10 @@ export const convertUiToApiFormatForUpdate = (prescription: Partial<Prescription
     apiData.patientId = prescription.patientId;
   }
   
-  // Add doctorId if provided
-  if (doctorId) {
+  // Use doctorId from prescription data if available, otherwise use the provided doctorId
+  if (prescription.doctorId) {
+    apiData.doctorId = prescription.doctorId;
+  } else if (doctorId) {
     apiData.doctorId = doctorId;
   }
   
