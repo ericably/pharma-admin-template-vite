@@ -45,3 +45,37 @@ export const convertUiToApiFormat = (prescription: Omit<Prescription, '@id' | 'i
   
   return apiData;
 };
+
+// Convert UI format to API format specifically for updates (PATCH requests)
+export const convertUiToApiFormatForUpdate = (prescription: Partial<Prescription>) => {
+  const apiData: any = {};
+  
+  // Add patientId if provided
+  if (prescription.patientId) {
+    apiData.patientId = prescription.patientId;
+  }
+  
+  // Add doctorId if doctor is provided (extract from doctor string or use directly)
+  if (prescription.doctor) {
+    // If it's already an ID, use it; otherwise try to extract
+    apiData.doctorId = prescription.doctor.replace('Dr. ', '');
+  }
+  
+  // Add notes if provided
+  if (prescription.notes !== undefined) {
+    apiData.notes = prescription.notes;
+  }
+  
+  // Add items if provided
+  if (prescription.items) {
+    apiData.items = prescription.items.map(item => ({
+      id: item.id?.toString() || '',
+      medicationId: item.medicationId,
+      posology: item.dosage,
+      instructions: item.instructions || '',
+      quantity: item.quantity
+    }));
+  }
+  
+  return apiData;
+};
