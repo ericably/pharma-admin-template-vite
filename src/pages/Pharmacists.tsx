@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { PharmacistsList } from "@/components/pharmacists/PharmacistsList";
 import { PharmacistForm } from "@/components/pharmacists/PharmacistForm";
-import { PharmacistService, type Pharmacist } from "@/api/services/PharmacistService";
+import PharmacistService, { type Pharmacist } from "@/api/services/PharmacistService";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Pharmacists() {
@@ -18,10 +18,12 @@ export default function Pharmacists() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: pharmacists = [], isLoading } = useQuery({
+  const { data: pharmacistsResponse, isLoading } = useQuery({
     queryKey: ['pharmacists'],
-    queryFn: PharmacistService.getAll,
+    queryFn: () => PharmacistService.getAllPharmacists(),
   });
+
+  const pharmacists = pharmacistsResponse?.items || [];
 
   const filteredPharmacists = pharmacists.filter(pharmacist =>
     pharmacist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -43,8 +45,10 @@ export default function Pharmacists() {
   };
 
   const handleDelete = async (pharmacist: Pharmacist) => {
+    if (!pharmacist.id) return;
+    
     try {
-      await PharmacistService.delete(pharmacist.id);
+      await PharmacistService.deletePharmacist(pharmacist.id);
       queryClient.invalidateQueries({ queryKey: ['pharmacists'] });
       toast({
         title: "Succès",
@@ -61,14 +65,14 @@ export default function Pharmacists() {
 
   const handleSubmit = async (data: Omit<Pharmacist, '@id' | 'id'>) => {
     try {
-      if (editingPharmacist) {
-        await PharmacistService.update(editingPharmacist.id, data);
+      if (editingPharmacist && editingPharmacist.id) {
+        await PharmacistService.updatePharmacist(editingPharmacist.id, data);
         toast({
           title: "Succès",
           description: "Pharmacien modifié avec succès",
         });
       } else {
-        await PharmacistService.create(data);
+        await PharmacistService.createPharmacist(data);
         toast({
           title: "Succès", 
           description: "Pharmacien ajouté avec succès",
