@@ -360,11 +360,6 @@ export default function Suppliers() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-
-              <Button onClick={handleOpenDialog}>
-                <Plus className="mr-2 h-4 w-4" />
-                Nouveau Fournisseur
-              </Button>
             </div>
           </div>
 
