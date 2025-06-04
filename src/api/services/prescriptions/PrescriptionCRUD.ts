@@ -61,8 +61,8 @@ export class PrescriptionCRUD {
   }
 
   // Update an existing prescription
-  async updatePrescription(id: string, prescription: Partial<Prescription>) {
-    const apiData = convertUiToApiFormatForUpdate(prescription);
+  async updatePrescription(id: string, prescription: Partial<Prescription>, doctorId?: string) {
+    const apiData = convertUiToApiFormatForUpdate(prescription, doctorId);
     console.log(`Updating prescription with ID ${id} using data:`, apiData);
     const response = await apiClient.patch<ApiPrescription>(`${this.endpoint}/${id}`, apiData);
     return convertApiToUiFormat(response);
