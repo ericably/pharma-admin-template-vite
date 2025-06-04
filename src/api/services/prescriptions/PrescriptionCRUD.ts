@@ -10,8 +10,7 @@ export class PrescriptionCRUD {
   async getAllPrescriptions(page = 1, itemsPerPage = 30, filters?: Record<string, any>) {
     try {
       const response = await apiClient.get<any>(this.endpoint);
-      console.log('Response from API:', response);
-      
+
       if (!response || !response.member) {
         return {
           items: [],
@@ -36,8 +35,6 @@ export class PrescriptionCRUD {
         convertApiToUiFormat(prescription)
       );
 
-      console.log('Converted prescriptions:', convertedPrescriptions);
-      
       return {
         items: convertedPrescriptions,
         totalItems: response.totalItems || convertedPrescriptions.length,
@@ -65,7 +62,9 @@ export class PrescriptionCRUD {
 
   // Update an existing prescription
   async updatePrescription(id: string, prescription: Partial<Prescription>) {
+    console.log(`Updating prescription with ID: ${id}`, prescription);
     const response = await apiClient.patch<ApiPrescription>(`${this.endpoint}/${id}`, prescription);
+    console.log(response);
     return convertApiToUiFormat(response);
   }
 

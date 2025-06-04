@@ -27,7 +27,7 @@ const navigation: NavigationItem[] = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Inventaire", href: "/inventory", icon: Pill },
   { name: "Patients", href: "/patients", icon: Users },
-  { name: "Prescriptions", href: "/prescriptions", icon: ClipboardList },
+  { name: "Ordonnances", href: "/prescriptions", icon: ClipboardList },
   { name: "Commandes", href: "/orders", icon: ShoppingBag },
   { name: "Pharmaciens", href: "/pharmacists", icon: Hospital },
   { name: "Docteurs", href: "/doctors", icon: UserRound },

@@ -78,7 +78,7 @@ export default function Prescriptions() {
   });
   // @ts-ignore
   const [prescriptionItems, setPrescriptionItems] = useState<PrescriptionItem[]>([
-    { id:"", medication: "", medicationId: "", dosage: "", quantity: 1, instructions: "" }
+    { medication: "", medicationId: "", dosage: "", quantity: 1, instructions: "" }
   ]);
   const [openPatientCombobox, setOpenPatientCombobox] = useState(false);
   const [openDoctorCombobox, setOpenDoctorCombobox] = useState(false);
