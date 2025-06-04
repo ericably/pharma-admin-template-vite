@@ -82,6 +82,7 @@ export interface ApiPlatformCollectionResponse<T> {
 
 // UI types (adapted for existing interface compatibility)
 export interface PrescriptionItem {
+  id?: number; // Add optional ID for items
   medication: string;
   medicationId: string;
   dosage: string;

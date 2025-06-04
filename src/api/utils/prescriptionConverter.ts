@@ -9,6 +9,7 @@ export const convertApiToUiFormat = (apiPrescription: any): Prescription => {
     patient: `${apiPrescription.patient.firstName} ${apiPrescription.patient.lastName}`,
     patientId: apiPrescription.patient.id.toString(),
     items: apiPrescription.items.map((item: any) => ({
+      id: item.id, // Add item ID
       medication: `${item.medication.name} ${item.medication.dosage}`,
       medicationId: item.medication.id.toString(),
       dosage: item.posology,
@@ -32,6 +33,7 @@ export const convertUiToApiFormat = (prescription: Omit<Prescription, '@id' | 'i
     patient: prescription.patientId,
     doctor: prescription.doctor,
     items: prescription.items.map(item => ({
+      ...(item.id && { id: item.id }), // Include ID if it exists (for updates)
       medication: item.medicationId,
       posology: item.dosage,
       quantity: item.quantity,
