@@ -272,9 +272,14 @@ export default function Prescriptions() {
 
   const editPrescription = (prescription: Prescription) => {
     setEditingPrescription(prescription);
+    
+    // Find the doctor ID from the doctor name
+    const doctorName = prescription.doctor.replace('Dr. ', '');
+    const selectedDoctor = activeDoctors.find(d => d.name === doctorName);
+    
     setFormData({
       patient: prescription.patientId,
-      doctor: prescription.doctor.replace('Dr. ', ''),
+      doctor: selectedDoctor?.id?.toString() || '',
       notes: prescription.notes || ""
     });
     setPrescriptionItems(prescription.items);
@@ -288,11 +293,20 @@ export default function Prescriptions() {
 
     try {
       const updatedData = {
+        patientId: editingPrescription.patientId,
         items: prescriptionItems,
         notes: formData.notes
       };
 
-      await PrescriptionService.updatePrescription(editingPrescription.id || '', updatedData);
+      console.log('Sending update data:', updatedData);
+      console.log('Doctor ID:', formData.doctor);
+
+      await PrescriptionService.updatePrescription(
+        editingPrescription.id || '', 
+        updatedData, 
+        formData.doctor
+      );
+      
       toast({
         title: "Ordonnance modifiée",
         description: "L'ordonnance a été mise à jour avec succès.",
@@ -301,6 +315,7 @@ export default function Prescriptions() {
       setEditingPrescription(null);
       queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
     } catch (error) {
+      console.error('Error updating prescription:', error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la modification de l'ordonnance.",

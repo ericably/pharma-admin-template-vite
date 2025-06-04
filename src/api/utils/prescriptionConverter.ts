@@ -47,7 +47,7 @@ export const convertUiToApiFormat = (prescription: Omit<Prescription, '@id' | 'i
 };
 
 // Convert UI format to API format specifically for updates (PATCH requests)
-export const convertUiToApiFormatForUpdate = (prescription: Partial<Prescription>) => {
+export const convertUiToApiFormatForUpdate = (prescription: Partial<Prescription>, doctorId?: string) => {
   const apiData: any = {};
   
   // Add patientId if provided
@@ -55,10 +55,9 @@ export const convertUiToApiFormatForUpdate = (prescription: Partial<Prescription
     apiData.patientId = prescription.patientId;
   }
   
-  // Add doctorId if doctor is provided (extract from doctor string or use directly)
-  if (prescription.doctor) {
-    // If it's already an ID, use it; otherwise try to extract
-    apiData.doctorId = prescription.doctor.replace('Dr. ', '');
+  // Add doctorId if provided
+  if (doctorId) {
+    apiData.doctorId = doctorId;
   }
   
   // Add notes if provided
@@ -77,5 +76,6 @@ export const convertUiToApiFormatForUpdate = (prescription: Partial<Prescription
     }));
   }
   
+  console.log('API Data for update:', apiData);
   return apiData;
 };

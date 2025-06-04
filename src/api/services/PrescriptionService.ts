@@ -23,7 +23,8 @@ class PrescriptionService {
   getAllPrescriptions = this.crud.getAllPrescriptions.bind(this.crud);
   getPrescriptionById = this.crud.getPrescriptionById.bind(this.crud);
   createPrescription = this.crud.createPrescription.bind(this.crud);
-  updatePrescription = this.crud.updatePrescription.bind(this.crud);
+  updatePrescription = (id: string, prescription: any, doctorId?: string) => 
+    this.crud.updatePrescription(id, prescription, doctorId);
   deletePrescription = this.crud.deletePrescription.bind(this.crud);
 
   // Query operations
