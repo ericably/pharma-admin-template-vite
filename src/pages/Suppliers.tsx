@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Plus, Download } from "lucide-react";
+import { Search, Plus, Download, Truck, Building, UserCheck, UserX } from "lucide-react";
 import { SuppliersList } from "@/components/suppliers/SuppliersList";
 import { SupplierForm } from "@/components/suppliers/SupplierForm";
 import SupplierService, { Supplier } from "@/api/services/SupplierService";
@@ -197,104 +197,195 @@ export default function Suppliers() {
     setSearchQuery("");
   };
 
+  const activeSuppliers = suppliers.filter(s => s.status).length;
+  const inactiveSuppliers = suppliers.filter(s => !s.status).length;
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Gestion des Fournisseurs</h1>
-        <p className="text-muted-foreground mt-2">
-          Gérez les fournisseurs partenaires.
-        </p>
-      </div>
-
-      <Card className="p-4">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
-            {/* Barre de recherche */}
-            <div className="relative w-full sm:max-w-xs">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Rechercher un fournisseur..."
-                className="pl-8 w-full"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 space-y-8 animate-fade-in">
+      {/* Header Section with Enhanced Gradient */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-orange-600 via-orange-700 to-red-800 p-8 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                  <Truck className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold tracking-tight">Gestion des Fournisseurs</h1>
+                  <p className="text-orange-100 text-lg mt-1">Gérez vos fournisseurs partenaires</p>
+                </div>
+              </div>
             </div>
-
-            {/* Filtres */}
-            <div className="flex items-center gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[130px]">
-                  <SelectValue placeholder="Statut" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="active">Actif</SelectItem>
-                  <SelectItem value="inactive">Inactif</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Catégorie" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes</SelectItem>
-                  {uniqueCategories.map((category) => (
-                    <SelectItem key={category} value={category.toLowerCase()}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {(statusFilter !== "all" || categoryFilter !== "all" || searchQuery) && (
-                <Button variant="outline" size="sm" onClick={clearFilters}>
-                  Effacer
-                </Button>
-              )}
+            <div className="text-right space-y-2">
+              <div className="text-orange-100 text-sm">Total Fournisseurs</div>
+              <div className="text-3xl font-bold">{suppliers.length}</div>
             </div>
           </div>
+        </div>
+        <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-orange-400/20 rounded-full blur-3xl"></div>
+      </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <Download className="mr-2 h-4 w-4" />
-                  Export
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={handleExportPDF}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Exporter en PDF
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+      {/* Stats Cards with Enhanced Design */}
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Building className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Total</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{suppliers.length}</div>
+            <p className="text-emerald-100">Fournisseurs enregistrés</p>
+          </CardContent>
+        </Card>
 
-            <Button onClick={handleOpenDialog}>
-              <Plus className="mr-2 h-4 w-4" />
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <UserCheck className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Actifs</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{activeSuppliers}</div>
+            <p className="text-blue-100">Fournisseurs actifs</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <UserX className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Inactifs</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{inactiveSuppliers}</div>
+            <p className="text-orange-100">Fournisseurs inactifs</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content */}
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-xl text-gray-800">Liste des Fournisseurs</CardTitle>
+              <CardDescription className="text-gray-600">Recherchez et gérez vos fournisseurs partenaires</CardDescription>
+            </div>
+            <Button 
+              onClick={handleOpenDialog}
+              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0"
+              size="lg"
+            >
+              <Plus className="mr-2 h-5 w-5" />
               Nouveau Fournisseur
             </Button>
           </div>
-        </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+              {/* Barre de recherche */}
+              <div className="relative w-full sm:max-w-xs">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Rechercher un fournisseur..."
+                  className="pl-8 w-full"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
 
-        {/* Résultats */}
-        <div className="mb-4">
-          <p className="text-sm text-muted-foreground">
-            {filteredSuppliers.length} fournisseur(s) trouvé(s)
-            {(statusFilter !== "all" || categoryFilter !== "all" || searchQuery) && 
-              ` (${suppliers.length} au total)`
-            }
-          </p>
-        </div>
+              {/* Filtres */}
+              <div className="flex items-center gap-2">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[130px]">
+                    <SelectValue placeholder="Statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous</SelectItem>
+                    <SelectItem value="active">Actif</SelectItem>
+                    <SelectItem value="inactive">Inactif</SelectItem>
+                  </SelectContent>
+                </Select>
 
-        <SuppliersList 
-          suppliers={filteredSuppliers}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Catégorie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes</SelectItem>
+                    {uniqueCategories.map((category) => (
+                      <SelectItem key={category} value={category.toLowerCase()}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {(statusFilter !== "all" || categoryFilter !== "all" || searchQuery) && (
+                  <Button variant="outline" size="sm" onClick={clearFilters}>
+                    Effacer
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Download className="mr-2 h-4 w-4" />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={handleExportPDF}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Exporter en PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Button onClick={handleOpenDialog}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nouveau Fournisseur
+              </Button>
+            </div>
+          </div>
+
+          {/* Résultats */}
+          <div className="mb-4">
+            <p className="text-sm text-muted-foreground">
+              {filteredSuppliers.length} fournisseur(s) trouvé(s)
+              {(statusFilter !== "all" || categoryFilter !== "all" || searchQuery) && 
+                ` (${suppliers.length} au total)`
+              }
+            </p>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <SuppliersList 
+              suppliers={filteredSuppliers}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          </div>
+        </CardContent>
       </Card>
 
       <SupplierForm 

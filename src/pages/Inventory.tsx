@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,9 +23,13 @@ import {
   Search, 
   FileDown, 
   AlertTriangle,
-  Package
+  Package,
+  Package2,
+  TrendingUp,
+  TrendingDown
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import MedicationService, { Medication } from "@/api/services/MedicationService";
@@ -235,78 +238,132 @@ export default function Inventory() {
 
   const lowStockCount = medications.filter(m => m.stock < 10).length;
   const outOfStockCount = medications.filter(m => m.stock === 0).length;
+  const activeCount = medications.filter(m => m.status === "Actif").length;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Gestion de l'Inventaire</h1>
-        <p className="text-muted-foreground mt-2">
-          Gérez votre stock de médicaments, surveillez les niveaux et gérez les fournisseurs.
-        </p>
-      </div>
-
-      {(lowStockCount > 0 || outOfStockCount > 0) && (
-        <Card className="p-4 border-orange-200 bg-orange-50">
-          <div className="flex items-center gap-2 text-orange-800">
-            <AlertTriangle className="h-5 w-5" />
-            <div>
-              <p className="font-medium">Alertes de Stock</p>
-              <p className="text-sm">
-                {outOfStockCount > 0 && `${outOfStockCount} médicament(s) en rupture de stock`}
-                {outOfStockCount > 0 && lowStockCount > 0 && " • "}
-                {lowStockCount > 0 && `${lowStockCount} médicament(s) avec stock faible`}
-              </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 space-y-8 animate-fade-in">
+      {/* Header Section with Enhanced Gradient */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-green-600 via-green-700 to-emerald-800 p-8 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                  <Package className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold tracking-tight">Gestion de l'Inventaire</h1>
+                  <p className="text-green-100 text-lg mt-1">Gérez votre stock de médicaments</p>
+                </div>
+              </div>
+            </div>
+            <div className="text-right space-y-2">
+              <div className="text-green-100 text-sm">Total Médicaments</div>
+              <div className="text-3xl font-bold">{medications.length}</div>
             </div>
           </div>
+        </div>
+        <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-green-400/20 rounded-full blur-3xl"></div>
+      </div>
+
+      {/* Stats Cards with Enhanced Design */}
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-4">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Package2 className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Total</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{medications.length}</div>
+            <p className="text-emerald-100">Médicaments</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <TrendingUp className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Actifs</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{activeCount}</div>
+            <p className="text-blue-100">En stock actif</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <AlertTriangle className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Stock Bas</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{lowStockCount}</div>
+            <p className="text-orange-100">Stock faible</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <TrendingDown className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Rupture</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{outOfStockCount}</div>
+            <p className="text-red-100">Rupture de stock</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Alert Section */}
+      {(lowStockCount > 0 || outOfStockCount > 0) && (
+        <Card className="bg-gradient-to-r from-orange-100 to-red-100 border-orange-200 shadow-lg">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-orange-800">
+              <AlertTriangle className="h-5 w-5" />
+              <div>
+                <p className="font-medium">Alertes de Stock</p>
+                <p className="text-sm">
+                  {outOfStockCount > 0 && `${outOfStockCount} médicament(s) en rupture de stock`}
+                  {outOfStockCount > 0 && lowStockCount > 0 && " • "}
+                  {lowStockCount > 0 && `${lowStockCount} médicament(s) avec stock faible`}
+                </p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
       )}
 
-      <Card className="p-4">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-          <div className="relative w-full sm:max-w-xs">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Rechercher un médicament..."
-              className="pl-8 w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex">
-                  Filtrer
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleFilterChange("all")}>
-                  Tous les Médicaments
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterChange("low-stock")}>
-                  Stock Faible
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterChange("out-of-stock")}>
-                  Rupture de Stock
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterChange("active")}>
-                  Médicaments Actifs
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterChange("inactive")}>
-                  Médicaments Inactifs
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button variant="outline" onClick={handleExportMedications}>
-              <FileDown className="mr-2 h-4 w-4" />
-              Exporter
-            </Button>
+      {/* Main Content */}
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-xl text-gray-800">Inventaire des Médicaments</CardTitle>
+              <CardDescription className="text-gray-600">
+                Gérez votre stock de médicaments, surveillez les niveaux et gérez les fournisseurs
+              </CardDescription>
+            </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
+                <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0" size="lg">
+                  <Plus className="mr-2 h-5 w-5" />
                   Ajouter Médicament
                 </Button>
               </DialogTrigger>
@@ -411,27 +468,74 @@ export default function Inventory() {
               </DialogContent>
             </Dialog>
           </div>
-        </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+            <div className="relative w-full sm:max-w-xs">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Rechercher un médicament..."
+                className="pl-8 w-full bg-white/70 border-gray-200 focus:border-green-500 focus:ring-green-500/20 shadow-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex bg-white/70 border-gray-200 hover:bg-white hover:border-green-500">
+                    Filtrer
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleFilterChange("all")}>
+                    Tous les Médicaments
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("low-stock")}>
+                    Stock Faible
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("out-of-stock")}>
+                    Rupture de Stock
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("active")}>
+                    Médicaments Actifs
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("inactive")}>
+                    Médicaments Inactifs
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button variant="outline" onClick={handleExportMedications} className="bg-white/70 border-gray-200 hover:bg-white hover:border-green-500">
+                <FileDown className="mr-2 h-4 w-4" />
+                Exporter
+              </Button>
+            </div>
+          </div>
 
-        <MedicationsList
-          medications={filteredMedications}
-          onEdit={handleEditMedication}
-          onDelete={handleDeleteMedication}
-          onView={handleViewMedication}
-        />
-        
-        <div className="mt-4 text-sm text-muted-foreground">
-          Affichage de {filteredMedications.length} {filteredMedications.length === 1 ? 'médicament' : 'médicaments'}
-          {currentFilter !== "all" && (
-            <>
-              {' '}• Filtre: {
-                currentFilter === "low-stock" ? "Stock Faible" :
-                currentFilter === "out-of-stock" ? "Rupture de Stock" :
-                currentFilter === "active" ? "Actifs" : "Inactifs"
-              }
-            </>
-          )}
-        </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <MedicationsList
+              medications={filteredMedications}
+              onEdit={handleEditMedication}
+              onDelete={handleDeleteMedication}
+              onView={handleViewMedication}
+            />
+          </div>
+          
+          <div className="mt-4 text-sm text-muted-foreground">
+            Affichage de {filteredMedications.length} {filteredMedications.length === 1 ? 'médicament' : 'médicaments'}
+            {currentFilter !== "all" && (
+              <>
+                {' '}• Filtre: {
+                  currentFilter === "low-stock" ? "Stock Faible" :
+                  currentFilter === "out-of-stock" ? "Rupture de Stock" :
+                  currentFilter === "active" ? "Actifs" : "Inactifs"
+                }
+              </>
+            )}
+          </div>
+        </CardContent>
       </Card>
     </div>
   );

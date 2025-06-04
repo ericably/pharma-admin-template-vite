@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,9 +11,14 @@ import {
   ChevronDown, 
   Plus, 
   Search, 
-  FileDown
+  FileDown,
+  Users,
+  UserCheck,
+  UserX,
+  Shield
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import PatientService, { Patient } from "@/api/services/PatientService";
 import { useQuery } from "@tanstack/react-query";
@@ -57,6 +61,10 @@ export default function Patients() {
         return true;
     }
   });
+
+  const activePatients = patients.filter(p => p.status === "Actif").length;
+  const inactivePatients = patients.filter(p => p.status === "Inactif").length;
+  const insuredPatients = patients.filter(p => p.insurance !== undefined && p.insurance !== "").length;
 
   const handleCreatePatient = async (data: Omit<Patient, '@id' | 'id'>) => {
     try {
@@ -217,75 +225,174 @@ export default function Patients() {
   const handleFormSubmit = selectedPatient ? handleUpdatePatient : handleCreatePatient;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Gestion des Patients</h1>
-        <p className="text-muted-foreground mt-2">
-          Gérez les informations des patients, leurs ordonnances et leur historique médical.
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 space-y-8 animate-fade-in">
+      {/* Header Section with Enhanced Gradient */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-teal-600 via-teal-700 to-cyan-800 p-8 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                  <Users className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold tracking-tight">Gestion des Patients</h1>
+                  <p className="text-teal-100 text-lg mt-1">Gérez les informations et l'historique médical</p>
+                </div>
+              </div>
+            </div>
+            <div className="text-right space-y-2">
+              <div className="text-teal-100 text-sm">Total Patients</div>
+              <div className="text-3xl font-bold">{patients.length}</div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-teal-400/20 rounded-full blur-3xl"></div>
       </div>
 
-      <Card className="p-4">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-          <div className="relative w-full sm:max-w-xs">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Rechercher un patient..."
-              className="pl-8 w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex">
-                  Filtrer
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleFilterChange("all")}>
-                  Tous les Patients
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterChange("active")}>
-                  Patients Actifs
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterChange("inactive")}>
-                  Patients Inactifs
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterChange("insurance")}>
-                  Par Assurance
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button variant="outline" onClick={handleExportPatients}>
-              <FileDown className="mr-2 h-4 w-4" />
-              Exporter
-            </Button>
-            <Button onClick={handleOpenForm}>
-              <Plus className="mr-2 h-4 w-4" />
+      {/* Stats Cards with Enhanced Design */}
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-4">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Users className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Total</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{patients.length}</div>
+            <p className="text-emerald-100">Patients enregistrés</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <UserCheck className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Actifs</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{activePatients}</div>
+            <p className="text-blue-100">Patients actifs</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <UserX className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Inactifs</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{inactivePatients}</div>
+            <p className="text-orange-100">Patients inactifs</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Shield className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Assurance</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{insuredPatients}</div>
+            <p className="text-purple-100">Avec assurance</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content */}
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <CardTitle className="text-xl text-gray-800">Liste des Patients</CardTitle>
+              <CardDescription className="text-gray-600">Recherchez et gérez vos patients</CardDescription>
+            </div>
+            <Button 
+              onClick={handleOpenForm}
+              className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0"
+              size="lg"
+            >
+              <Plus className="mr-2 h-5 w-5" />
               Ajouter Patient
             </Button>
           </div>
-        </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+            <div className="relative w-full sm:max-w-xs">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Input
+                type="search"
+                placeholder="Rechercher un patient..."
+                className="pl-10 bg-white/70 border-gray-200 focus:border-teal-500 focus:ring-teal-500/20 shadow-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex bg-white/70 border-gray-200 hover:bg-white hover:border-teal-500">
+                    Filtrer
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleFilterChange("all")}>
+                    Tous les Patients
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("active")}>
+                    Patients Actifs
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("inactive")}>
+                    Patients Inactifs
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("insurance")}>
+                    Par Assurance
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button variant="outline" onClick={handleExportPatients} className="bg-white/70 border-gray-200 hover:bg-white hover:border-teal-500">
+                <FileDown className="mr-2 h-4 w-4" />
+                Exporter
+              </Button>
+            </div>
+          </div>
 
-        <PatientsList
-          patients={filteredPatients}
-          onEdit={handleEditPatient}
-          onDelete={handleDeletePatient}
-          onView={() => {}} // Simplified for now
-        />
-        
-        <div className="mt-4 text-sm text-muted-foreground">
-          Affichage de {filteredPatients.length} {filteredPatients.length === 1 ? 'patient' : 'patients'}
-          {currentFilter !== "all" && (
-            <>
-              {' '}• Filtre: {currentFilter === "active" ? "Actifs" : currentFilter === "inactive" ? "Inactifs" : "Avec Assurance"}
-            </>
-          )}
-        </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <PatientsList
+              patients={filteredPatients}
+              onEdit={handleEditPatient}
+              onDelete={handleDeletePatient}
+              onView={() => {}} // Simplified for now
+            />
+          </div>
+          
+          <div className="mt-4 text-sm text-muted-foreground">
+            Affichage de {filteredPatients.length} {filteredPatients.length === 1 ? 'patient' : 'patients'}
+            {currentFilter !== "all" && (
+              <>
+                {' '}• Filtre: {currentFilter === "active" ? "Actifs" : currentFilter === "inactive" ? "Inactifs" : "Avec Assurance"}
+              </>
+            )}
+          </div>
+        </CardContent>
       </Card>
 
       <PatientForm
