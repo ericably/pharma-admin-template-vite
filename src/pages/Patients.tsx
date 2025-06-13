@@ -24,12 +24,15 @@ import PatientService, { Patient } from "@/api/services/PatientService";
 import { useQuery } from "@tanstack/react-query";
 import { PatientsList } from "@/components/patients/PatientsList";
 import { PatientForm } from "@/components/patients/PatientForm";
+import { PrescriptionCreateForm } from "@/components/prescriptions/PrescriptionCreateForm";
 
 export default function Patients() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentFilter, setCurrentFilter] = useState("all");
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedPatientForPrescription, setSelectedPatientForPrescription] = useState<Patient | null>(null);
+  const [isPrescriptionFormOpen, setIsPrescriptionFormOpen] = useState(false);
   
   const { toast } = useToast();
 
@@ -212,6 +215,19 @@ export default function Patients() {
     });
   };
 
+  const handleCreatePrescription = (patient: Patient) => {
+    setSelectedPatientForPrescription(patient);
+    setIsPrescriptionFormOpen(true);
+  };
+
+  const handlePrescriptionSuccess = () => {
+    toast({
+      title: "Succès",
+      description: "L'ordonnance a été créée et associée au patient.",
+      variant: "default",
+    });
+  };
+
   const handleOpenForm = () => {
     setSelectedPatient(null);
     setIsFormOpen(true);
@@ -381,6 +397,7 @@ export default function Patients() {
               onEdit={handleEditPatient}
               onDelete={handleDeletePatient}
               onView={() => {}} // Simplified for now
+              onCreatePrescription={handleCreatePrescription}
             />
           </div>
           
@@ -401,6 +418,18 @@ export default function Patients() {
         onSubmit={handleFormSubmit}
         initialData={selectedPatient || undefined}
       />
+
+      {selectedPatientForPrescription && (
+        <PrescriptionCreateForm
+          isOpen={isPrescriptionFormOpen}
+          onClose={() => {
+            setIsPrescriptionFormOpen(false);
+            setSelectedPatientForPrescription(null);
+          }}
+          patient={selectedPatientForPrescription}
+          onSuccess={handlePrescriptionSuccess}
+        />
+      )}
     </div>
   );
 }

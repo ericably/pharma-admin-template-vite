@@ -23,9 +23,10 @@ interface PatientsListProps {
   onEdit: (patient: Patient) => void;
   onDelete: (patient: Patient) => void;
   onView?: (patient: Patient) => void;
+  onCreatePrescription?: (patient: Patient) => void;
 }
 
-export function PatientsList({ patients, onEdit, onDelete, onView }: PatientsListProps) {
+export function PatientsList({ patients, onEdit, onDelete, onView, onCreatePrescription }: PatientsListProps) {
   const getStatusBadge = (status: string) => {
     return status === "Actif" ? 
       <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Actif</Badge> :
@@ -81,10 +82,12 @@ export function PatientsList({ patients, onEdit, onDelete, onView }: PatientsLis
                         <Edit className="mr-2 h-4 w-4" />
                         Modifier
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <FilePlus className="mr-2 h-4 w-4" />
-                        Nouvelle Ordonnance
-                      </DropdownMenuItem>
+                      {onCreatePrescription && (
+                        <DropdownMenuItem onClick={() => onCreatePrescription(patient)}>
+                          <FilePlus className="mr-2 h-4 w-4" />
+                          Nouvelle Ordonnance
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem>
                         <FileText className="mr-2 h-4 w-4" />
                         Voir Historique
