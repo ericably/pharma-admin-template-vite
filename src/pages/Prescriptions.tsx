@@ -289,15 +289,12 @@ export default function Prescriptions() {
     if (!editingPrescription) return;
 
     try {
-      console.log(prescriptionItems);
       const updatedData = {
         patientId: editingPrescription.patientId,
         doctorId: editingPrescription.doctorId, // Include doctorId in the data
         items: prescriptionItems,
         notes: formData.notes
       };
-
-      console.log('Sending update data:', updatedData);
 
       await PrescriptionService.updatePrescription(
         editingPrescription.id || '', 

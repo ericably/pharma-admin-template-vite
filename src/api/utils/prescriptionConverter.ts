@@ -79,6 +79,5 @@ export const convertUiToApiFormatForUpdate = (prescription: Partial<Prescription
     }));
   }
   
-  console.log('API Data for update:', apiData);
   return apiData;
 };
