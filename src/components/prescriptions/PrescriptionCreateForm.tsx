@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -58,6 +58,19 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
 
   const medications = medicationsData?.items || [];
 
+  // Initialiser avec un produit vide quand le formulaire s'ouvre
+  useEffect(() => {
+    if (isOpen && items.length === 0) {
+      const initialItem: OrderItem = {
+        medicationId: "",
+        medicationName: "",
+        price: 0,
+        quantity: 1
+      };
+      setItems([initialItem]);
+    }
+  }, [isOpen, items.length]);
+
   const addItem = () => {
     const newItem: OrderItem = {
       medicationId: "",
@@ -93,21 +106,12 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
 
   const onSubmit = async () => {
     try {
-      if (items.length === 0) {
-        toast({
-          title: "Erreur",
-          description: "Veuillez ajouter au moins un produit à la commande.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const validItems = items.filter(item => item.medicationId && item.quantity > 0);
       
       if (validItems.length === 0) {
         toast({
           title: "Erreur",
-          description: "Veuillez sélectionner des produits valides.",
+          description: "Veuillez sélectionner au moins un produit valide.",
           variant: "destructive",
         });
         return;
@@ -208,15 +212,17 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
               <div key={index} className="border rounded-lg p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Produit {index + 1}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeItem(index)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {items.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeItem(index)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -290,16 +296,6 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
                 </div>
               </div>
             ))}
-
-            {items.length === 0 && (
-              <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
-                <p className="text-gray-500 mb-4">Aucun produit ajouté</p>
-                <Button type="button" onClick={addItem}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Ajouter le premier produit
-                </Button>
-              </div>
-            )}
           </div>
 
           {/* Total */}
@@ -320,7 +316,7 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
             <Button 
               onClick={onSubmit} 
               className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700"
-              disabled={items.length === 0}
+              disabled={items.filter(item => item.medicationId && item.quantity > 0).length === 0}
             >
               <ShoppingCart className="mr-2 h-4 w-4" />
               Créer la Commande ({getTotalPrice().toFixed(2)}€)
