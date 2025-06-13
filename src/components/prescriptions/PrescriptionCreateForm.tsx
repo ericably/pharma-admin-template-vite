@@ -28,7 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Patient } from "@/api/services/PatientService";
 import MedicationService from "@/api/services/MedicationService";
 import PrescriptionService from "@/api/services/PrescriptionService";
-import { Plus, Trash2, Check, ChevronsUpDown, ShoppingCart } from "lucide-react";
+import { Plus, Trash2, Check, ChevronsUpDown, ShoppingCart, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PrescriptionCreateFormProps {
@@ -100,6 +100,18 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
     setOpenMedicationCombobox(null);
   };
 
+  const incrementQuantity = (index: number) => {
+    const currentQuantity = items[index].quantity;
+    updateItem(index, 'quantity', currentQuantity + 1);
+  };
+
+  const decrementQuantity = (index: number) => {
+    const currentQuantity = items[index].quantity;
+    if (currentQuantity > 1) {
+      updateItem(index, 'quantity', currentQuantity - 1);
+    }
+  };
+
   const getTotalPrice = () => {
     return items.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
@@ -162,11 +174,11 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
 
   const getStockBadge = (stock: number) => {
     if (stock === 0) {
-      return <Badge variant="destructive" className="ml-1">Rupture</Badge>;
+      return <Badge variant="destructive" className="ml-1 text-xs">Rupture</Badge>;
     } else if (stock < 10) {
-      return <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200 ml-1">Stock Faible ({stock})</Badge>;
+      return <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200 ml-1 text-xs">Stock Faible</Badge>;
     } else {
-      return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 ml-1">En Stock ({stock})</Badge>;
+      return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 ml-1 text-xs">En Stock</Badge>;
     }
   };
 
@@ -176,58 +188,36 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
+        <DialogHeader className="pb-4">
           <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5" />
-            Nouvelle Commande - {patient.name}
+            <ShoppingCart className="h-5 w-5 text-blue-600" />
+            Commande Rapide - {patient.name}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Patient Information */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-medium mb-2">Client</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium">Nom:</span> {patient.name}
+        <div className="space-y-4">
+          {/* Client Info compacte */}
+          <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="font-medium text-blue-800">{patient.name}</span>
+                <span className="text-blue-600 text-sm">{patient.email}</span>
               </div>
-              <div>
-                <span className="font-medium">Email:</span> {patient.email}
+              <div className="text-right">
+                <div className="text-2xl font-bold text-green-600">{getTotalPrice().toFixed(2)}€</div>
+                <div className="text-xs text-gray-500">Total</div>
               </div>
             </div>
           </div>
 
-          {/* Products Selection */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-base font-medium">Produits</Label>
-              <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                <Plus className="h-4 w-4 mr-2" />
-                Ajouter un produit
-              </Button>
-            </div>
-
+          {/* Produits - Interface simplifiée */}
+          <div className="space-y-3">
             {items.map((item, index) => (
-              <div key={index} className="border rounded-lg p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Produit {index + 1}</span>
-                  {items.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeItem(index)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Médicament</Label>
+              <div key={index} className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                  {/* Sélection produit */}
+                  <div className="lg:col-span-6">
                     <Popover 
                       open={openMedicationCombobox === index} 
                       onOpenChange={(open) => setOpenMedicationCombobox(open ? index : null)}
@@ -236,16 +226,22 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
                         <Button
                           variant="outline"
                           role="combobox"
-                          aria-expanded={openMedicationCombobox === index}
-                          className="w-full justify-between"
+                          className="w-full justify-between h-12 text-left"
                         >
-                          {item.medicationName || "Sélectionner un produit"}
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">
+                              {item.medicationName || "Sélectionner un produit"}
+                            </span>
+                            {item.price > 0 && (
+                              <span className="text-sm text-gray-500">{item.price}€/unité</span>
+                            )}
+                          </div>
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
+                      <PopoverContent className="w-full p-0" style={{ width: 'var(--radix-popover-trigger-width)' }}>
                         <Command>
-                          <CommandInput placeholder="Rechercher un produit..." />
+                          <CommandInput placeholder="Rechercher..." className="h-9" />
                           <CommandList>
                             <CommandEmpty>Aucun produit trouvé.</CommandEmpty>
                             <CommandGroup>
@@ -263,8 +259,8 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
                                   />
                                   <div className="flex items-center justify-between w-full">
                                     <div>
-                                      <span>{medication.name}</span>
-                                      <div className="text-xs text-gray-500">{medication.price}€</div>
+                                      <span className="font-medium">{medication.name}</span>
+                                      <div className="text-sm text-gray-500">{medication.price}€</div>
                                     </div>
                                     {getStockBadge(medication.stock)}
                                   </div>
@@ -277,49 +273,88 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
                     </Popover>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Quantité</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                    />
+                  {/* Quantité avec boutons +/- */}
+                  <div className="lg:col-span-3">
+                    <div className="flex items-center justify-center">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => decrementQuantity(index)}
+                        disabled={item.quantity <= 1}
+                        className="h-10 w-10 p-0"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                        className="mx-2 text-center h-10 w-16"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => incrementQuantity(index)}
+                        className="h-10 w-10 p-0"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Prix Total</Label>
-                    <div className="h-10 px-3 py-2 border rounded-md bg-gray-50 flex items-center font-medium">
+                  {/* Total ligne */}
+                  <div className="lg:col-span-2 text-center">
+                    <div className="text-lg font-bold text-green-600">
                       {(item.price * item.quantity).toFixed(2)}€
                     </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="lg:col-span-1 flex justify-center">
+                    {items.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeItem(index)}
+                        className="text-red-600 hover:text-red-700 h-10 w-10 p-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
+
+            {/* Bouton ajouter produit */}
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={addItem}
+              className="w-full h-12 border-dashed border-2 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Ajouter un autre produit
+            </Button>
           </div>
 
-          {/* Total */}
-          {items.length > 0 && (
-            <div className="border-t pt-4">
-              <div className="flex justify-between items-center text-lg font-semibold">
-                <span>Total de la commande:</span>
-                <span className="text-green-600">{getTotalPrice().toFixed(2)}€</span>
-              </div>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex justify-end gap-4 pt-4 border-t">
+          {/* Actions rapides */}
+          <div className="flex justify-between items-center pt-4 border-t">
             <Button type="button" variant="outline" onClick={handleClose}>
               Annuler
             </Button>
             <Button 
               onClick={onSubmit} 
-              className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700"
+              size="lg"
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8"
               disabled={items.filter(item => item.medicationId && item.quantity > 0).length === 0}
             >
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              Créer la Commande ({getTotalPrice().toFixed(2)}€)
+              <ShoppingCart className="mr-2 h-5 w-5" />
+              Valider la Commande • {getTotalPrice().toFixed(2)}€
             </Button>
           </div>
         </div>
