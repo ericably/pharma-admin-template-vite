@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -187,11 +186,11 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
 
   const getStockBadge = (stock: number) => {
     if (stock === 0) {
-      return <Badge variant="destructive" className="ml-1 text-xs">Rupture</Badge>;
+      return <Badge variant="destructive" className="text-xs">Rupture</Badge>;
     } else if (stock < 10) {
-      return <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200 ml-1 text-xs">Stock Faible</Badge>;
+      return <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200 text-xs">Faible</Badge>;
     } else {
-      return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 ml-1 text-xs">En Stock</Badge>;
+      return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 text-xs">Stock</Badge>;
     }
   };
 
@@ -228,13 +227,13 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
             </div>
           </div>
 
-          {/* Produits - Interface simplifiée */}
-          <div className="space-y-3">
+          {/* Produits - Interface très compacte */}
+          <div className="space-y-2">
             {items.map((item, index) => (
-              <div key={index} className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-                  {/* Sélection produit */}
-                  <div className="lg:col-span-6">
+              <div key={index} className="bg-white border rounded-lg p-3 shadow-sm">
+                <div className="flex items-center gap-3">
+                  {/* Sélection produit - Plus compact */}
+                  <div className="flex-1 min-w-0">
                     <Popover 
                       open={openMedicationCombobox === index} 
                       onOpenChange={(open) => setOpenMedicationCombobox(open ? index : null)}
@@ -243,17 +242,17 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
                         <Button
                           variant="outline"
                           role="combobox"
-                          className="w-full justify-between h-12 text-left"
+                          className="w-full h-10 justify-between text-left"
                         >
-                          <div className="flex flex-col items-start">
-                            <span className="font-medium">
-                              {item.medicationName || "Sélectionner un produit"}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="truncate">
+                              {item.medicationName || "Sélectionner..."}
                             </span>
                             {item.price > 0 && (
-                              <span className="text-sm text-gray-500">{item.price}€/unité</span>
+                              <span className="text-sm text-green-600 font-medium">{item.price}€</span>
                             )}
                           </div>
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-full p-0" style={{ width: 'var(--radix-popover-trigger-width)' }}>
@@ -290,76 +289,66 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
                     </Popover>
                   </div>
 
-                  {/* Quantité avec boutons +/- */}
-                  <div className="lg:col-span-3">
-                    <div className="flex items-center justify-center">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => decrementQuantity(index)}
-                        disabled={item.quantity <= 1}
-                        className="h-10 w-10 p-0"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                        className="mx-2 text-center h-10 w-16"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => incrementQuantity(index)}
-                        className="h-10 w-10 p-0"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
+                  {/* Quantité compacte */}
+                  <div className="flex items-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => decrementQuantity(index)}
+                      disabled={item.quantity <= 1}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </Button>
+                    <span className="mx-2 text-center w-8 text-sm font-medium">{item.quantity}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => incrementQuantity(index)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
                   </div>
 
                   {/* Total ligne */}
-                  <div className="lg:col-span-2 text-center">
+                  <div className="text-right min-w-[80px]">
                     <div className="text-lg font-bold text-green-600">
                       {(item.price * item.quantity).toFixed(2)}€
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="lg:col-span-1 flex justify-center">
-                    {items.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeItem(index)}
-                        className="text-red-600 hover:text-red-700 h-10 w-10 p-0"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
+                  {/* Supprimer */}
+                  {items.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeItem(index)}
+                      className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
 
-            {/* Bouton ajouter produit */}
+            {/* Bouton ajouter produit - Plus compact */}
             <Button 
               type="button" 
               variant="outline" 
               onClick={addItem}
-              className="w-full h-12 border-dashed border-2 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+              className="w-full h-10 border-dashed border-2 hover:border-blue-500 hover:bg-blue-50 transition-colors"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Ajouter un autre produit
+              Ajouter un produit
             </Button>
           </div>
 
-          {/* Actions rapides */}
+          {/* Actions */}
           <div className="flex justify-between items-center pt-4 border-t">
             <Button type="button" variant="outline" onClick={handleClose}>
               Annuler
@@ -371,7 +360,7 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
               disabled={getValidItems().length === 0}
             >
               <ShoppingCart className="mr-2 h-5 w-5" />
-              Valider la Commande • {getTotalPrice().toFixed(2)}€
+              Valider • {getTotalPrice().toFixed(2)}€
             </Button>
           </div>
         </div>
