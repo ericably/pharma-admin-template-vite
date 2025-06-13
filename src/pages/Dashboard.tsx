@@ -1,9 +1,10 @@
 
 import { StatCard } from "@/components/dashboard/StatCard";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
-import { Pill, Users, ClipboardList, ShoppingBag, AreaChart } from "lucide-react";
+import { Pill, Users, ClipboardList, ShoppingBag, AreaChart, Calendar, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 
 // Sample data
 const recentActivities = [
@@ -52,128 +53,207 @@ const recentActivities = [
 ];
 
 export default function Dashboard() {
+  const currentTime = new Date().toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
-          Welcome back to PharmaSys Admin. Here's what's happening today.
-        </p>
+    <div className="space-y-8 animate-fade-in">
+      {/* Header Section with Gradient */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 p-8 text-white shadow-xl">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight mb-2">
+                Bonjour, Dr. PharmaSys
+              </h1>
+              <p className="text-emerald-100 text-lg">
+                Vous avez <span className="font-semibold text-white">5 rendez-vous</span> aujourd'hui
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-emerald-100 text-sm">Aujourd'hui</div>
+              <div className="text-2xl font-bold">{currentTime}</div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute -top-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
+        <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-emerald-400/20 rounded-full blur-2xl"></div>
       </div>
 
+      {/* Stats Grid */}
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total "
-          value="1,234"
-          icon={Pill}
-          iconColor="text-blue-600"
-          iconBgColor="bg-blue-100"
-          trend={{ value: 12, isPositive: true }}
-        />
-        <StatCard
-          title="Active Patients"
-          value="856"
-          icon={Users}
-          iconColor="text-emerald-600"
-          iconBgColor="bg-emerald-100"
-          trend={{ value: 5, isPositive: true }}
-        />
-        <StatCard
-          title="Pending Prescriptions"
-          value="23"
-          icon={ClipboardList}
-          iconColor="text-amber-600" 
-          iconBgColor="bg-amber-100"
-          trend={{ value: 8, isPositive: false }}
-        />
-        <StatCard
-          title="Orders This Month"
-          value="42" 
-          icon={ShoppingBag}
-          iconColor="text-purple-600"
-          iconBgColor="bg-purple-100"
-          trend={{ value: 20, isPositive: true }}
-        />
+        <div className="transform hover:scale-105 transition-all duration-300">
+          <StatCard
+            title="Total Medications"
+            value="1,234"
+            icon={Pill}
+            iconColor="text-blue-600"
+            iconBgColor="bg-gradient-to-br from-blue-50 to-blue-100"
+            trend={{ value: 12, isPositive: true }}
+          />
+        </div>
+        <div className="transform hover:scale-105 transition-all duration-300">
+          <StatCard
+            title="Active Patients"
+            value="856"
+            icon={Users}
+            iconColor="text-emerald-600"
+            iconBgColor="bg-gradient-to-br from-emerald-50 to-emerald-100"
+            trend={{ value: 5, isPositive: true }}
+          />
+        </div>
+        <div className="transform hover:scale-105 transition-all duration-300">
+          <StatCard
+            title="Pending Prescriptions"
+            value="23"
+            icon={ClipboardList}
+            iconColor="text-amber-600"
+            iconBgColor="bg-gradient-to-br from-amber-50 to-amber-100"
+            trend={{ value: 8, isPositive: false }}
+          />
+        </div>
+        <div className="transform hover:scale-105 transition-all duration-300">
+          <StatCard
+            title="Orders This Month"
+            value="42"
+            icon={ShoppingBag}
+            iconColor="text-purple-600"
+            iconBgColor="bg-gradient-to-br from-purple-50 to-purple-100"
+            trend={{ value: 20, isPositive: true }}
+          />
+        </div>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="sales">Sales</TabsTrigger>
-          <TabsTrigger value="inventory">Inventory</TabsTrigger>
+      {/* Today's Schedule */}
+      <Card className="shadow-lg border-0 bg-gradient-to-r from-white to-gray-50">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-100 rounded-lg">
+              <Calendar className="h-5 w-5 text-emerald-600" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Quoi de neuf aujourd'hui?</CardTitle>
+              <CardDescription>Votre planning du jour</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <div className="text-2xl font-bold text-emerald-600">07:30 - 07:40</div>
+              <div className="text-sm text-gray-600 mt-1">Motif: Hello on se voit en ligne...</div>
+              <div className="text-xs text-emerald-500 mt-1">En ligne - KOFFI Yao</div>
+            </div>
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <div className="text-2xl font-bold text-amber-600">15:30 - 15:40</div>
+              <div className="text-sm text-gray-600 mt-1">Motif: bj lagon...</div>
+              <div className="text-xs text-amber-500 mt-1">À domicile - KOFFI Yao</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="bg-white shadow-md border-0 p-1 rounded-xl">
+          <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-emerald-500 data-[state=active]:text-white transition-all duration-300">Vue d'ensemble</TabsTrigger>
+          <TabsTrigger value="sales" className="rounded-lg data-[state=active]:bg-emerald-500 data-[state=active]:text-white transition-all duration-300">Ventes</TabsTrigger>
+          <TabsTrigger value="inventory" className="rounded-lg data-[state=active]:bg-emerald-500 data-[state=active]:text-white transition-all duration-300">Inventaire</TabsTrigger>
         </TabsList>
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 grid-cols-1 lg:grid-cols-4">
-            <RecentActivityCard activities={recentActivities} />
+
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <RecentActivityCard activities={recentActivities} />
+            </div>
             
-            <Card className="col-span-1 lg:col-span-1">
-              <CardHeader>
-                <CardTitle>Stock Alerts</CardTitle>
-                <CardDescription>Low inventory items</CardDescription>
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-red-50">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Alertes Stock</CardTitle>
+                    <CardDescription>Stocks faibles</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Amoxicillin 500mg</span>
-                      <span className="text-sm font-bold text-red-500">15 units</span>
-                    </div>
-                    <div className="bg-red-100 h-2 rounded-full">
-                      <div className="bg-red-500 h-2 w-1/5 rounded-full"></div>
-                    </div>
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">Amoxicillin 500mg</span>
+                    <span className="text-sm font-bold text-red-600 bg-red-100 px-2 py-1 rounded-full">15 units</span>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Lisinopril 10mg</span>
-                      <span className="text-sm font-bold text-amber-500">28 units</span>
-                    </div>
-                    <div className="bg-amber-100 h-2 rounded-full">
-                      <div className="bg-amber-500 h-2 w-2/5 rounded-full"></div>
-                    </div>
+                  <Progress value={20} className="h-2" />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">Lisinopril 10mg</span>
+                    <span className="text-sm font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded-full">28 units</span>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Atorvastatin 20mg</span>
-                      <span className="text-sm font-bold text-amber-500">32 units</span>
-                    </div>
-                    <div className="bg-amber-100 h-2 rounded-full">
-                      <div className="bg-amber-500 h-2 w-1/3 rounded-full"></div>
-                    </div>
+                  <Progress value={40} className="h-2" />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">Atorvastatin 20mg</span>
+                    <span className="text-sm font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded-full">32 units</span>
                   </div>
+                  <Progress value={35} className="h-2" />
                 </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
+
         <TabsContent value="sales">
-          <Card>
+          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-blue-50">
             <CardHeader>
-              <CardTitle>Sales Overview</CardTitle>
-              <CardDescription>View your pharmacy's sales data</CardDescription>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <AreaChart className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <CardTitle>Évolution des ventes</CardTitle>
+                  <CardDescription>Analyse de performance des ventes</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="pl-2">
-              <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-md">
-                <div className="flex flex-col items-center text-muted-foreground">
-                  <AreaChart className="h-10 w-10 mb-2" />
-                  <p>Sales chart will appear here</p>
+              <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-blue-200 rounded-xl bg-blue-50/50">
+                <div className="flex flex-col items-center text-blue-600">
+                  <AreaChart className="h-16 w-16 mb-4 opacity-60" />
+                  <p className="text-lg font-medium">Graphique des ventes à venir</p>
+                  <p className="text-sm text-blue-500">Données en cours de chargement...</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
+
         <TabsContent value="inventory">
-          <Card>
+          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-purple-50">
             <CardHeader>
-              <CardTitle>Inventory Status</CardTitle>
-              <CardDescription>Monitor your stock levels</CardDescription>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Pill className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <CardTitle>État de l'inventaire</CardTitle>
+                  <CardDescription>Surveillance des niveaux de stock</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-md">
-                <div className="flex flex-col items-center text-muted-foreground">
-                  <Pill className="h-10 w-10 mb-2" />
-                  <p>Inventory overview will appear here</p>
+              <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-purple-200 rounded-xl bg-purple-50/50">
+                <div className="flex flex-col items-center text-purple-600">
+                  <Pill className="h-16 w-16 mb-4 opacity-60" />
+                  <p className="text-lg font-medium">Vue d'ensemble de l'inventaire</p>
+                  <p className="text-sm text-purple-500">Données en cours de chargement...</p>
                 </div>
               </div>
             </CardContent>

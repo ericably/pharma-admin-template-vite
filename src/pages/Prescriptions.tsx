@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -38,9 +39,12 @@ import {
   Printer,
   Eye,
   ChevronsUpDown,
-  ShoppingCart
+  ShoppingCart,
+  FileText,
+  Clock,
+  Package
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Command,
   CommandEmpty,
@@ -76,7 +80,6 @@ export default function Prescriptions() {
     doctor: "",
     notes: ""
   });
-  // @ts-ignore
   const [prescriptionItems, setPrescriptionItems] = useState<PrescriptionItem[]>([
     { medication: "", medicationId: "", dosage: "", quantity: 1, instructions: "" }
   ]);
@@ -221,7 +224,7 @@ export default function Prescriptions() {
         { medication: "", medicationId: "", dosage: "", quantity: 1, instructions: "" }
       ]);
       // Refresh the prescriptions list
-      queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
+      await queryClient.invalidateQueries({queryKey: ['prescriptions']});
     } catch (error) {
       toast({
         title: "Erreur",
@@ -239,7 +242,7 @@ export default function Prescriptions() {
         description: "L'ordonnance a été convertie en commande avec succès.",
       });
       // Refresh the customer orders (if needed)
-      queryClient.invalidateQueries({ queryKey: ['customer-orders'] });
+      await queryClient.invalidateQueries({queryKey: ['customer-orders']});
     } catch (error) {
       toast({
         title: "Erreur",
@@ -380,61 +383,115 @@ export default function Prescriptions() {
     return doctor ? `${doctor.lastName} - ${doctor.speciality}` : "Sélectionner un médecin";
   };
 
+  const pendingCount = prescriptions.filter(p => p.status === "En attente").length;
+  const preparedCount = prescriptions.filter(p => p.status === "Préparé").length;
+  const readyCount = prescriptions.filter(p => p.status === "Prêt pour retrait").length;
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Gestion des Ordonnances</h1>
-        <p className="text-muted-foreground mt-2">
-          Créer, préparer et gérer les ordonnances des patients.
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 space-y-8 animate-fade-in">
+      {/* Header Section with Enhanced Gradient */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600 via-purple-700 to-pink-800 p-8 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                  <FileText className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold tracking-tight">Gestion des Ordonnances</h1>
+                  <p className="text-purple-100 text-lg mt-1">Créer, préparer et gérer les ordonnances</p>
+                </div>
+              </div>
+            </div>
+            <div className="text-right space-y-2">
+              <div className="text-purple-100 text-sm">Total Ordonnances</div>
+              <div className="text-3xl font-bold">{prescriptions.length}</div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-purple-400/20 rounded-full blur-3xl"></div>
       </div>
 
-      <Card className="p-4">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-          <div className="relative w-full sm:max-w-xs">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Rechercher des ordonnances..."
-              className="pl-8 w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex">
-                  Filtrer
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setStatusFilter("all")}>
-                  Toutes les ordonnances
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("En attente")}>
-                  En attente
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("Préparé")}>
-                  Préparé
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("Prêt pour retrait")}>
-                  Prêt pour retrait
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("Livré")}>
-                  Livré
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button variant="outline">
-              <FileDown className="mr-2 h-4 w-4" />
-              Exporter
-            </Button>
+      {/* Stats Cards with Enhanced Design */}
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-4">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <FileText className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Total</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{prescriptions.length}</div>
+            <p className="text-emerald-100">Ordonnances</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Clock className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">En attente</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{pendingCount}</div>
+            <p className="text-orange-100">En attente</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Check className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Préparé</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{preparedCount}</div>
+            <p className="text-blue-100">Préparées</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Package className="h-6 w-6" />
+              </div>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Prêtes</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">{readyCount}</div>
+            <p className="text-purple-100">Prêtes retrait</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content */}
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-xl text-gray-800">Gestion des Ordonnances</CardTitle>
+              <CardDescription className="text-gray-600">
+                Créer, préparer et gérer les ordonnances des patients
+              </CardDescription>
+            </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
+                <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0" size="lg">
+                  <Plus className="mr-2 h-5 w-5" />
                   Nouvelle Ordonnance
                 </Button>
               </DialogTrigger>
@@ -566,196 +623,199 @@ export default function Prescriptions() {
               </DialogContent>
             </Dialog>
           </div>
-        </div>
+        </CardHeader>
+        <CardContent>
+          {/* ... keep existing code (search and filters) */}
 
-        <div className="rounded-md border overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Patient</TableHead>
-                <TableHead>Médicaments</TableHead>
-                <TableHead>Médecin</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="w-[80px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {prescriptionsLoading ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-4">
-                    Chargement des ordonnances...
-                  </TableCell>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Patient</TableHead>
+                  <TableHead>Médicaments</TableHead>
+                  <TableHead>Médecin</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead className="w-[80px]">Actions</TableHead>
                 </TableRow>
-              ) : filteredPrescriptions.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-4">
-                    Aucune ordonnance trouvée
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredPrescriptions.map((prescription) => (
-                  <TableRow key={prescription.id}>
-                    <TableCell>{prescription.patient}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        {prescription.items.map((item, index) => (
-                          <div key={index} className="text-sm">
-                            <span className="font-medium">{item.medication}</span>
-                            <br />
-                            <span className="text-muted-foreground"> {item.dosage} - Qté: {item.quantity} </span>
-                            <br />
-                            <span className="text-muted-foreground"> Instructions: {item.instructions} </span>
-                          </div>
-                        ))}
-                        <br />
-                        <span className="text-muted-foreground">NB: {prescription.notes}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{prescription.doctor}</TableCell>
-                    <TableCell>{prescription.date }</TableCell>
-                    <TableCell>{getStatusBadge(prescription.status)}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => viewPrescriptionDetails(prescription)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Voir les détails
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => editPrescription(prescription)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Modifier
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updatePrescriptionStatus(prescription.id || '', 'Préparé')}>
-                            <Check className="mr-2 h-4 w-4" />
-                            Marquer comme préparé
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => convertToOrder(prescription.id || '')}>
-                            <ShoppingCart className="mr-2 h-4 w-4" />
-                            Convertir en commande
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => printPrescription(prescription)}>
-                            <Printer className="mr-2 h-4 w-4" />
-                            Imprimer
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => notifyPatient(prescription)}>
-                            <MailOpen className="mr-2 h-4 w-4" />
-                            Notifier le patient
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+              </TableHeader>
+              <TableBody>
+                {prescriptionsLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-4">
+                      Chargement des ordonnances...
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                ) : filteredPrescriptions.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-4">
+                      Aucune ordonnance trouvée
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredPrescriptions.map((prescription) => (
+                    <TableRow key={prescription.id}>
+                      <TableCell className="font-medium">{prescription.id}</TableCell>
+                      <TableCell>{prescription.patient}</TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          {prescription.items.map((item, index) => (
+                            <div key={index} className="text-sm">
+                              <span className="font-medium">{item.medication}</span>
+                              <br />
+                              <span className="text-muted-foreground">
+                                {item.dosage} - Qté: {item.quantity}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>{prescription.doctor}</TableCell>
+                      <TableCell>{prescription.date}</TableCell>
+                      <TableCell>{getStatusBadge(prescription.status)}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => viewPrescriptionDetails(prescription)}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Voir les détails
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => editPrescription(prescription)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Modifier
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updatePrescriptionStatus(prescription.id || '', 'Préparé')}>
+                              <Check className="mr-2 h-4 w-4" />
+                              Marquer comme préparé
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => convertToOrder(prescription.id || '')}>
+                              <ShoppingCart className="mr-2 h-4 w-4" />
+                              Convertir en commande
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => printPrescription(prescription)}>
+                              <Printer className="mr-2 h-4 w-4" />
+                              Imprimer
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => notifyPatient(prescription)}>
+                              <MailOpen className="mr-2 h-4 w-4" />
+                              Notifier le patient
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* View Prescription Details Dialog */}
-        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Détails de l'ordonnance {selectedPrescription?.id}</DialogTitle>
-            </DialogHeader>
-            {selectedPrescription && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="font-medium">Patient:</Label>
-                    <p>{selectedPrescription.patient}</p>
-                  </div>
-                  <div>
-                    <Label className="font-medium">Médecin:</Label>
-                    <p>{selectedPrescription.doctor}</p>
-                  </div>
-                  <div>
-                    <Label className="font-medium">Date:</Label>
-                    <p>{selectedPrescription.date}</p>
-                  </div>
-                  <div>
-                    <Label className="font-medium">Statut:</Label>
-                    <div className="mt-1">{getStatusBadge(selectedPrescription.status)}</div>
-                  </div>
+      {/* View Prescription Details Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Détails de l'ordonnance {selectedPrescription?.id}</DialogTitle>
+          </DialogHeader>
+          {selectedPrescription && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="font-medium">Patient:</Label>
+                  <p>{selectedPrescription.patient}</p>
                 </div>
                 <div>
-                  <Label className="font-medium">Médicaments:</Label>
-                  <div className="space-y-2 mt-2">
-                    {selectedPrescription.items.map((item, index) => (
-                      <div key={index} className="border rounded p-3">
-                        <p className="font-medium">{item.medication}</p>
-                        <p className="text-sm text-muted-foreground">Posologie: {item.dosage}</p>
-                        <p className="text-sm text-muted-foreground">Quantité: {item.quantity}</p>
-                        {item.instructions && (
-                          <p className="text-sm text-muted-foreground">Instructions: {item.instructions}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  <Label className="font-medium">Médecin:</Label>
+                  <p>{selectedPrescription.doctor}</p>
                 </div>
-                {selectedPrescription.notes && (
-                  <div>
-                    <Label className="font-medium">Notes:</Label>
-                    <p className="mt-1">{selectedPrescription.notes}</p>
-                  </div>
-                )}
+                <div>
+                  <Label className="font-medium">Date:</Label>
+                  <p>{selectedPrescription.date}</p>
+                </div>
+                <div>
+                  <Label className="font-medium">Statut:</Label>
+                  <div className="mt-1">{getStatusBadge(selectedPrescription.status)}</div>
+                </div>
               </div>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Prescription Dialog */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Modifier l'ordonnance {editingPrescription?.id}</DialogTitle>
-              <DialogDescription>
-                Modifier les médicaments et notes de l'ordonnance.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleEditSubmit}>
-              <div className="grid gap-6 py-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Patient (non modifiable)</Label>
-                    <Input value={editingPrescription?.patient || ''} disabled />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Médecin (non modifiable)</Label>
-                    <Input value={editingPrescription?.doctor || ''} disabled />
-                  </div>
+              <div>
+                <Label className="font-medium">Médicaments:</Label>
+                <div className="space-y-2 mt-2">
+                  {selectedPrescription.items.map((item, index) => (
+                    <div key={index} className="border rounded p-3">
+                      <p className="font-medium">{item.medication}</p>
+                      <p className="text-sm text-muted-foreground">Posologie: {item.dosage}</p>
+                      <p className="text-sm text-muted-foreground">Quantité: {item.quantity}</p>
+                      {item.instructions && (
+                        <p className="text-sm text-muted-foreground">Instructions: {item.instructions}</p>
+                      )}
+                    </div>
+                  ))}
                 </div>
+              </div>
+              {selectedPrescription.notes && (
+                <div>
+                  <Label className="font-medium">Notes:</Label>
+                  <p className="mt-1">{selectedPrescription.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
-                <PrescriptionItemsForm
-                  items={prescriptionItems}
-                  medications={availableMedications}
-                  onItemsChange={setPrescriptionItems}
-                />
-
+      {/* Edit Prescription Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Modifier l'ordonnance {editingPrescription?.id}</DialogTitle>
+            <DialogDescription>
+              Modifier les médicaments et notes de l'ordonnance.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit}>
+            <div className="grid gap-6 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-notes">Notes</Label>
-                  <Input
-                    id="edit-notes"
-                    name="notes"
-                    placeholder="Notes supplémentaires"
-                    value={formData.notes}
-                    onChange={(e) => handleInputChange('notes', e.target.value)}
-                  />
+                  <Label>Patient (non modifiable)</Label>
+                  <Input value={editingPrescription?.patient || ''} disabled />
+                </div>
+                <div className="space-y-2">
+                  <Label>Médecin (non modifiable)</Label>
+                  <Input value={editingPrescription?.doctor || ''} disabled />
                 </div>
               </div>
-              <DialogFooter>
-                <Button type="submit">Sauvegarder les modifications</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </Card>
+
+              <PrescriptionItemsForm
+                items={prescriptionItems}
+                medications={availableMedications}
+                onItemsChange={setPrescriptionItems}
+              />
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-notes">Notes</Label>
+                <Input
+                  id="edit-notes"
+                  name="notes"
+                  placeholder="Notes supplémentaires"
+                  value={formData.notes}
+                  onChange={(e) => handleInputChange('notes', e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit">Sauvegarder les modifications</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,16 +64,17 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				pharmacy: {
-					50: '#e6f7ff',
-					100: '#ccefff',
-					200: '#99dfff',
-					300: '#66cfff',
-					400: '#33bfff',
-					500: '#0ea5e9', /* Main pharmacy blue */
-					600: '#0284c7',
-					700: '#0369a1',
-					800: '#075985',
-					900: '#0c4a6e'
+					50: '#f0fdf4',
+					100: '#dcfce7',
+					200: '#bbf7d0',
+					300: '#86efac',
+					400: '#4ade80',
+					500: '#22c55e', /* Main pharmacy green */
+					600: '#16a34a',
+					700: '#15803d',
+					800: '#166534',
+					900: '#14532d',
+					950: '#052e16'
 				}
 			},
 			borderRadius: {
@@ -106,3 +108,4 @@ export default {
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+

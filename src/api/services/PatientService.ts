@@ -1,7 +1,6 @@
 
 import apiClient from '../apiClient';
 
-// Type definitions
 export interface Patient {
   '@id'?: string;
   id?: string;
@@ -80,7 +79,7 @@ class PatientService {
         insurance: 'CPAM',
         status: 'Actif'
       }
-    ].filter(patient => 
+    ].filter(patient =>
       patient.name.toLowerCase().includes(query.toLowerCase()) ||
       patient.email.toLowerCase().includes(query.toLowerCase()) ||
       patient.phone.includes(query)
@@ -88,10 +87,11 @@ class PatientService {
     
     return Promise.resolve(mockResponse);
      */
-    
+
     // When API is ready, uncomment this:
     return apiClient.get<Patient[]>(`${this.endpoint}/search?query=${query}`);
   }
 }
 
 export default new PatientService();
+
