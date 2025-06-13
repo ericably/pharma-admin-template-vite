@@ -94,10 +94,17 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
   };
 
   const selectMedication = (index: number, medication: any) => {
-    updateItem(index, 'medicationName', medication.name);
-    updateItem(index, 'medicationId', medication.id?.toString() || '');
-    updateItem(index, 'price', medication.price);
+    console.log('Sélection du médicament:', medication);
+    const updatedItems = [...items];
+    updatedItems[index] = {
+      ...updatedItems[index],
+      medicationName: medication.name,
+      medicationId: medication.id?.toString() || '',
+      price: medication.price
+    };
+    setItems(updatedItems);
     setOpenMedicationCombobox(null);
+    console.log('Items après sélection:', updatedItems);
   };
 
   const incrementQuantity = (index: number) => {
@@ -116,9 +123,15 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
     return items.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
+  const getValidItems = () => {
+    return items.filter(item => item.medicationId && item.medicationName && item.quantity > 0);
+  };
+
   const onSubmit = async () => {
     try {
-      const validItems = items.filter(item => item.medicationId && item.quantity > 0);
+      const validItems = getValidItems();
+      
+      console.log('Items valides pour soumission:', validItems);
       
       if (validItems.length === 0) {
         toast({
@@ -185,6 +198,10 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
   const availableMedications = medications.filter(medication => 
     medication.status === 'Actif' && medication.stock > 0
   );
+
+  console.log('Items actuels:', items);
+  console.log('Médicaments disponibles:', availableMedications);
+  console.log('Items valides:', getValidItems());
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -351,7 +368,7 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
               onClick={onSubmit} 
               size="lg"
               className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8"
-              disabled={items.filter(item => item.medicationId && item.quantity > 0).length === 0}
+              disabled={getValidItems().length === 0}
             >
               <ShoppingCart className="mr-2 h-5 w-5" />
               Valider la Commande • {getTotalPrice().toFixed(2)}€
