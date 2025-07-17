@@ -149,7 +149,7 @@ class ApiClient {
 
 // Create and export a singleton instance
 export const apiClient = new ApiClient({
-  baseUrl: import.meta.env.VITE_API_URL || '/api', // Default to '/api' if not set
+  baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000/api', // API Platform URL
 });
 
 export default apiClient;

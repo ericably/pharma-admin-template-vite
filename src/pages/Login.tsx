@@ -11,8 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import AuthService from "../api/services/AuthService";
 
 export default function Login() {
-  const [email, setEmail] = useState("admin@pharmacy.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -77,11 +77,10 @@ export default function Login() {
             
             <Alert variant="default" className="bg-blue-50 border-blue-200 text-blue-800">
               <Info className="h-4 w-4" />
-              <AlertTitle>Development Credentials</AlertTitle>
+              <AlertTitle>API Platform Integration</AlertTitle>
               <AlertDescription>
-                For testing, use: <br/>
-                Email: admin@pharmacy.com<br/>
-                Password: password123
+                Connecté à API Platform avec JWT.<br/>
+                Utilisez vos identifiants de l'API.
               </AlertDescription>
             </Alert>
             
