@@ -44,19 +44,18 @@ export default function Patients() {
   const patients = patientsData?.items || [];
   
   const filteredPatients = patients.filter(patient => {
-    const matchesSearch = 
+    const matchesSearch =
       patient.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (patient.id && patient.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      patient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      patient.id || patient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       patient.phone.toLowerCase().includes(searchQuery.toLowerCase());
     
     if (!matchesSearch) return false;
     
     switch (currentFilter) {
       case "active":
-        return patient.status === "Actif";
+        return patient.status === true;
       case "inactive":
-        return patient.status === "Inactif";
+        return patient.status === false;
       case "insurance":
         return patient.insurance !== undefined && patient.insurance !== "";
       case "all":
@@ -65,8 +64,8 @@ export default function Patients() {
     }
   });
 
-  const activePatients = patients.filter(p => p.status === "Actif").length;
-  const inactivePatients = patients.filter(p => p.status === "Inactif").length;
+  const activePatients = patients.filter(p => p.status === true).length;
+  const inactivePatients = patients.filter(p => p.status === false).length;
   const insuredPatients = patients.filter(p => p.insurance !== undefined && p.insurance !== "").length;
 
   const handleCreatePatient = async (data: Omit<Patient, '@id' | 'id'>) => {
@@ -134,7 +133,7 @@ export default function Patients() {
           variant: "default",
         });
         
-        refetch();
+        await refetch();
       } catch (error) {
         console.error("Error deleting patient:", error);
         toast({
@@ -154,14 +153,15 @@ export default function Patients() {
       filteredPatients.forEach(patient => {
         const row = [
           patient.id?.toString() || '',
-          patient.fullName || '',
+          patient?.lastName || '',
           patient.email || '',
           patient.phone || '',
-          patient.birthdate || '',
+          patient.dob || '',
           patient.address || '',
           patient.insurance || '',
           patient.status
         ];
+        // @ts-ignore
         csvRows.push(row);
       });
       
@@ -402,7 +402,7 @@ export default function Patients() {
           </div>
           
           <div className="mt-4 text-sm text-muted-foreground">
-            Affichage de {filteredPatients.length} {filteredPatients.length === 1 ? 'patient' : 'patients'}
+            Affichage de {filteredPatients.length} {filteredPatients.length === 1 ? 'patient sur ' : 'patients sur'} {patients.length} total
             {currentFilter !== "all" && (
               <>
                 {' '}• Filtre: {currentFilter === "active" ? "Actifs" : currentFilter === "inactive" ? "Inactifs" : "Avec Assurance"}

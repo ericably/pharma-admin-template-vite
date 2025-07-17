@@ -8,16 +8,12 @@ export class PrescriptionActions {
 
   // Update prescription status
   async updatePrescriptionStatus(id: string, status: Prescription['status']) {
-    console.log('Mise à jour du statut d\'ordonnance:', id, status);
-    
     const response = await apiClient.patch<ApiPrescription>(`${this.endpoint}/${id}`, { status });
     return convertApiToUiFormat(response);
   }
 
   // Convert prescription to customer order
   async convertToCustomerOrder(prescriptionId: string) {
-    console.log('Conversion d\'ordonnance en commande:', prescriptionId);
-    
     // Get the prescription details
     const response = await apiClient.get<ApiPrescription>(`${this.endpoint}/${prescriptionId}`);
     const prescription = convertApiToUiFormat(response);

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Edit, Trash2, MoreVertical, Eye, FilePlus, FileText } from "lucide-react";
 import type { Patient } from "@/api/services/PatientService";
+import {boolean} from "zod";
 
 interface PatientsListProps {
   patients: Patient[];
@@ -27,10 +28,10 @@ interface PatientsListProps {
 }
 
 export function PatientsList({ patients, onEdit, onDelete, onView, onCreatePrescription }: PatientsListProps) {
-  const getStatusBadge = (status: string) => {
-    return status === "Actif" ? 
+  const getStatusBadge = (status: boolean) => {
+    return !!status === true ?
       <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Actif</Badge> :
-      <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">Inactif</Badge>;
+      <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">Inactif</Badge>;
   };
 
   return (

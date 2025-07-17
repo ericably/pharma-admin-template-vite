@@ -186,13 +186,13 @@ export default function CustomerOrdersTab() {
 
     try {
       const newOrder: Omit<CustomerOrder, "@id" | "id"> = {
-        patient: selectedPatient.name,
+        patient: selectedPatient,
         patientId: formData.patientId,
         orderDate: formData.orderDate,
         items: orderItems,
         totalAmount: calculateTotal(orderItems),
         status: formData.status,
-        doctor: formData.doctor,
+        //doctor: formData.doctor,
         notes: formData.notes
       };
 
@@ -247,9 +247,9 @@ export default function CustomerOrdersTab() {
 
   const filteredOrders = orders.filter(order => 
     order.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    order.patient.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     order.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.items.some(item => item.medication.toLowerCase().includes(searchQuery.toLowerCase()))
+    order.items.some(item => item.medication.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   
   const getStatusBadge = (status: string) => {
@@ -388,7 +388,7 @@ export default function CustomerOrdersTab() {
                       <tbody>
                         {orderItems.map((item, index) => (
                           <tr key={index} className="border-t">
-                            <td className="py-2">{item.medication}</td>
+                            <td className="py-2">{item.medication.name}</td>
                             <td className="py-2 text-sm text-muted-foreground">{item.dosage}</td>
                             <td className="text-center">{item.quantity}</td>
                             <td className="text-right">€{item.unitPrice.toFixed(2)}</td>
@@ -516,17 +516,17 @@ export default function CustomerOrdersTab() {
                 filteredOrders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">{order.id}</TableCell>
-                    <TableCell>{order.patient}</TableCell>
+                    <TableCell>{order.patient.fullName}</TableCell>
                     <TableCell>
                       <div className="text-sm">
                         {order.items.map((item, index) => (
                           <div key={index} className="truncate">
-                            {item.medication} ({item.quantity})
+                            {item.medication.name} ({item.quantity})
                           </div>
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell>{order.doctor || "-"}</TableCell>
+                    <TableCell>{order.doctor.lastName || "-"}</TableCell>
                     <TableCell>{order.orderDate}</TableCell>
                     <TableCell className="text-right">€{order.totalAmount.toFixed(2)}</TableCell>
                     <TableCell>{getStatusBadge(order.status)}</TableCell>

@@ -29,13 +29,14 @@ const PatientDetails = ({
 }: PatientDetailsProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [patientData, setPatientData] = useState<Omit<Patient, '@id' | 'id'>>({
-    name: '',
+    lastName: '',
+    firstName: '',
     email: '',
     phone: '',
     dob: '',
     address: '',
     insurance: '',
-    status: 'Actif'
+    status: true
   });
   const { toast } = useToast();
 
@@ -43,7 +44,8 @@ const PatientDetails = ({
   useEffect(() => {
     if (patient && mode === "view") {
       setPatientData({
-        name: patient.name,
+        lastName: patient.lastName,
+        firstName: patient.firstName,
         email: patient.email,
         phone: patient.phone,
         dob: patient.dob,
@@ -53,7 +55,8 @@ const PatientDetails = ({
       });
     } else if (patient && mode === "edit") {
       setPatientData({
-        name: patient.name,
+        lastName: patient.lastName,
+        firstName: patient.firstName,
         email: patient.email,
         phone: patient.phone,
         dob: patient.dob,
@@ -64,13 +67,14 @@ const PatientDetails = ({
     } else if (!patient && mode === "edit") {
       // Reset form for new patient
       setPatientData({
-        name: '',
+        lastName: '',
+        firstName: '',
         email: '',
         phone: '',
         dob: '',
         address: '',
         insurance: '',
-        status: 'Actif'
+        status: true
       });
     }
   }, [patient, mode]);
@@ -80,7 +84,7 @@ const PatientDetails = ({
     setPatientData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleStatusChange = (status: string) => {
+  const handleStatusChange = (status: boolean) => {
     setPatientData(prev => ({ ...prev, status }));
   };
 
@@ -195,12 +199,12 @@ const PatientDetails = ({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="birthdate">Date de naissance</Label>
+              <Label htmlFor="dob">Date de naissance</Label>
               <Input
-                id="birthdate"
-                name="birthdate"
+                id="dob"
+                name="dob"
                 type="date"
-                value={patientData.birthdate}
+                value={patientData.dob}
                 onChange={handleInputChange}
                 disabled={mode === "view"}
                 required
@@ -234,16 +238,16 @@ const PatientDetails = ({
               <div className="flex gap-2">
                 <Button
                   type="button"
-                  variant={patientData.status === "Actif" ? "default" : "outline"}
-                  onClick={() => handleStatusChange("Actif")}
+                  variant={patientData.status === true ? "default" : "outline"}
+                  onClick={() => handleStatusChange(true)}
                   disabled={mode === "view"}
                 >
                   Actif
                 </Button>
                 <Button
                   type="button"
-                  variant={patientData.status === "Inactif" ? "default" : "outline"}
-                  onClick={() => handleStatusChange("Inactif")}
+                  variant={patientData.status === false ? "default" : "outline"}
+                  onClick={() => handleStatusChange(false)}
                   disabled={mode === "view"}
                 >
                   Inactif

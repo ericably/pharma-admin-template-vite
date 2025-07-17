@@ -26,7 +26,7 @@ export default function Pharmacists() {
   const pharmacists = pharmacistsResponse?.items || [];
 
   const filteredPharmacists = pharmacists.filter(pharmacist =>
-    pharmacist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    pharmacist.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     pharmacist.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     pharmacist.licenseNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );

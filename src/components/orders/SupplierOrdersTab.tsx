@@ -211,8 +211,6 @@ export default function SupplierOrdersTab() {
         totalAmount: calculateTotal(orderItems),
       };
 
-      console.log("Order created:", newOrder);
-      
       const orderWithId = {
         ...newOrder,
         id: `PO-${new Date().getFullYear()}-${(orders.length + 1).toString().padStart(3, '0')}`,

@@ -9,10 +9,10 @@ export interface Patient {
   lastName?: string;
   email?: string;
   phone?: string;
-  birthdate?: string;
+  dob?: string;
   address?: string;
   insurance?: string;
-  status?: string;
+  status?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

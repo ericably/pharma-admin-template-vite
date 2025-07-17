@@ -1,20 +1,20 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { 
-  Home, 
-  Pill, 
-  Users, 
-  ClipboardList, 
-  ShoppingBag, 
-  BarChart4, 
-  Settings, 
+import {
+  Home,
+  Pill,
+  Users,
+  ClipboardList,
+  ShoppingBag,
+  BarChart4,
+  Settings,
   LogOut,
   Menu,
   UserRound,  // Added for Doctors
   Hospital,   // Added for Pharmacists
   Truck,      // Added for Suppliers
-  Cross       // Pharmacy symbol
+  Cross, Receipt       // Pharmacy symbol
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React, { useState } from "react";
@@ -28,9 +28,10 @@ interface NavigationItem {
 const navigation: NavigationItem[] = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Inventaire", href: "/inventory", icon: Pill },
-  { name: "Patients", href: "/patients", icon: Users },
-  { name: "Ordonnances", href: "/prescriptions", icon: ClipboardList },
+  { name: "Clients", href: "/patients", icon: Users },
+  { name: "Facturation", href: "/prescriptions", icon: ClipboardList },
   { name: "Commandes", href: "/orders", icon: ShoppingBag },
+  { name: "Facturation Test", href: "/billing", icon: Receipt },
   { name: "Pharmaciens", href: "/pharmacists", icon: Hospital },
   { name: "Docteurs", href: "/doctors", icon: UserRound },
   { name: "Fournisseurs", href: "/suppliers", icon: Truck },

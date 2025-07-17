@@ -17,6 +17,7 @@ import Suppliers from "./pages/Suppliers";
 import Pharmacists from "./pages/Pharmacists";
 import Doctors from "./pages/Doctors";
 import AuthService from "./api/services/AuthService";
+import Billing from "./pages/Billing";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +77,7 @@ const App = () => {
               <Route path="patients" element={<Patients />} />
               <Route path="prescriptions" element={<Prescriptions />} />
               <Route path="orders" element={<Orders />} />
+              <Route path="billing" element={<Billing />} />
               <Route path="suppliers" element={<Suppliers />} />
               <Route path="pharmacists" element={<Pharmacists />} />
               <Route path="doctors" element={<Doctors />} />

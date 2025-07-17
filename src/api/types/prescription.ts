@@ -99,8 +99,10 @@ export interface Prescription {
   items: PrescriptionItem[];
   doctor: string;
   date: string;
-  status: 'En attente' | 'Préparé' | 'Prêt pour retrait' | 'Livré';
+  status: boolean;
   notes?: string;
+  category?: string; // Optional category for the order
+  totalPrice?: string; // Optional total price for the order
   createdAt?: string;
   updatedAt?: string;
 }

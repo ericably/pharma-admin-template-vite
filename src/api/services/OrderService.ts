@@ -108,8 +108,7 @@ class OrderService {
   // Create a new order
   async createOrder(order: Omit<Order, '@id' | 'id'>) {
     // For testing purposes
-    console.log('Création de commande:', order);
-    
+
     // Mock successful response
     const mockResponse = {
       ...order,
@@ -128,8 +127,7 @@ class OrderService {
   // Update an existing order
   async updateOrder(id: string, order: Partial<Order>) {
     // For testing purposes
-    console.log('Mise à jour de commande:', id, order);
-    
+
     // Mock successful response
     const mockResponse = {
       ...order,
@@ -147,8 +145,7 @@ class OrderService {
   // Delete an order
   async deleteOrder(id: string) {
     // For testing purposes
-    console.log('Suppression de commande:', id);
-    
+
     // Mock successful response
     return Promise.resolve({});
     
@@ -213,9 +210,7 @@ class OrderService {
   
   // Update order status
   async updateOrderStatus(id: string, status: Order['status']) {
-    // For testing purposes
-    console.log('Mise à jour du statut de commande:', id, status);
-    
+
     // Mock successful response
     const mockResponse = {
       id,

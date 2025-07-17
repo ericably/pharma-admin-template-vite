@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -119,7 +119,7 @@ export default function Prescriptions() {
   const doctors = doctorsData?.items || [];
 
   // Filter only active patients
-  const activePatients = patients.filter(patient => patient.status === 'Actif');
+  const activePatients = patients.filter(patient => patient.status === true);
   
   // Filter only active medications with stock > 0
   const availableMedications = medications.filter(medication => 
@@ -140,18 +140,15 @@ export default function Prescriptions() {
     return matchesSearch && matchesStatus;
   });
   
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: boolean) => {
+    console.log(status)
     switch(status) {
-      case "En attente":
+      case false:
         return <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">En attente</Badge>;
-      case "Préparé":
-        return <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">Préparé</Badge>;
-      case "Prêt pour retrait":
-        return <Badge variant="outline" className="bg-purple-50 text-purple-600 border-purple-200">Prêt pour retrait</Badge>;
-      case "Livré":
-        return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Livré</Badge>;
+      case true:
+        return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Facture payée</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">En attente</Badge>;
     }
   };
 
@@ -203,9 +200,12 @@ export default function Prescriptions() {
       patientId: selectedPatient.id || '',
       items: prescriptionItems,
       doctor: selectedDoctor.lastName,
+      doctorId: selectedDoctor.id?.toString() || '',
       notes: formData.notes,
       date: new Date().toISOString().split('T')[0],
-      status: "En attente" as const
+      status: "En attente" as const,
+      totalPrice: 0 ,
+      category: "Ordonnance",
     };
 
     try {
@@ -400,13 +400,13 @@ export default function Prescriptions() {
                   <FileText className="h-8 w-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight">Gestion des Ordonnances</h1>
-                  <p className="text-purple-100 text-lg mt-1">Créer, préparer et gérer les ordonnances</p>
+                  <h1 className="text-4xl font-bold tracking-tight">Gestion des commandes</h1>
+                  <p className="text-purple-100 text-lg mt-1">Créer, préparer et gérer les commandes</p>
                 </div>
               </div>
             </div>
             <div className="text-right space-y-2">
-              <div className="text-purple-100 text-sm">Total Ordonnances</div>
+              <div className="text-purple-100 text-sm">Total commandes</div>
               <div className="text-3xl font-bold">{prescriptions.length}</div>
             </div>
           </div>
@@ -428,7 +428,7 @@ export default function Prescriptions() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold mb-2">{prescriptions.length}</div>
-            <p className="text-emerald-100">Ordonnances</p>
+            <p className="text-emerald-100">Factures</p>
           </CardContent>
         </Card>
 
@@ -483,16 +483,16 @@ export default function Prescriptions() {
         <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <CardTitle className="text-xl text-gray-800">Gestion des Ordonnances</CardTitle>
+              <CardTitle className="text-xl text-gray-800">Gestion de la facturation</CardTitle>
               <CardDescription className="text-gray-600">
-                Créer, préparer et gérer les ordonnances des patients
+                Créer, préparer et gérer les commandes des patients
               </CardDescription>
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0" size="lg">
                   <Plus className="mr-2 h-5 w-5" />
-                  Nouvelle Ordonnance
+                  Nouvelle commande client
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
@@ -636,6 +636,7 @@ export default function Prescriptions() {
                   <TableHead>Médicaments</TableHead>
                   <TableHead>Médecin</TableHead>
                   <TableHead>Date</TableHead>
+                  <TableHead>Prix Total</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="w-[80px]">Actions</TableHead>
                 </TableRow>
@@ -643,13 +644,13 @@ export default function Prescriptions() {
               <TableBody>
                 {prescriptionsLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-4">
+                    <TableCell colSpan={8} className="text-center py-4">
                       Chargement des ordonnances...
                     </TableCell>
                   </TableRow>
                 ) : filteredPrescriptions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-4">
+                    <TableCell colSpan={8} className="text-center py-4">
                       Aucune ordonnance trouvée
                     </TableCell>
                   </TableRow>
@@ -673,6 +674,7 @@ export default function Prescriptions() {
                       </TableCell>
                       <TableCell>{prescription.doctor}</TableCell>
                       <TableCell>{prescription.date}</TableCell>
+                      <TableCell>{prescription.totalPrice ? `${prescription.totalPrice} €` : '-'}</TableCell>
                       <TableCell>{getStatusBadge(prescription.status)}</TableCell>
                       <TableCell>
                         <DropdownMenu>
@@ -691,9 +693,9 @@ export default function Prescriptions() {
                               <Edit className="mr-2 h-4 w-4" />
                               Modifier
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updatePrescriptionStatus(prescription.id || '', 'Préparé')}>
+                            <DropdownMenuItem onClick={() => updatePrescriptionStatus(prescription.id || '', true)}>
                               <Check className="mr-2 h-4 w-4" />
-                              Marquer comme préparé
+                              Marquer comme payé
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => convertToOrder(prescription.id || '')}>
                               <ShoppingCart className="mr-2 h-4 w-4" />

@@ -61,7 +61,6 @@ class SupplierService {
   }
 
   async createSupplier(supplier: Omit<Supplier, '@id' | 'id'>) {
-    console.log('Création du fournisseur:', supplier);
     const newSupplier = {
       ...supplier,
       id: Math.floor(1000 + Math.random() * 9000),
@@ -76,7 +75,6 @@ class SupplierService {
   }
 
   async updateSupplier(id: number, supplier: Partial<Supplier>) {
-    console.log('Mise à jour du fournisseur:', id, supplier);
     const index = this.mockSuppliers.findIndex(s => s.id === id);
     if (index === -1) {
       return Promise.reject(new Error("Supplier not found"));
@@ -92,7 +90,6 @@ class SupplierService {
   }
 
   async deleteSupplier(id: number) {
-    console.log('Suppression du fournisseur:', id);
     const index = this.mockSuppliers.findIndex(s => s.id === id);
     if (index === -1) {
       return Promise.reject(new Error("Supplier not found"));

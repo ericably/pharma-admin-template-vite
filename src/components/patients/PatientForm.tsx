@@ -27,20 +27,22 @@ export function PatientForm({ isOpen, onClose, onSubmit, initialData }: PatientF
 
   const form = useForm({
     defaultValues: {
-      name: "",
+      lastName: "",
+      firstName: "",
       email: "",
       phone: "",
       dob: "",
       address: "",
       insurance: "",
-      status: "Actif"
+      status: true
     }
   });
 
   useEffect(() => {
     if (initialData) {
       form.reset({
-        name: initialData.name,
+        lastName: initialData.lastName,
+        firstName: initialData.firstName,
         email: initialData.email,
         phone: initialData.phone,
         dob: initialData.dob,
@@ -50,13 +52,14 @@ export function PatientForm({ isOpen, onClose, onSubmit, initialData }: PatientF
       });
     } else {
       form.reset({
-        name: "",
+        lastName: "",
+        firstName: "",
         email: "",
         phone: "",
         dob: "",
         address: "",
         insurance: "",
-        status: "Actif"
+        status: true
       });
     }
   }, [initialData, form]);
@@ -73,7 +76,7 @@ export function PatientForm({ isOpen, onClose, onSubmit, initialData }: PatientF
     }
   };
 
-  const handleStatusChange = (status: string) => {
+  const handleStatusChange = (status: boolean) => {
     form.setValue("status", status);
   };
 
@@ -89,11 +92,19 @@ export function PatientForm({ isOpen, onClose, onSubmit, initialData }: PatientF
         <form onSubmit={form.handleSubmit(handleSubmit)}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">Nom</Label>
+              <Label htmlFor="lastName" className="text-right">Nom</Label>
               <Input
-                id="name"
+                id="lastName"
                 className="col-span-3"
-                {...form.register("name", { required: true })}
+                {...form.register("lastName", { required: true })}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="firstName" className="text-right">Prenom</Label>
+              <Input
+                id="firstName"
+                className="col-span-3"
+                {...form.register("firstName", { required: true })}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -143,16 +154,16 @@ export function PatientForm({ isOpen, onClose, onSubmit, initialData }: PatientF
               <div className="col-span-3 flex gap-2">
                 <Button
                   type="button"
-                  variant={form.watch("status") === "Actif" ? "default" : "outline"}
-                  onClick={() => handleStatusChange("Actif")}
+                  variant={form.watch("status") === true ? "default" : "outline"}
+                  onClick={() => handleStatusChange(true)}
                   size="sm"
                 >
                   Actif
                 </Button>
                 <Button
                   type="button"
-                  variant={form.watch("status") === "Inactif" ? "default" : "outline"}
-                  onClick={() => handleStatusChange("Inactif")}
+                  variant={form.watch("status") === false ? "default" : "outline"}
+                  onClick={() => handleStatusChange(false)}
                   size="sm"
                 >
                   Inactif

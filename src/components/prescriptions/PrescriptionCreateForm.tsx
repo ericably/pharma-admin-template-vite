@@ -93,7 +93,6 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
   };
 
   const selectMedication = (index: number, medication: any) => {
-    console.log('Sélection du médicament:', medication);
     const updatedItems = [...items];
     updatedItems[index] = {
       ...updatedItems[index],
@@ -103,7 +102,6 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
     };
     setItems(updatedItems);
     setOpenMedicationCombobox(null);
-    console.log('Items après sélection:', updatedItems);
   };
 
   const incrementQuantity = (index: number) => {
@@ -129,9 +127,7 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
   const onSubmit = async () => {
     try {
       const validItems = getValidItems();
-      
-      console.log('Items valides pour soumission:', validItems);
-      
+
       if (validItems.length === 0) {
         toast({
           title: "Erreur",
@@ -142,7 +138,7 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
       }
 
       const prescriptionData = {
-        patient: patient.name,
+        patient: patient.lastName,
         patientId: patient.id || "",
         doctorId: "1",
         doctor: "Vente directe",
@@ -155,7 +151,9 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
           dosage: "Selon besoin",
           quantity: item.quantity,
           instructions: ""
-        }))
+        })),
+        totalPrice: getTotalPrice().toFixed(2),
+        category: "Vente directe",
       };
 
       await PrescriptionService.createPrescription(prescriptionData);
@@ -194,13 +192,9 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
     }
   };
 
-  const availableMedications = medications.filter(medication => 
-    medication.status === 'Actif' && medication.stock > 0
+  const availableMedications = medications.filter(medication =>
+      medication.stock > 0
   );
-
-  console.log('Items actuels:', items);
-  console.log('Médicaments disponibles:', availableMedications);
-  console.log('Items valides:', getValidItems());
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -208,7 +202,7 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
         <DialogHeader className="pb-4">
           <DialogTitle className="text-xl font-semibold flex items-center gap-2">
             <ShoppingCart className="h-5 w-5 text-blue-600" />
-            Commande Rapide - {patient.name}
+            Commande Rapide - {patient.lastName}
           </DialogTitle>
         </DialogHeader>
 
@@ -217,7 +211,7 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
           <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <span className="font-medium text-blue-800">{patient.name}</span>
+                <span className="font-medium text-blue-800">{patient.lastName}</span>
                 <span className="text-blue-600 text-sm">{patient.email}</span>
               </div>
               <div className="text-right">

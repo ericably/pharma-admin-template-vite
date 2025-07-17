@@ -4,7 +4,7 @@ import apiClient from '../apiClient';
 // Type definitions
 export interface Medication {
   '@id'?: string;
-  id?: number;
+  id?: string;
   name: string;
   category?: string;
   description?: string;
