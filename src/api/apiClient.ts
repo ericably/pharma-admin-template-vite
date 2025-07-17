@@ -24,7 +24,7 @@ class ApiClient {
 
   // Set JWT token for authenticated requests
   setAuthToken(token: string): void {
-   // this.headers['Authorization'] = `Bearer ${token}`;
+    this.headers['Authorization'] = `Bearer ${token}`;
   }
 
   // Remove JWT token

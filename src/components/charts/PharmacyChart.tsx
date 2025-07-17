@@ -1,5 +1,5 @@
 
-import { Line, Bar, Pie } from 'recharts';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -58,43 +58,62 @@ export function PharmacyChart({ type, data, title, description }: PharmacyChartP
       case 'revenue':
         return (
           <ChartContainer config={chartConfig} className="h-[300px]">
-            <Line
-              data={data}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <ChartLegend content={<ChartLegendContent />} />
-            </Line>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
+                <XAxis dataKey="name" stroke="#6b7280" />
+                <YAxis stroke="#6b7280" />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Line 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke={chartConfig[type].color} 
+                  strokeWidth={3}
+                  dot={{ fill: chartConfig[type].color, strokeWidth: 2, r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </ChartContainer>
         );
       
       case 'patients':
         return (
           <ChartContainer config={chartConfig} className="h-[300px]">
-            <Bar
-              data={data}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <ChartLegend content={<ChartLegendContent />} />
-            </Bar>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
+                <XAxis dataKey="name" stroke="#6b7280" />
+                <YAxis stroke="#6b7280" />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Bar 
+                  dataKey="value" 
+                  fill={chartConfig[type].color}
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </ChartContainer>
         );
       
       case 'inventory':
         return (
           <ChartContainer config={chartConfig} className="h-[300px]">
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              fill="#22c55e"
-              dataKey="value"
-            >
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <ChartLegend content={<ChartLegendContent />} />
-            </Pie>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill={chartConfig[type].color}
+                  dataKey="value"
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartLegend content={<ChartLegendContent />} />
+              </PieChart>
+            </ResponsiveContainer>
           </ChartContainer>
         );
       
@@ -127,4 +146,3 @@ export function PharmacyChart({ type, data, title, description }: PharmacyChartP
     </Card>
   );
 }
-
