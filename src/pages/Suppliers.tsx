@@ -378,6 +378,22 @@ export default function Suppliers() {
               suppliers={filteredSuppliers}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onUpdate={async (supplier, updates) => {
+                try {
+                  await SupplierService.updateSupplier(supplier.id, updates);
+                  await refetch();
+                  toast({
+                    title: "Succès",
+                    description: "Fournisseur mis à jour avec succès",
+                  });
+                } catch (error) {
+                  toast({
+                    title: "Erreur",
+                    description: "Erreur lors de la mise à jour du fournisseur",
+                    variant: "destructive",
+                  });
+                }
+              }}
             />
           </div>
         </CardContent>

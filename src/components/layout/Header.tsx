@@ -11,8 +11,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useNavigate } from "react-router-dom";
+import AuthService from "@/api/services/AuthService";
+import { useToast } from "@/hooks/use-toast";
 
 export function Header() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const user = AuthService.getUser();
+
+  const handleLogout = () => {
+    AuthService.logout();
+    toast({
+      title: "Déconnecté",
+      description: "Vous avez été déconnecté avec succès",
+    });
+    navigate("/login");
+  };
+
   return (
     <header className="h-16 flex items-center border-b border-border bg-background px-6 gap-4">
       <div className="relative flex-1 max-w-md">
@@ -40,9 +56,9 @@ export function Header() {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">John Doe</p>
+                <p className="text-sm font-medium leading-none">{user?.name || "Utilisateur"}</p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  john.doe@pharmacy.com
+                  {user?.email || ""}
                 </p>
               </div>
             </DropdownMenuLabel>
@@ -56,9 +72,9 @@ export function Header() {
               <span>Settings</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+              <span>Se déconnecter</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
