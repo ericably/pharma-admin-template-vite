@@ -398,6 +398,22 @@ export default function Patients() {
               onDelete={handleDeletePatient}
               onView={() => {}} // Simplified for now
               onCreatePrescription={handleCreatePrescription}
+              onUpdate={async (patient, updates) => {
+                try {
+                  await PatientService.updatePatient(patient.id, updates);
+                  await refetch();
+                  toast({
+                    title: "Succès",
+                    description: "Patient mis à jour avec succès",
+                  });
+                } catch (error) {
+                  toast({
+                    title: "Erreur",
+                    description: "Erreur lors de la mise à jour du patient",
+                    variant: "destructive",
+                  });
+                }
+              }}
             />
           </div>
           
