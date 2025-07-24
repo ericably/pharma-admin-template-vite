@@ -35,7 +35,9 @@ class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
       // API Platform JWT login_check endpoint
-      const response = await fetch('http://localhost:8080/api/login_check', {
+      const { API_CONFIG } = await import('../config');
+      const loginUrl = API_CONFIG.AUTH_URL;
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,7 +75,6 @@ class AuthService {
       
       throw new Error("Invalid response from server");
     } catch (error) {
-      console.error("API login failed:", error);
       
       // Fallback to mock for development
       if (credentials.email === this.mockCredentials.email && 

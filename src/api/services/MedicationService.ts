@@ -1,4 +1,3 @@
-
 import apiClient from '../apiClient';
 
 export interface Medication {
@@ -66,8 +65,6 @@ class MedicationService {
   }
 
   async createMedication(medication: Omit<Medication, '@id' | 'id'>) {
-    console.log('Création du médicament:', medication);
-    
     const newMedication = {
       ...medication,
       id: Math.floor(1000 + Math.random() * 9000),
@@ -82,8 +79,6 @@ class MedicationService {
   }
 
   async updateMedication(id: number, medication: Partial<Medication>) {
-    console.log('Mise à jour du médicament:', id, medication);
-    
     const index = this.mockMedications.findIndex(m => m.id === id);
     if (index === -1) {
       return Promise.reject(new Error("Medication not found"));
@@ -99,8 +94,6 @@ class MedicationService {
   }
 
   async deleteMedication(id: number) {
-    console.log('Suppression du médicament:', id);
-    
     const index = this.mockMedications.findIndex(m => m.id === id);
     if (index === -1) {
       return Promise.reject(new Error("Medication not found"));

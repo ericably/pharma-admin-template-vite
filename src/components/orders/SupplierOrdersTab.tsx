@@ -211,7 +211,7 @@ export default function SupplierOrdersTab() {
         totalAmount: calculateTotal(orderItems),
       };
 
-      console.log("Order created:", newOrder);
+      
       
       const orderWithId = {
         ...newOrder,

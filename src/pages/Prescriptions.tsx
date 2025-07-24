@@ -299,7 +299,7 @@ export default function Prescriptions() {
         notes: formData.notes
       };
 
-      console.log('Sending update data:', updatedData);
+      
 
       await PrescriptionService.updatePrescription(
         editingPrescription.id || '', 

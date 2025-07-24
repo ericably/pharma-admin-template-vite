@@ -1,7 +1,5 @@
-
 import apiClient from '../apiClient';
 
-// Type definitions
 export interface OrderItem {
   medication: string;
   medicationId: string;
@@ -27,9 +25,7 @@ export interface Order {
 class OrderService {
   private endpoint = '/orders';
 
-  // Get all orders with pagination
   async getAllOrders(page = 1, itemsPerPage = 30, filters?: Record<string, any>) {
-    // For testing purposes
     const mockResponse = {
       'hydra:member': [
         {
@@ -74,14 +70,9 @@ class OrderService {
       totalPages: Math.ceil((mockResponse['hydra:totalItems'] || 0) / itemsPerPage),
       currentPage: page,
     });
-    
-    // When API is ready, uncomment this:
-    // return apiClient.getCollection<Order>(this.endpoint, page, itemsPerPage, filters);
   }
 
-  // Get a single order by ID
   async getOrderById(id: string) {
-    // For testing purposes
     const mockResponse = {
       id,
       '@id': `/orders/${id}`,
@@ -100,17 +91,9 @@ class OrderService {
     };
     
     return Promise.resolve(mockResponse);
-    
-    // When API is ready, uncomment this:
-    // return apiClient.get<Order>(`${this.endpoint}/${id}`);
   }
 
-  // Create a new order
   async createOrder(order: Omit<Order, '@id' | 'id'>) {
-    // For testing purposes
-    console.log('Création de commande:', order);
-    
-    // Mock successful response
     const mockResponse = {
       ...order,
       id: `O-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -120,17 +103,9 @@ class OrderService {
     };
     
     return Promise.resolve(mockResponse);
-    
-    // When API is ready, uncomment this:
-    // return apiClient.post<Order>(this.endpoint, order);
   }
 
-  // Update an existing order
   async updateOrder(id: string, order: Partial<Order>) {
-    // For testing purposes
-    console.log('Mise à jour de commande:', id, order);
-    
-    // Mock successful response
     const mockResponse = {
       ...order,
       id,
@@ -139,26 +114,13 @@ class OrderService {
     };
     
     return Promise.resolve(mockResponse as Order);
-    
-    // When API is ready, uncomment this:
-    // return apiClient.patch<Order>(`${this.endpoint}/${id}`, order);
   }
 
-  // Delete an order
   async deleteOrder(id: string) {
-    // For testing purposes
-    console.log('Suppression de commande:', id);
-    
-    // Mock successful response
     return Promise.resolve({});
-    
-    // When API is ready, uncomment this:
-    // return apiClient.delete(`${this.endpoint}/${id}`);
   }
 
-  // Get orders by supplier
   async getOrdersBySupplier(supplierId: string) {
-    // For testing purposes
     const mockResponse = [
       {
         id: 'O-1001',
@@ -179,14 +141,9 @@ class OrderService {
     ];
     
     return Promise.resolve(mockResponse);
-    
-    // When API is ready, uncomment this:
-    // return apiClient.get<Order[]>(`${this.endpoint}?supplierId=${supplierId}`);
   }
 
-  // Get orders by status
   async getOrdersByStatus(status: string) {
-    // For testing purposes
     const mockResponse = [
       {
         id: 'O-1002',
@@ -206,17 +163,9 @@ class OrderService {
     ];
     
     return Promise.resolve(mockResponse);
-    
-    // When API is ready, uncomment this:
-    // return apiClient.get<Order[]>(`${this.endpoint}?status=${status}`);
   }
   
-  // Update order status
   async updateOrderStatus(id: string, status: Order['status']) {
-    // For testing purposes
-    console.log('Mise à jour du statut de commande:', id, status);
-    
-    // Mock successful response
     const mockResponse = {
       id,
       '@id': `/orders/${id}`,
@@ -225,9 +174,6 @@ class OrderService {
     };
     
     return Promise.resolve(mockResponse as Order);
-    
-    // When API is ready, uncomment this:
-    // return apiClient.patch<Order>(`${this.endpoint}/${id}`, { status });
   }
 }
 

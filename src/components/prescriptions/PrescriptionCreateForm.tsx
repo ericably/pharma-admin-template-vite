@@ -93,7 +93,6 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
   };
 
   const selectMedication = (index: number, medication: any) => {
-    console.log('Sélection du médicament:', medication);
     const updatedItems = [...items];
     updatedItems[index] = {
       ...updatedItems[index],
@@ -103,7 +102,6 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
     };
     setItems(updatedItems);
     setOpenMedicationCombobox(null);
-    console.log('Items après sélection:', updatedItems);
   };
 
   const incrementQuantity = (index: number) => {
@@ -130,7 +128,7 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
     try {
       const validItems = getValidItems();
       
-      console.log('Items valides pour soumission:', validItems);
+      
       
       if (validItems.length === 0) {
         toast({
@@ -198,9 +196,6 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
     medication.status === 'Actif' && medication.stock > 0
   );
 
-  console.log('Items actuels:', items);
-  console.log('Médicaments disponibles:', availableMedications);
-  console.log('Items valides:', getValidItems());
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>

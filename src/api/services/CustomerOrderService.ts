@@ -109,7 +109,7 @@ class CustomerOrderService {
   }
 
   async createCustomerOrder(order: Omit<CustomerOrder, '@id' | 'id'>) {
-    console.log('Création de commande client:', order);
+    
     const newOrder = {
       ...order,
       id: `CO-${new Date().getFullYear()}-${(this.mockOrders.length + 1).toString().padStart(3, '0')}`,
@@ -123,7 +123,7 @@ class CustomerOrderService {
   }
 
   async updateCustomerOrder(id: string, order: Partial<CustomerOrder>) {
-    console.log('Mise à jour de commande client:', id, order);
+    
     const index = this.mockOrders.findIndex(o => o.id === id);
     if (index === -1) {
       return Promise.reject(new Error("Customer order not found"));
@@ -143,7 +143,7 @@ class CustomerOrderService {
   }
 
   async deleteCustomerOrder(id: string) {
-    console.log('Suppression de commande client:', id);
+    
     const index = this.mockOrders.findIndex(o => o.id === id);
     if (index === -1) {
       return Promise.reject(new Error("Customer order not found"));
