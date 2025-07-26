@@ -1,12 +1,4 @@
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
@@ -15,7 +7,8 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { Edit, Trash2, MoreVertical, Eye, FilePlus, FileText } from "lucide-react";
+import { Edit, Trash2, MoreVertical, Eye, FilePlus, FileText, UserCircle, Shield } from "lucide-react";
+import { EditableTable, EditableColumn } from "@/components/ui/editable-table";
 import type { Patient } from "@/api/services/PatientService";
 import {boolean} from "zod";
 
@@ -25,6 +18,7 @@ interface PatientsListProps {
   onDelete: (patient: Patient) => void;
   onView?: (patient: Patient) => void;
   onCreatePrescription?: (patient: Patient) => void;
+  onUpdate: (patient: Patient, updates: Partial<Patient>) => Promise<void>;
 }
 
 export function PatientsList({ patients, onEdit, onDelete, onView, onCreatePrescription }: PatientsListProps) {
@@ -34,80 +28,89 @@ export function PatientsList({ patients, onEdit, onDelete, onView, onCreatePresc
       <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">Inactif</Badge>;
   };
 
+  const columns: EditableColumn<Patient>[] = [
+    { key: 'id', label: 'ID', editable: false },
+    {
+      key: 'name',
+      label: 'Nom',
+      type: 'text',
+      render: (value) => (
+        <div className="flex items-center gap-2">
+          <UserCircle className="h-4 w-4 text-muted-foreground" />
+          {value}
+        </div>
+      )
+    },
+    { key: 'email', label: 'Email', type: 'email' },
+    { key: 'phone', label: 'Téléphone', type: 'tel' },
+    {
+      key: 'insurance',
+      label: 'Assurance',
+      render: (value) => (
+        <div className="flex items-center gap-2">
+          <Shield className="h-4 w-4 text-muted-foreground" />
+          {value}
+        </div>
+      )
+    },
+    {
+      key: 'status',
+      label: 'Statut',
+      editable: false,
+      render: (value) => getStatusBadge(value)
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      editable: false,
+      render: (_, patient) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Ouvrir le menu</span>
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {onView && (
+              <DropdownMenuItem onClick={() => onView(patient)}>
+                <Eye className="mr-2 h-4 w-4" />
+                Voir Détails
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={() => onEdit(patient)}>
+              <Edit className="mr-2 h-4 w-4" />
+              Modifier
+            </DropdownMenuItem>
+            {onCreatePrescription && (
+              <DropdownMenuItem onClick={() => onCreatePrescription(patient)}>
+                <FilePlus className="mr-2 h-4 w-4" />
+                Nouvelle Ordonnance
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem>
+              <FileText className="mr-2 h-4 w-4" />
+              Voir Historique
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-red-600"
+              onClick={() => onDelete(patient)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Supprimer
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    }
+  ];
+
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>ID</TableHead>
-            <TableHead>Nom</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Téléphone</TableHead>
-            <TableHead>Assurance</TableHead>
-            <TableHead>Statut</TableHead>
-            <TableHead className="w-[80px]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {patients.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                Aucun patient trouvé
-              </TableCell>
-            </TableRow>
-          ) : (
-            patients.map((patient) => (
-              <TableRow key={patient.id}>
-                <TableCell className="font-medium">{patient.id}</TableCell>
-                <TableCell>{patient.fullName}</TableCell>
-                <TableCell>{patient.email}</TableCell>
-                <TableCell>{patient.phone}</TableCell>
-                <TableCell>{patient.insurance}</TableCell>
-                <TableCell>{getStatusBadge(patient.status)}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Ouvrir le menu</span>
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {onView && (
-                        <DropdownMenuItem onClick={() => onView(patient)}>
-                          <Eye className="mr-2 h-4 w-4" />
-                          Voir Détails
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem onClick={() => onEdit(patient)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Modifier
-                      </DropdownMenuItem>
-                      {onCreatePrescription && (
-                        <DropdownMenuItem onClick={() => onCreatePrescription(patient)}>
-                          <FilePlus className="mr-2 h-4 w-4" />
-                          Nouvelle Ordonnance
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem>
-                        <FileText className="mr-2 h-4 w-4" />
-                        Voir Historique
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        className="text-red-600" 
-                        onClick={() => onDelete(patient)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Supprimer
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
+    <EditableTable
+      data={patients}
+      columns={columns}
+      onUpdate={onUpdate}
+      keyField="id"
+    />
   );
 }

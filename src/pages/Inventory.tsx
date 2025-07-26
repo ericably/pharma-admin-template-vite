@@ -520,6 +520,22 @@ export default function Inventory() {
               onEdit={handleEditMedication}
               onDelete={handleDeleteMedication}
               onView={handleViewMedication}
+              onUpdate={async (medication, updates) => {
+                try {
+                  await MedicationService.updateMedication(medication.id, updates);
+                  await refetch();
+                  toast({
+                    title: "Succès",
+                    description: "Médicament mis à jour avec succès",
+                  });
+                } catch (error) {
+                  toast({
+                    title: "Erreur",
+                    description: "Erreur lors de la mise à jour du médicament",
+                    variant: "destructive",
+                  });
+                }
+              }}
             />
           </div>
 

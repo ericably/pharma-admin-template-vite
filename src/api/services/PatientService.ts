@@ -1,4 +1,3 @@
-
 import apiClient from '../apiClient';
 
 export interface Patient {
@@ -94,4 +93,3 @@ class PatientService {
 }
 
 export default new PatientService();
-

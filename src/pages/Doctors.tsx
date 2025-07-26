@@ -383,6 +383,22 @@ export default function Doctors() {
               doctors={filteredDoctors}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onUpdate={async (doctor, updates) => {
+                try {
+                  await DoctorService.updateDoctor(doctor.id, updates);
+                  await refetch();
+                  toast({
+                    title: "Succès",
+                    description: "Médecin mis à jour avec succès",
+                  });
+                } catch (error) {
+                  toast({
+                    title: "Erreur",
+                    description: "Erreur lors de la mise à jour du médecin",
+                    variant: "destructive",
+                  });
+                }
+              }}
             />
           </div>
         </CardContent>

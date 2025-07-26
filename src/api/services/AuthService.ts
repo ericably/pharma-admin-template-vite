@@ -34,34 +34,47 @@ class AuthService {
   // Login user and store tokens
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      // API Platform JWT endpoint
-      const response = await apiClient.post<{token: string}>('/auth', credentials);
-      
-      if (response?.token) {
-        // Create proper response structure
-        const loginResponse: LoginResponse = {
-          token: response.token,
-          user: {
-            id: 1, // Will be decoded from JWT in production
-            email: credentials.email,
-            roles: ["ROLE_USER"],
-            name: credentials.email.split('@')[0]
-          }
-        };
+      // API Platform JWT login_check endpoint
+      const { API_CONFIG } = await import('../config');
+      const loginUrl = API_CONFIG.AUTH_URL;
+      const response = await fetch(loginUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: credentials.email,
+          password: credentials.password
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
         
-        // Store token and user data
-        this.setToken(loginResponse.token);
-        this.setUser(loginResponse.user);
-        
-        // Set auth token for future API requests
-        apiClient.setAuthToken(loginResponse.token);
-        
-        return loginResponse;
+        if (data.token) {
+          const loginResponse: LoginResponse = {
+            token: data.token,
+            user: {
+              id: 1,
+              email: credentials.email,
+              roles: ["ROLE_USER"],
+              name: credentials.email.split('@')[0]
+            }
+          };
+          
+          // Store token and user data
+          this.setToken(loginResponse.token);
+          this.setUser(loginResponse.user);
+          
+          // Set auth token for future API requests
+          apiClient.setAuthToken(loginResponse.token);
+          
+          return loginResponse;
+        }
       }
       
       throw new Error("Invalid response from server");
     } catch (error) {
-      console.error("API login failed:", error);
       
       // Fallback to mock for development
       if (credentials.email === this.mockCredentials.email && 

@@ -204,6 +204,22 @@ export default function Pharmacists() {
                 pharmacists={filteredPharmacists}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onUpdate={async (pharmacist, updates) => {
+                  try {
+                    await PharmacistService.updatePharmacist(pharmacist.id, updates);
+                    queryClient.invalidateQueries({ queryKey: ['pharmacists'] });
+                    toast({
+                      title: "Succès",
+                      description: "Pharmacien mis à jour avec succès",
+                    });
+                  } catch (error) {
+                    toast({
+                      title: "Erreur",
+                      description: "Erreur lors de la mise à jour du pharmacien",
+                      variant: "destructive",
+                    });
+                  }
+                }}
               />
             </div>
           )}
