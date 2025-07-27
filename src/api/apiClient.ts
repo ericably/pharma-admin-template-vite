@@ -47,13 +47,24 @@ class ApiClient {
     return url.toString();
   }
 
-  // Generic request method
+  // Auto-setup token from localStorage on initialization
+  private setupAuthFromStorage(): void {
+    const token = localStorage.getItem('pharma_auth_token');
+    if (token) {
+      this.setAuthToken(token);
+    }
+  }
+
+  // Generic request method with enhanced error handling
   private async request<T>(
     method: string,
     endpoint: string,
     data?: any,
     params?: Record<string, any>
   ): Promise<T> {
+    // Ensure we have token from localStorage if available
+    this.setupAuthFromStorage();
+    
     const url = this.buildUrl(endpoint, params);
     
     // Set appropriate headers based on method
@@ -66,6 +77,7 @@ class ApiClient {
       method,
       headers: requestHeaders,
       signal: AbortSignal.timeout(this.defaultTimeout),
+      mode: 'cors', // Explicitly set CORS mode
     };
 
     if (data) {
@@ -75,14 +87,36 @@ class ApiClient {
     try {
       const response = await fetch(url, options);
       
-      // Handle HTTP errors
+      // Handle authentication errors
+      if (response.status === 401) {
+        // Token expired or invalid, redirect to login
+        localStorage.removeItem('pharma_auth_token');
+        localStorage.removeItem('pharma_refresh_token');
+        localStorage.removeItem('pharma_user');
+        this.removeAuthToken();
+        
+        // Only redirect if we're not already on login page
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+        throw new Error('Session expirée. Veuillez vous reconnecter.');
+      }
+      
+      // Handle other HTTP errors
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(
-          errorData?.['hydra:description'] || 
-          errorData?.message || 
-          `API error: ${response.status} ${response.statusText}`
-        );
+        let errorMessage = `Erreur API: ${response.status} ${response.statusText}`;
+        
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData?.['hydra:description'] || 
+                        errorData?.message || 
+                        errorData?.detail ||
+                        errorMessage;
+        } catch {
+          // If we can't parse error response, use default message
+        }
+        
+        throw new Error(errorMessage);
       }
       
       // Check if response is empty
@@ -95,8 +129,22 @@ class ApiClient {
       
       return null as T;
     } catch (error) {
+      if (error instanceof Error) {
+        // Re-throw our custom errors
+        if (error.message.includes('Session expirée') || 
+            error.message.includes('Erreur API') ||
+            error.message.includes('CORS')) {
+          throw error;
+        }
+      }
+      
+      // Handle network errors (including CORS issues)
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Erreur de connexion au serveur. Vérifiez votre connexion internet.');
+      }
+      
       console.error('API request error:', error);
-      throw error;
+      throw new Error('Une erreur inattendue s\'est produite.');
     }
   }
 
@@ -152,6 +200,14 @@ import { API_CONFIG } from './config';
 
 export const apiClient = new ApiClient({
   baseUrl: API_CONFIG.BASE_URL,
+  headers: API_CONFIG.DEFAULT_HEADERS,
+  defaultTimeout: API_CONFIG.TIMEOUT,
 });
+
+// Auto-setup token from localStorage on module load
+const token = localStorage.getItem('pharma_auth_token');
+if (token) {
+  apiClient.setAuthToken(token);
+}
 
 export default apiClient;
