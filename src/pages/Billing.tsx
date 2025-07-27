@@ -1,0 +1,472 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { 
+  Receipt, 
+  Plus, 
+  Trash2, 
+  Calculator,
+  CreditCard,
+  FileText,
+  User,
+  Calendar,
+  DollarSign
+} from "lucide-react";
+import PatientService, { Patient } from "@/api/services/PatientService";
+import MedicationService, { Medication } from "@/api/services/MedicationService";
+
+interface BillingItem {
+  id: string;
+  medicationId: string;
+  medicationName: string;
+  unitPrice: number;
+  quantity: number;
+  total: number;
+}
+
+interface BillingData {
+  patient: string;
+  patientId: string;
+  items: BillingItem[];
+  subtotal: number;
+  tax: number;
+  discount: number;
+  total: number;
+  paymentMethod: string;
+  notes: string;
+  date: string;
+}
+
+export default function Billing() {
+  const [billingData, setBillingData] = useState<BillingData>({
+    patient: "",
+    patientId: "",
+    items: [],
+    subtotal: 0,
+    tax: 0,
+    discount: 0,
+    total: 0,
+    paymentMethod: "cash",
+    notes: "",
+    date: new Date().toISOString().split('T')[0]
+  });
+
+  const { toast } = useToast();
+
+  // Fetch patients
+  const { data: patientsData } = useQuery({
+    queryKey: ['patients'],
+    queryFn: () => PatientService.getAllPatients()
+  });
+
+  // Fetch medications
+  const { data: medicationsData } = useQuery({
+    queryKey: ['medications'],
+    queryFn: () => MedicationService.getAllMedications()
+  });
+
+  const patients = patientsData?.items || [];
+  const medications = medicationsData?.items || [];
+  const activePatients = patients.filter(patient => patient.status === 'Actif');
+  const availableMedications = medications.filter(medication => 
+    medication.status === 'Actif' && medication.stock > 0
+  );
+
+  // Calculate totals when items change
+  useEffect(() => {
+    const subtotal = billingData.items.reduce((sum, item) => sum + item.total, 0);
+    const tax = subtotal * 0.1; // 10% tax
+    const total = subtotal + tax - billingData.discount;
+
+    setBillingData(prev => ({
+      ...prev,
+      subtotal,
+      tax,
+      total: Math.max(0, total)
+    }));
+  }, [billingData.items, billingData.discount]);
+
+  const addItem = () => {
+    const newItem: BillingItem = {
+      id: Date.now().toString(),
+      medicationId: "",
+      medicationName: "",
+      unitPrice: 0,
+      quantity: 1,
+      total: 0
+    };
+
+    setBillingData(prev => ({
+      ...prev,
+      items: [...prev.items, newItem]
+    }));
+  };
+
+  const removeItem = (itemId: string) => {
+    setBillingData(prev => ({
+      ...prev,
+      items: prev.items.filter(item => item.id !== itemId)
+    }));
+  };
+
+  const updateItem = (itemId: string, field: keyof BillingItem, value: any) => {
+    setBillingData(prev => ({
+      ...prev,
+      items: prev.items.map(item => {
+        if (item.id === itemId) {
+          const updatedItem = { ...item, [field]: value };
+          
+          // If medication changed, update name and price
+          if (field === 'medicationId') {
+            const medication = availableMedications.find(m => m.id === value);
+            if (medication) {
+              updatedItem.medicationName = medication.name;
+              updatedItem.unitPrice = medication.price;
+            }
+          }
+          
+          // Recalculate total
+          updatedItem.total = updatedItem.unitPrice * updatedItem.quantity;
+          
+          return updatedItem;
+        }
+        return item;
+      })
+    }));
+  };
+
+  const handlePatientChange = (patientId: string) => {
+    const patient = activePatients.find(p => p.id === patientId);
+    setBillingData(prev => ({
+      ...prev,
+      patientId,
+      patient: patient ? patient.name : ""
+    }));
+  };
+
+  const handleProcessPayment = () => {
+    if (!billingData.patientId) {
+      toast({
+        title: "Patient requis",
+        description: "Veuillez sélectionner un patient.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (billingData.items.length === 0) {
+      toast({
+        title: "Articles requis",
+        description: "Veuillez ajouter au moins un article à la facture.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Simulate payment processing
+    toast({
+      title: "Paiement traité",
+      description: `Facture de ${billingData.total.toFixed(2)} € payée par ${billingData.paymentMethod === 'cash' ? 'espèces' : 'carte'}.`,
+    });
+
+    // Reset form
+    setBillingData({
+      patient: "",
+      patientId: "",
+      items: [],
+      subtotal: 0,
+      tax: 0,
+      discount: 0,
+      total: 0,
+      paymentMethod: "cash",
+      notes: "",
+      date: new Date().toISOString().split('T')[0]
+    });
+  };
+
+  const selectedPatient = activePatients.find(p => p.id === billingData.patientId);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 space-y-6">
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 p-8 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                  <Receipt className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold tracking-tight">Facturation</h1>
+                  <p className="text-emerald-100 text-lg mt-1">Gestion des ventes et paiements</p>
+                </div>
+              </div>
+            </div>
+            <div className="text-right space-y-2">
+              <div className="text-emerald-100 text-sm">Facture #{Date.now().toString().slice(-6)}</div>
+              <div className="text-3xl font-bold">{billingData.total.toFixed(2)} €</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Left Panel - Billing Form */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Patient Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Informations Patient
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <Label htmlFor="patient">Patient</Label>
+                  <Select value={billingData.patientId} onValueChange={handlePatientChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner un patient" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activePatients.map((patient) => (
+                        <SelectItem key={patient.id} value={patient.id || ""}>
+                          {patient.name} - {patient.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="date">Date</Label>
+                  <Input
+                    type="date"
+                    value={billingData.date}
+                    onChange={(e) => setBillingData(prev => ({ ...prev, date: e.target.value }))}
+                  />
+                </div>
+              </div>
+              
+              {selectedPatient && (
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="grid gap-2 md:grid-cols-2">
+                    <div>
+                      <span className="font-medium">Email:</span> {selectedPatient.email}
+                    </div>
+                    <div>
+                      <span className="font-medium">Téléphone:</span> {selectedPatient.phone}
+                    </div>
+                    <div className="md:col-span-2">
+                      <span className="font-medium">Adresse:</span> {selectedPatient.address}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Items Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Articles
+                </CardTitle>
+                <Button onClick={addItem} size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Ajouter
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {billingData.items.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Aucun article ajouté. Cliquez sur "Ajouter" pour commencer.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {billingData.items.map((item) => (
+                    <div key={item.id} className="grid gap-4 md:grid-cols-6 items-end p-4 border rounded-lg">
+                      <div className="md:col-span-2">
+                        <Label>Médicament</Label>
+                        <Select 
+                          value={item.medicationId} 
+                          onValueChange={(value) => updateItem(item.id, 'medicationId', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableMedications.map((medication) => (
+                        <SelectItem key={medication.id} value={medication.id?.toString() || ""}>
+                          {medication.name} - {medication.price}€
+                        </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label>Prix unitaire</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={item.unitPrice}
+                          onChange={(e) => updateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label>Quantité</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label>Total</Label>
+                        <div className="h-9 px-3 py-2 bg-muted rounded-md flex items-center">
+                          {item.total.toFixed(2)} €
+                        </div>
+                      </div>
+                      
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeItem(item.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Notes */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                placeholder="Notes supplémentaires..."
+                value={billingData.notes}
+                onChange={(e) => setBillingData(prev => ({ ...prev, notes: e.target.value }))}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Panel - Summary & Payment */}
+        <div className="space-y-6">
+          {/* Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calculator className="h-5 w-5" />
+                Résumé
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Sous-total:</span>
+                  <span>{billingData.subtotal.toFixed(2)} €</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>TVA (10%):</span>
+                  <span>{billingData.tax.toFixed(2)} €</span>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span>Remise:</span>
+                    <span>{billingData.discount.toFixed(2)} €</span>
+                  </div>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Montant de la remise"
+                    value={billingData.discount || ""}
+                    onChange={(e) => setBillingData(prev => ({ 
+                      ...prev, 
+                      discount: parseFloat(e.target.value) || 0 
+                    }))}
+                  />
+                </div>
+                <Separator />
+                <div className="flex justify-between text-lg font-bold">
+                  <span>Total:</span>
+                  <span>{billingData.total.toFixed(2)} €</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Payment Method */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Mode de paiement
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select 
+                value={billingData.paymentMethod} 
+                onValueChange={(value) => setBillingData(prev => ({ ...prev, paymentMethod: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">Espèces</SelectItem>
+                  <SelectItem value="card">Carte bancaire</SelectItem>
+                  <SelectItem value="check">Chèque</SelectItem>
+                  <SelectItem value="transfer">Virement</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <Button 
+              onClick={handleProcessPayment}
+              className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700"
+              size="lg"
+            >
+              <DollarSign className="h-5 w-5" />
+              Traiter le paiement
+            </Button>
+            
+            <Button variant="outline" className="w-full">
+              Imprimer facture
+            </Button>
+            
+            <Button variant="ghost" className="w-full">
+              Sauvegarder brouillon
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import Suppliers from "./pages/Suppliers";
 import Pharmacists from "./pages/Pharmacists";
 import Doctors from "./pages/Doctors";
+import Billing from "./pages/Billing";
 import AuthService from "./api/services/AuthService";
 
 const queryClient = new QueryClient();
@@ -79,6 +80,7 @@ const App = () => {
               <Route path="suppliers" element={<Suppliers />} />
               <Route path="pharmacists" element={<Pharmacists />} />
               <Route path="doctors" element={<Doctors />} />
+              <Route path="billing" element={<Billing />} />
               <Route path="reports" element={<div>Page des Rapports</div>} />
               <Route path="settings" element={<div>Page des Paramètres</div>} />
             </Route>

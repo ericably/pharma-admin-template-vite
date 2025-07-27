@@ -34,6 +34,7 @@ const navigation: NavigationItem[] = [
   { name: "Pharmacists", href: "/pharmacists", icon: Hospital },
   { name: "Doctors", href: "/doctors", icon: UserRound },
   { name: "Suppliers", href: "/suppliers", icon: Truck },
+  { name: "Billing", href: "/billing", icon: BarChart4 },
   { name: "Reports", href: "/reports", icon: BarChart4 },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
