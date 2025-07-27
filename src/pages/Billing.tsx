@@ -145,7 +145,14 @@ export default function Billing() {
     patientId: "",
     doctor: "",
     doctorId: "",
-    items: [],
+    items: [{
+      id: "1",
+      medicationId: "",
+      medicationName: "",
+      unitPrice: 0,
+      quantity: 1,
+      total: 0
+    }],
     subtotal: 0,
     tax: 0,
     discount: 0,
