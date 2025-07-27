@@ -36,12 +36,12 @@ class AuthService {
     try {
       // API Platform JWT login_check endpoint
       const { API_CONFIG } = await import('../config');
-      const loginUrl = API_CONFIG.AUTH_URL;
-      const response = await fetch(loginUrl, {
+      const response = await fetch(API_CONFIG.AUTH_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        mode: 'cors',
         body: JSON.stringify({
           email: credentials.email,
           password: credentials.password
@@ -55,10 +55,10 @@ class AuthService {
           const loginResponse: LoginResponse = {
             token: data.token,
             user: {
-              id: 1,
+              id: data.user?.id || 1,
               email: credentials.email,
-              roles: ["ROLE_USER"],
-              name: credentials.email.split('@')[0]
+              roles: data.user?.roles || ["ROLE_USER"],
+              name: data.user?.name || credentials.email.split('@')[0]
             }
           };
           
@@ -73,11 +73,17 @@ class AuthService {
         }
       }
       
-      throw new Error("Invalid response from server");
+      // Handle authentication errors
+      if (response.status === 401) {
+        throw new Error("Email ou mot de passe incorrect");
+      }
+      
+      throw new Error("Erreur de connexion au serveur");
     } catch (error) {
       
-      // Fallback to mock for development
-      if (credentials.email === this.mockCredentials.email && 
+      // Fallback to mock for development only
+      if (process.env.NODE_ENV === 'development' &&
+          credentials.email === this.mockCredentials.email && 
           credentials.password === this.mockCredentials.password) {
         
         const mockResponse: LoginResponse = {
@@ -97,7 +103,8 @@ class AuthService {
         return mockResponse;
       }
       
-      throw new Error("Invalid email or password");
+      // Re-throw the error with original message or a user-friendly one
+      throw error instanceof Error ? error : new Error("Erreur de connexion");
     }
   }
 
@@ -121,13 +128,31 @@ class AuthService {
     }
     
     try {
-      // For API Platform, validate token by making a test request
+      // Set token in API client
       apiClient.setAuthToken(token);
-      // You could make a simple API call here to validate the token
-      // For now, we'll assume the token is valid if it exists
-      return true;
-    } catch (error) {
+      
+      // Validate token by making a test request to a protected endpoint
+      const { API_CONFIG } = await import('../config');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/test-auth`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/ld+json',
+        },
+        mode: 'cors',
+      });
+      
+      // If token is valid, return true
+      if (response.ok || response.status !== 401) {
+        return true;
+      }
+      
+      // Token is invalid, logout
       this.logout();
+      return false;
+    } catch (error) {
+      // On network error, don't logout (could be temporary)
+      // Just return false but keep token for retry
       return false;
     }
   }

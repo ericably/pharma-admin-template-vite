@@ -21,7 +21,7 @@ interface PatientsListProps {
   onUpdate: (patient: Patient, updates: Partial<Patient>) => Promise<void>;
 }
 
-export function PatientsList({ patients, onEdit, onDelete, onView, onCreatePrescription }: PatientsListProps) {
+export function PatientsList({ patients, onEdit, onDelete, onView, onCreatePrescription, onUpdate }: PatientsListProps) {
   const getStatusBadge = (status: boolean) => {
     return !!status === true ?
       <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Actif</Badge> :
