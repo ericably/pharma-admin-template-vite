@@ -21,10 +21,11 @@ import AuthService from "./api/services/AuthService";
 
 const queryClient = new QueryClient();
 
-// Route protégée
+// Route protégée - TEMPORAIREMENT DÉSACTIVÉE
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = AuthService.isAuthenticated();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  // const isAuthenticated = AuthService.isAuthenticated();
+  // return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  return <>{children}</>; // Accès libre temporaire
 };
 
 const App = () => {
