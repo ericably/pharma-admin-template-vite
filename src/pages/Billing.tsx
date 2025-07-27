@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
   Receipt, 
   Plus, 
@@ -19,10 +21,99 @@ import {
   FileText,
   User,
   Calendar,
-  DollarSign
+  DollarSign,
+  UserCheck,
+  Search,
+  Check,
+  ChevronsUpDown
 } from "lucide-react";
 import PatientService, { Patient } from "@/api/services/PatientService";
 import MedicationService, { Medication } from "@/api/services/MedicationService";
+import DoctorService, { Doctor } from "@/api/services/DoctorService";
+import { cn } from "@/lib/utils";
+
+interface ProductSelectorProps {
+  itemId: string;
+  selectedMedicationId: string;
+  medicationName: string;
+  onSelect: (medication: Medication) => void;
+  availableMedications: Medication[];
+}
+
+const ProductSelector = ({ 
+  itemId, 
+  selectedMedicationId, 
+  medicationName, 
+  onSelect, 
+  availableMedications 
+}: ProductSelectorProps) => {
+  const [open, setOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+
+  const filteredMedications = availableMedications.filter(medication =>
+    medication.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+    medication.description?.toLowerCase().includes(searchValue.toLowerCase())
+  );
+
+  const handleSelect = (medication: Medication) => {
+    onSelect(medication);
+    setOpen(false);
+    setSearchValue("");
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between text-left"
+        >
+          {medicationName || "Rechercher un produit..."}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[400px] p-0" align="start">
+        <Command>
+          <CommandInput
+            placeholder="Rechercher un médicament..."
+            value={searchValue}
+            onValueChange={setSearchValue}
+          />
+          <CommandList>
+            <CommandEmpty>Aucun produit trouvé.</CommandEmpty>
+            <CommandGroup>
+              {filteredMedications.map((medication) => (
+                <CommandItem
+                  key={medication.id}
+                  value={medication.name}
+                  onSelect={() => handleSelect(medication)}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      selectedMedicationId === medication.id?.toString()
+                        ? "opacity-100"
+                        : "opacity-0"
+                    )}
+                  />
+                  <div className="flex flex-col flex-1">
+                    <span className="font-medium">{medication.name}</span>
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>Stock: {medication.stock}</span>
+                      <span className="font-medium">{medication.price}€</span>
+                    </div>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 interface BillingItem {
   id: string;
@@ -36,6 +127,8 @@ interface BillingItem {
 interface BillingData {
   patient: string;
   patientId: string;
+  doctor: string;
+  doctorId: string;
   items: BillingItem[];
   subtotal: number;
   tax: number;
@@ -50,6 +143,8 @@ export default function Billing() {
   const [billingData, setBillingData] = useState<BillingData>({
     patient: "",
     patientId: "",
+    doctor: "",
+    doctorId: "",
     items: [],
     subtotal: 0,
     tax: 0,
@@ -59,6 +154,11 @@ export default function Billing() {
     notes: "",
     date: new Date().toISOString().split('T')[0]
   });
+
+  const [openPatientCombobox, setOpenPatientCombobox] = useState(false);
+  const [openDoctorCombobox, setOpenDoctorCombobox] = useState(false);
+  const [searchPatient, setSearchPatient] = useState("");
+  const [searchDoctor, setSearchDoctor] = useState("");
 
   const { toast } = useToast();
 
@@ -74,11 +174,30 @@ export default function Billing() {
     queryFn: () => MedicationService.getAllMedications()
   });
 
+  // Fetch doctors
+  const { data: doctorsData } = useQuery({
+    queryKey: ['doctors'],
+    queryFn: () => DoctorService.getAllDoctors()
+  });
+
   const patients = patientsData?.items || [];
   const medications = medicationsData?.items || [];
+  const doctors = doctorsData?.items || [];
   const activePatients = patients.filter(patient => patient.status === 'Actif');
+  const activeDoctors = doctors.filter(doctor => doctor.status === true);
   const availableMedications = medications.filter(medication => 
     medication.status === 'Actif' && medication.stock > 0
+  );
+
+  // Filter for search
+  const filteredPatients = activePatients.filter(patient =>
+    patient.name.toLowerCase().includes(searchPatient.toLowerCase()) ||
+    patient.email.toLowerCase().includes(searchPatient.toLowerCase())
+  );
+
+  const filteredDoctors = activeDoctors.filter(doctor =>
+    doctor.name.toLowerCase().includes(searchDoctor.toLowerCase()) ||
+    doctor.speciality.toLowerCase().includes(searchDoctor.toLowerCase())
   );
 
   // Calculate totals when items change
@@ -144,13 +263,24 @@ export default function Billing() {
     }));
   };
 
-  const handlePatientChange = (patientId: string) => {
-    const patient = activePatients.find(p => p.id === patientId);
+  const handlePatientSelect = (patient: Patient) => {
     setBillingData(prev => ({
       ...prev,
-      patientId,
-      patient: patient ? patient.name : ""
+      patientId: patient.id?.toString() || "",
+      patient: patient.name
     }));
+    setOpenPatientCombobox(false);
+    setSearchPatient("");
+  };
+
+  const handleDoctorSelect = (doctor: Doctor) => {
+    setBillingData(prev => ({
+      ...prev,
+      doctorId: doctor.id?.toString() || "",
+      doctor: doctor.name
+    }));
+    setOpenDoctorCombobox(false);
+    setSearchDoctor("");
   };
 
   const handleProcessPayment = () => {
@@ -182,6 +312,8 @@ export default function Billing() {
     setBillingData({
       patient: "",
       patientId: "",
+      doctor: "",
+      doctorId: "",
       items: [],
       subtotal: 0,
       tax: 0,
@@ -235,19 +367,54 @@ export default function Billing() {
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <Label htmlFor="patient">Patient</Label>
-                  <Select value={billingData.patientId} onValueChange={handlePatientChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un patient" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {activePatients.map((patient) => (
-                        <SelectItem key={patient.id} value={patient.id || ""}>
-                          {patient.name} - {patient.email}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Patient</Label>
+                  <Popover open={openPatientCombobox} onOpenChange={setOpenPatientCombobox}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openPatientCombobox}
+                        className="w-full justify-between"
+                      >
+                        {billingData.patient || "Rechercher un patient..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput
+                          placeholder="Rechercher un patient..."
+                          value={searchPatient}
+                          onValueChange={setSearchPatient}
+                        />
+                        <CommandList>
+                          <CommandEmpty>Aucun patient trouvé.</CommandEmpty>
+                          <CommandGroup>
+                            {filteredPatients.map((patient) => (
+                              <CommandItem
+                                key={patient.id}
+                                value={patient.name}
+                                onSelect={() => handlePatientSelect(patient)}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    billingData.patientId === patient.id?.toString()
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{patient.name}</span>
+                                  <span className="text-sm text-muted-foreground">{patient.email}</span>
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div>
                   <Label htmlFor="date">Date</Label>
@@ -277,6 +444,92 @@ export default function Billing() {
             </CardContent>
           </Card>
 
+          {/* Doctor Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserCheck className="h-5 w-5" />
+                Informations Docteur
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Docteur prescripteur</Label>
+                <Popover open={openDoctorCombobox} onOpenChange={setOpenDoctorCombobox}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openDoctorCombobox}
+                      className="w-full justify-between"
+                    >
+                      {billingData.doctor || "Rechercher un docteur..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput
+                        placeholder="Rechercher un docteur..."
+                        value={searchDoctor}
+                        onValueChange={setSearchDoctor}
+                      />
+                      <CommandList>
+                        <CommandEmpty>Aucun docteur trouvé.</CommandEmpty>
+                        <CommandGroup>
+                          {filteredDoctors.map((doctor) => (
+                            <CommandItem
+                              key={doctor.id}
+                              value={doctor.name}
+                              onSelect={() => handleDoctorSelect(doctor)}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  billingData.doctorId === doctor.id?.toString()
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              <div className="flex flex-col">
+                                <span className="font-medium">{doctor.name}</span>
+                                <span className="text-sm text-muted-foreground">{doctor.speciality}</span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              {billingData.doctorId && (
+                <div className="p-4 bg-muted rounded-lg">
+                  {(() => {
+                    const selectedDoctor = activeDoctors.find(d => d.id?.toString() === billingData.doctorId);
+                    return selectedDoctor ? (
+                      <div className="grid gap-2 md:grid-cols-2">
+                        <div>
+                          <span className="font-medium">Email:</span> {selectedDoctor.email}
+                        </div>
+                        <div>
+                          <span className="font-medium">Téléphone:</span> {selectedDoctor.phone}
+                        </div>
+                        <div>
+                          <span className="font-medium">Spécialité:</span> {selectedDoctor.speciality}
+                        </div>
+                        <div>
+                          <span className="font-medium">N° Licence:</span> {selectedDoctor.licenseNumber}
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Items Section */}
           <Card>
             <CardHeader>
@@ -297,64 +550,65 @@ export default function Billing() {
                   Aucun article ajouté. Cliquez sur "Ajouter" pour commencer.
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {billingData.items.map((item) => (
-                    <div key={item.id} className="grid gap-4 md:grid-cols-6 items-end p-4 border rounded-lg">
-                      <div className="md:col-span-2">
-                        <Label>Médicament</Label>
-                        <Select 
-                          value={item.medicationId} 
-                          onValueChange={(value) => updateItem(item.id, 'medicationId', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableMedications.map((medication) => (
-                        <SelectItem key={medication.id} value={medication.id?.toString() || ""}>
-                          {medication.name} - {medication.price}€
-                        </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <Label>Prix unitaire</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={item.unitPrice}
-                          onChange={(e) => updateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label>Quantité</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label>Total</Label>
-                        <div className="h-9 px-3 py-2 bg-muted rounded-md flex items-center">
-                          {item.total.toFixed(2)} €
-                        </div>
-                      </div>
-                      
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => removeItem(item.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[40%]">Désignation</TableHead>
+                        <TableHead className="w-[15%]">Prix unitaire</TableHead>
+                        <TableHead className="w-[15%]">Quantité</TableHead>
+                        <TableHead className="w-[15%]">Total</TableHead>
+                        <TableHead className="w-[15%]">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {billingData.items.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            <ProductSelector
+                              itemId={item.id}
+                              selectedMedicationId={item.medicationId}
+                              medicationName={item.medicationName}
+                              onSelect={(medication) => updateItem(item.id, 'medicationId', medication.id?.toString() || "")}
+                              availableMedications={availableMedications}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={item.unitPrice}
+                              onChange={(e) => updateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                              className="w-full"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={item.quantity}
+                              onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                              className="w-full"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">
+                              {item.total.toFixed(2)} €
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => removeItem(item.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </CardContent>
