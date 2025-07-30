@@ -43,12 +43,12 @@ export function MedicationsList({ medications, onEdit, onDelete, onView, onUpdat
       label: 'Nom', 
       type: 'text',
       render: (value, medication) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {medication.stock < 10 && (
-            <AlertTriangle className="h-4 w-4 text-orange-500" />
+            <AlertTriangle className="h-3 w-3 text-orange-500" />
           )}
-          <Pill className="h-4 w-4 text-muted-foreground" />
-          {value}
+          <Pill className="h-3 w-3 text-muted-foreground" />
+          <span className="text-xs">{value}</span>
         </div>
       )
     },
@@ -59,8 +59,8 @@ export function MedicationsList({ medications, onEdit, onDelete, onView, onUpdat
       label: 'Stock', 
       type: 'number',
       render: (value) => (
-        <div className="flex items-center gap-2">
-          <span>{value}</span>
+        <div className="flex items-center gap-1">
+          <span className="text-xs">{value}</span>
           {getStockBadge(value)}
         </div>
       )
@@ -70,9 +70,9 @@ export function MedicationsList({ medications, onEdit, onDelete, onView, onUpdat
       label: 'Prix',
       type: 'number',
       render: (value) => (
-        <div className="flex items-center gap-2">
-          <Euro className="h-4 w-4 text-muted-foreground" />
-          {value.toFixed(2)} €
+        <div className="flex items-center gap-1">
+          <Euro className="h-3 w-3 text-muted-foreground" />
+          <span className="text-xs">{value.toFixed(2)} €</span>
         </div>
       )
     },
@@ -89,9 +89,9 @@ export function MedicationsList({ medications, onEdit, onDelete, onView, onUpdat
       render: (_, medication) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" className="h-6 w-6 p-0">
               <span className="sr-only">Ouvrir le menu</span>
-              <MoreVertical className="h-4 w-4" />
+              <MoreVertical className="h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

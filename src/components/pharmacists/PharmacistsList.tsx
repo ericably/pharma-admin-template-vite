@@ -37,9 +37,9 @@ export function PharmacistsList({ pharmacists, onEdit, onDelete, onView, onUpdat
       label: 'Nom', 
       type: 'text',
       render: (value) => (
-        <div className="flex items-center gap-2">
-          <UserCircle className="h-4 w-4 text-muted-foreground" />
-          {value}
+        <div className="flex items-center gap-1">
+          <UserCircle className="h-3 w-3 text-muted-foreground" />
+          <span className="text-xs">{value}</span>
         </div>
       )
     },
@@ -49,9 +49,9 @@ export function PharmacistsList({ pharmacists, onEdit, onDelete, onView, onUpdat
       key: 'licenseNumber', 
       label: 'N° Licence',
       render: (value) => (
-        <div className="flex items-center gap-2">
-          <BadgeIcon className="h-4 w-4 text-muted-foreground" />
-          {value}
+        <div className="flex items-center gap-1">
+          <BadgeIcon className="h-3 w-3 text-muted-foreground" />
+          <span className="text-xs">{value}</span>
         </div>
       )
     },
@@ -68,9 +68,9 @@ export function PharmacistsList({ pharmacists, onEdit, onDelete, onView, onUpdat
       render: (_, pharmacist) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" className="h-6 w-6 p-0">
               <span className="sr-only">Ouvrir le menu</span>
-              <MoreVertical className="h-4 w-4" />
+              <MoreVertical className="h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

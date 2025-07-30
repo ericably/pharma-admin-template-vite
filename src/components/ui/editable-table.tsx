@@ -90,13 +90,13 @@ export function EditableTable<T extends Record<string, any>>({
   return (
     <div className={cn("rounded-md border", className)}>
       <div className="relative w-full overflow-auto">
-        <table className="w-full caption-bottom text-sm">
+        <table className="w-full caption-bottom text-xs">
           <thead className="[&_tr]:border-b">
             <tr className="border-b transition-colors hover:bg-muted/50">
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0"
+                  className="h-8 px-2 text-left align-middle font-medium text-muted-foreground text-xs [&:has([role=checkbox])]:pr-0"
                 >
                   {column.label}
                 </th>
@@ -108,7 +108,7 @@ export function EditableTable<T extends Record<string, any>>({
               <tr className="border-b transition-colors hover:bg-muted/50">
                 <td 
                   colSpan={columns.length} 
-                  className="p-4 align-middle text-center py-6 text-muted-foreground"
+                  className="p-2 align-middle text-center py-4 text-muted-foreground text-xs"
                 >
                   Aucune donnée trouvée
                 </td>
@@ -127,44 +127,44 @@ export function EditableTable<T extends Record<string, any>>({
                     return (
                       <td
                         key={column.key}
-                        className="p-4 align-middle [&:has([role=checkbox])]:pr-0"
+                        className="p-2 align-middle [&:has([role=checkbox])]:pr-0"
                       >
                         {editing ? (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <Input
                               type={column.type || 'text'}
                               value={editValue}
                               onChange={(e) => setEditValue(e.target.value)}
                               onKeyDown={handleKeyPress}
-                              className="h-8"
+                              className="h-6 text-xs"
                               autoFocus
                             />
                             <div className="flex gap-1">
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="h-8 w-8 p-0"
+                                className="h-6 w-6 p-0"
                                 onClick={saveEdit}
                                 disabled={isLoading}
                               >
-                                <Check className="h-4 w-4 text-green-600" />
+                                <Check className="h-3 w-3 text-green-600" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="h-8 w-8 p-0"
+                                className="h-6 w-6 p-0"
                                 onClick={cancelEdit}
                                 disabled={isLoading}
                               >
-                                <X className="h-4 w-4 text-red-600" />
+                                <X className="h-3 w-3 text-red-600" />
                               </Button>
                             </div>
                           </div>
                         ) : (
                           <div 
                             className={cn(
-                              "flex items-center gap-2 min-h-[32px]",
-                              column.editable !== false && "cursor-pointer hover:bg-muted/50 rounded px-2 py-1 -mx-2 -my-1"
+                              "flex items-center gap-1 min-h-[24px] text-xs",
+                              column.editable !== false && "cursor-pointer hover:bg-muted/50 rounded px-1 py-0.5 -mx-1 -my-0.5"
                             )}
                             onClick={() => {
                               if (column.editable !== false) {
@@ -176,7 +176,7 @@ export function EditableTable<T extends Record<string, any>>({
                               {column.render ? column.render(cellValue, item) : cellValue}
                             </span>
                             {column.editable !== false && (
-                              <Edit className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100" />
+                              <Edit className="h-2.5 w-2.5 text-muted-foreground opacity-0 group-hover:opacity-100" />
                             )}
                           </div>
                         )}
