@@ -9,26 +9,26 @@ import CustomerOrdersTab from "@/components/orders/CustomerOrdersTab";
 
 export default function Orders() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 space-y-8 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-3 space-y-4 animate-fade-in">
       {/* Header Section with Enhanced Gradient */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 p-8 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 p-4 text-white shadow-xl">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                  <Package className="h-8 w-8 text-white" />
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <Package className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight">Gestion des Commandes</h1>
-                  <p className="text-purple-100 text-lg mt-1">Gérez vos commandes fournisseurs et clients</p>
+                  <h1 className="text-2xl font-bold tracking-tight">Gestion des Commandes</h1>
+                  <p className="text-purple-100 text-sm">Gérez vos commandes fournisseurs et clients</p>
                 </div>
               </div>
             </div>
-            <div className="text-right space-y-2">
-              <div className="text-purple-100 text-sm">Commandes Actives</div>
-              <div className="text-3xl font-bold">24</div>
+            <div className="text-right space-y-1">
+              <div className="text-purple-100 text-xs">Commandes Actives</div>
+              <div className="text-2xl font-bold">24</div>
             </div>
           </div>
         </div>
@@ -37,73 +37,73 @@ export default function Orders() {
       </div>
 
       {/* Stats Cards with Enhanced Design */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-4">
-        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <ShoppingCart className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <ShoppingCart className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Fournisseurs</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Fournisseurs</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">12</div>
-            <p className="text-emerald-100">Commandes en cours</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">12</div>
+            <p className="text-emerald-100 text-sm">Commandes en cours</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <Package className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <Package className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Clients</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Clients</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">12</div>
-            <p className="text-blue-100">Commandes clients</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">12</div>
+            <p className="text-blue-100 text-sm">Commandes clients</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <Clock className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <Clock className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">En attente</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">En attente</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">5</div>
-            <p className="text-orange-100">En traitement</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">5</div>
+            <p className="text-orange-100 text-sm">En traitement</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <TrendingUp className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <TrendingUp className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Total</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Total</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">€2,450</div>
-            <p className="text-purple-100">Valeur totale</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">€2,450</div>
+            <p className="text-purple-100 text-sm">Valeur totale</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content */}
       <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl text-gray-800">Gestion des Commandes</CardTitle>
-          <CardDescription className="text-gray-600">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-gray-800">Gestion des Commandes</CardTitle>
+          <CardDescription className="text-gray-600 text-sm">
             Gérez vos commandes fournisseurs et les prescriptions clients
           </CardDescription>
         </CardHeader>
