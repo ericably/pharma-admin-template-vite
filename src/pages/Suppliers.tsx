@@ -201,26 +201,26 @@ export default function Suppliers() {
   const inactiveSuppliers = suppliers.filter(s => !s.status).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 space-y-8 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-3 space-y-4 animate-fade-in">
       {/* Header Section with Enhanced Gradient */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-orange-600 via-orange-700 to-red-800 p-8 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 via-orange-700 to-red-800 p-4 text-white shadow-xl">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                  <Truck className="h-8 w-8 text-white" />
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <Truck className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight">Gestion des Fournisseurs</h1>
-                  <p className="text-orange-100 text-lg mt-1">Gérez vos fournisseurs partenaires</p>
+                  <h1 className="text-2xl font-bold tracking-tight">Gestion des Fournisseurs</h1>
+                  <p className="text-orange-100 text-sm">Gérez vos fournisseurs partenaires</p>
                 </div>
               </div>
             </div>
-            <div className="text-right space-y-2">
-              <div className="text-orange-100 text-sm">Total Fournisseurs</div>
-              <div className="text-3xl font-bold">{suppliers.length}</div>
+            <div className="text-right space-y-1">
+              <div className="text-orange-100 text-xs">Total Fournisseurs</div>
+              <div className="text-2xl font-bold">{suppliers.length}</div>
             </div>
           </div>
         </div>
@@ -229,49 +229,49 @@ export default function Suppliers() {
       </div>
 
       {/* Stats Cards with Enhanced Design */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
-        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <Building className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <Building className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Total</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Total</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">{suppliers.length}</div>
-            <p className="text-emerald-100">Fournisseurs enregistrés</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">{suppliers.length}</div>
+            <p className="text-emerald-100 text-sm">Fournisseurs enregistrés</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <UserCheck className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <UserCheck className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Actifs</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Actifs</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">{activeSuppliers}</div>
-            <p className="text-blue-100">Fournisseurs actifs</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">{activeSuppliers}</div>
+            <p className="text-blue-100 text-sm">Fournisseurs actifs</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <UserX className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <UserX className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Inactifs</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Inactifs</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">{inactiveSuppliers}</div>
-            <p className="text-orange-100">Fournisseurs inactifs</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">{inactiveSuppliers}</div>
+            <p className="text-orange-100 text-sm">Fournisseurs inactifs</p>
           </CardContent>
         </Card>
       </div>

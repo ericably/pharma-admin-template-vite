@@ -8,22 +8,22 @@ import { PharmacySettingsForm } from "@/components/settings/PharmacySettingsForm
 
 export default function Settings() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 p-3">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Paramètres</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-2xl font-bold tracking-tight">Paramètres</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
           Gérez les paramètres de votre pharmacie
         </p>
       </div>
 
-      <div className="grid gap-6">
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Informations de la Pharmacie</h3>
+      <div className="grid gap-4">
+        <Card className="p-4">
+          <h3 className="text-base font-semibold mb-3">Informations de la Pharmacie</h3>
           <PharmacySettingsForm />
         </Card>
 
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Notifications</h3>
+        <Card className="p-4">
+          <h3 className="text-base font-semibold mb-3">Notifications</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -46,8 +46,8 @@ export default function Settings() {
           </div>
         </Card>
 
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Sécurité</h3>
+        <Card className="p-4">
+          <h3 className="text-base font-semibold mb-3">Sécurité</h3>
           <div className="space-y-4">
             <div className="grid gap-2">
               <Label htmlFor="current-password">Mot de passe actuel</Label>

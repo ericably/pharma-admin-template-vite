@@ -80,72 +80,72 @@ export function DoctorForm({ isOpen, onClose, onSubmit, initialData }: DoctorFor
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
-          <DialogTitle>{isEditing ? "Modifier" : "Ajouter"} un Médecin</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-[480px]">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-lg">{isEditing ? "Modifier" : "Ajouter"} un Médecin</DialogTitle>
+          <DialogDescription className="text-sm">
             {isEditing ? "Modifiez les informations du médecin." : "Ajoutez les informations du nouveau médecin."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(handleSubmit)}>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="lastName" className="text-right">Nom</Label>
+          <div className="grid gap-3 py-3">
+            <div className="grid grid-cols-4 items-center gap-3">
+              <Label htmlFor="lastName" className="text-right text-sm">Nom</Label>
               <Input
                 id="lastName"
-                className="col-span-3"
+                className="col-span-3 h-8 text-sm"
                 {...form.register("lastName", { required: true })}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right">Email</Label>
+            <div className="grid grid-cols-4 items-center gap-3">
+              <Label htmlFor="email" className="text-right text-sm">Email</Label>
               <Input
                 id="email"
                 type="email"
-                className="col-span-3"
+                className="col-span-3 h-8 text-sm"
                 {...form.register("email", { required: true })}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="phone" className="text-right">Téléphone</Label>
+            <div className="grid grid-cols-4 items-center gap-3">
+              <Label htmlFor="phone" className="text-right text-sm">Téléphone</Label>
               <Input
                 id="phone"
-                className="col-span-3"
+                className="col-span-3 h-8 text-sm"
                 {...form.register("phone", { required: true })}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="speciality" className="text-right">Spécialité</Label>
+            <div className="grid grid-cols-4 items-center gap-3">
+              <Label htmlFor="speciality" className="text-right text-sm">Spécialité</Label>
               <Input
                 id="speciality"
-                className="col-span-3"
+                className="col-span-3 h-8 text-sm"
                 {...form.register("speciality", { required: true })}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="licenseNumber" className="text-right">N° Licence</Label>
+            <div className="grid grid-cols-4 items-center gap-3">
+              <Label htmlFor="licenseNumber" className="text-right text-sm">N° Licence</Label>
               <Input
                 id="licenseNumber"
-                className="col-span-3"
+                className="col-span-3 h-8 text-sm"
                 {...form.register("licenseNumber", { required: true })}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">Actif</Label>
+            <div className="grid grid-cols-4 items-center gap-3">
+              <Label htmlFor="status" className="text-right text-sm">Actif</Label>
               <div className="col-span-3 flex items-center space-x-2">
                 <Switch
                   id="status"
                   checked={form.watch("status")}
                   onCheckedChange={handleStatusChange}
                 />
-                <Label htmlFor="status" className="text-sm">
+                <Label htmlFor="status" className="text-xs">
                   {form.watch("status") ? "Actif" : "Inactif"}
                 </Label>
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button type="submit" disabled={isLoading}>
+          <DialogFooter className="pt-3">
+            <Button type="submit" disabled={isLoading} size="sm">
               {isLoading ? "Enregistrement..." : (isEditing ? "Enregistrer" : "Ajouter")}
             </Button>
           </DialogFooter>

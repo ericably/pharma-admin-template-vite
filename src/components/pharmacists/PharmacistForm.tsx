@@ -78,95 +78,95 @@ export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: Pharm
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] bg-white border-0 shadow-2xl">
-        <DialogHeader className="pb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl">
-              <User className="h-6 w-6 text-white" />
+      <DialogContent className="sm:max-w-[480px] bg-white border-0 shadow-xl">
+        <DialogHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg">
+              <User className="h-4 w-4 text-white" />
             </div>
             <div>
-              <DialogTitle className="text-2xl text-gray-800">
+              <DialogTitle className="text-lg text-gray-800">
                 {isEditing ? "Modifier" : "Ajouter"} un Pharmacien
               </DialogTitle>
-              <DialogDescription className="text-gray-600 mt-1">
+              <DialogDescription className="text-gray-600 text-sm">
                 {isEditing ? "Modifiez les informations du pharmacien." : "Ajoutez les informations du nouveau pharmacien."}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
-
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          <div className="grid gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="lastName" className="text-gray-700 font-medium flex items-center gap-2">
-                <User className="h-4 w-4 text-blue-600" />
+        
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
+          <div className="grid gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="lastName" className="text-gray-700 font-medium flex items-center gap-1 text-sm">
+                <User className="h-3 w-3 text-blue-600" />
                 Nom complet
               </Label>
               <Input
                 id="lastName"
                 placeholder="Entrez le nom complet"
-                className="bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+                className="bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 h-8 text-sm"
                 {...form.register("lastName", { required: true })}
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700 font-medium flex items-center gap-2">
-                <Mail className="h-4 w-4 text-emerald-600" />
+            
+            <div className="space-y-1">
+              <Label htmlFor="email" className="text-gray-700 font-medium flex items-center gap-1 text-sm">
+                <Mail className="h-3 w-3 text-emerald-600" />
                 Adresse email
               </Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="exemple@email.com"
-                className="bg-gray-50 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500/20"
+                className="bg-gray-50 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500/20 h-8 text-sm"
                 {...form.register("email", { required: true })}
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-gray-700 font-medium flex items-center gap-2">
-                <Phone className="h-4 w-4 text-purple-600" />
+            
+            <div className="space-y-1">
+              <Label htmlFor="phone" className="text-gray-700 font-medium flex items-center gap-1 text-sm">
+                <Phone className="h-3 w-3 text-purple-600" />
                 Numéro de téléphone
               </Label>
               <Input
                 id="phone"
                 placeholder="+33 1 23 45 67 89"
-                className="bg-gray-50 border-gray-200 focus:border-purple-500 focus:ring-purple-500/20"
+                className="bg-gray-50 border-gray-200 focus:border-purple-500 focus:ring-purple-500/20 h-8 text-sm"
                 {...form.register("phone", { required: true })}
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="licenseNumber" className="text-gray-700 font-medium flex items-center gap-2">
-                <Award className="h-4 w-4 text-amber-600" />
+            
+            <div className="space-y-1">
+              <Label htmlFor="licenseNumber" className="text-gray-700 font-medium flex items-center gap-1 text-sm">
+                <Award className="h-3 w-3 text-amber-600" />
                 Numéro de licence
               </Label>
               <Input
                 id="licenseNumber"
                 placeholder="LIC-123456789"
-                className="bg-gray-50 border-gray-200 focus:border-amber-500 focus:ring-amber-500/20 font-mono"
+                className="bg-gray-50 border-gray-200 focus:border-amber-500 focus:ring-amber-500/20 font-mono h-8 text-sm"
                 {...form.register("licenseNumber", { required: true })}
               />
             </div>
-
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200">
-              <div className="space-y-1">
-                <Label htmlFor="status" className="text-gray-700 font-medium">
+            
+            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
+              <div className="space-y-0.5">
+                <Label htmlFor="status" className="text-gray-700 font-medium text-sm">
                   Statut du pharmacien
                 </Label>
-                <div className="text-sm text-gray-600">
+                <div className="text-xs text-gray-600">
                   {form.watch("status") ? "Le pharmacien est actif et peut exercer" : "Le pharmacien est inactif"}
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
                 <Switch
                   id="status"
                   checked={form.watch("status")}
                   onCheckedChange={handleStatusChange}
                   className="data-[state=checked]:bg-emerald-500"
                 />
-                <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
                   form.watch("status") 
                     ? "bg-emerald-100 text-emerald-700" 
                     : "bg-gray-100 text-gray-600"
@@ -176,28 +176,30 @@ export function PharmacistForm({ isOpen, onClose, onSubmit, initialData }: Pharm
               </div>
             </div>
           </div>
-
-          <DialogFooter className="pt-6">
-            <Button
-              type="button"
-              variant="outline"
+          
+          <DialogFooter className="pt-3">
+            <Button 
+              type="button" 
+              variant="outline" 
               onClick={onClose}
+              size="sm"
               className="border-gray-200 text-gray-600 hover:bg-gray-50"
             >
               Annuler
             </Button>
-            <Button
-              type="submit"
+            <Button 
+              type="submit" 
               disabled={isLoading}
+              size="sm"
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                   Enregistrement...
                 </div>
               ) : (
-                isEditing ? "Enregistrer les modifications" : "Ajouter le pharmacien"
+                isEditing ? "Enregistrer" : "Ajouter"
               )}
             </Button>
           </DialogFooter>

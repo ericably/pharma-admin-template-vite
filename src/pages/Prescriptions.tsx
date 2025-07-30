@@ -141,7 +141,6 @@ export default function Prescriptions() {
   });
   
   const getStatusBadge = (status: boolean) => {
-    console.log(status)
     switch(status) {
       case false:
         return <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">En attente</Badge>;
@@ -224,7 +223,7 @@ export default function Prescriptions() {
         { medication: "", medicationId: "", dosage: "", quantity: 1, instructions: "" }
       ]);
       // Refresh the prescriptions list
-      await queryClient.invalidateQueries({queryKey: ['prescriptions']});
+      queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
     } catch (error) {
       toast({
         title: "Erreur",
@@ -242,7 +241,7 @@ export default function Prescriptions() {
         description: "L'ordonnance a été convertie en commande avec succès.",
       });
       // Refresh the customer orders (if needed)
-      await queryClient.invalidateQueries({queryKey: ['customer-orders']});
+      queryClient.invalidateQueries({ queryKey: ['customer-orders'] });
     } catch (error) {
       toast({
         title: "Erreur",
@@ -388,26 +387,26 @@ export default function Prescriptions() {
   const readyCount = prescriptions.filter(p => p.status === "Prêt pour retrait").length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 space-y-8 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-3 space-y-4 animate-fade-in">
       {/* Header Section with Enhanced Gradient */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600 via-purple-700 to-pink-800 p-8 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 via-purple-700 to-pink-800 p-4 text-white shadow-xl">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                  <FileText className="h-8 w-8 text-white" />
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <FileText className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight">Gestion des commandes</h1>
-                  <p className="text-purple-100 text-lg mt-1">Créer, préparer et gérer les commandes</p>
+                  <h1 className="text-2xl font-bold tracking-tight">Gestion des commandes</h1>
+                  <p className="text-purple-100 text-sm">Créer, préparer et gérer les commandes</p>
                 </div>
               </div>
             </div>
-            <div className="text-right space-y-2">
-              <div className="text-purple-100 text-sm">Total commandes</div>
-              <div className="text-3xl font-bold">{prescriptions.length}</div>
+            <div className="text-right space-y-1">
+              <div className="text-purple-100 text-xs">Total commandes</div>
+              <div className="text-2xl font-bold">{prescriptions.length}</div>
             </div>
           </div>
         </div>
@@ -416,64 +415,64 @@ export default function Prescriptions() {
       </div>
 
       {/* Stats Cards with Enhanced Design */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-4">
-        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <FileText className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <FileText className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Total</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Total</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">{prescriptions.length}</div>
-            <p className="text-emerald-100">Factures</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">{prescriptions.length}</div>
+            <p className="text-emerald-100 text-sm">Factures</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <Clock className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <Clock className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">En attente</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">En attente</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">{pendingCount}</div>
-            <p className="text-orange-100">En attente</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">{pendingCount}</div>
+            <p className="text-orange-100 text-sm">En attente</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <Check className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <Check className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Préparé</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Préparé</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">{preparedCount}</div>
-            <p className="text-blue-100">Préparées</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">{preparedCount}</div>
+            <p className="text-blue-100 text-sm">Préparées</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <Package className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <Package className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Prêtes</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Prêtes</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">{readyCount}</div>
-            <p className="text-purple-100">Prêtes retrait</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">{readyCount}</div>
+            <p className="text-purple-100 text-sm">Prêtes retrait</p>
           </CardContent>
         </Card>
       </div>

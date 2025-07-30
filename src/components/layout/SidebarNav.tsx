@@ -28,13 +28,13 @@ interface NavigationItem {
 const navigation: NavigationItem[] = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Inventaire", href: "/inventory", icon: Pill },
-  { name: "Clients", href: "/patients", icon: Users },
+  { name: "Patients", href: "/patients", icon: Users },
   { name: "Facturation", href: "/prescriptions", icon: ClipboardList },
   { name: "Commandes", href: "/orders", icon: ShoppingBag },
-  { name: "Facturation Test", href: "/billing", icon: Receipt },
   { name: "Pharmaciens", href: "/pharmacists", icon: Hospital },
   { name: "Docteurs", href: "/doctors", icon: UserRound },
   { name: "Fournisseurs", href: "/suppliers", icon: Truck },
+  { name: "Facturation Test", href: "/billing", icon: BarChart4 },
   { name: "Rapports", href: "/reports", icon: BarChart4 },
   { name: "Paramètres", href: "/settings", icon: Settings },
 ];

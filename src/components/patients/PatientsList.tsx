@@ -35,9 +35,9 @@ export function PatientsList({ patients, onEdit, onDelete, onView, onCreatePresc
       label: 'Nom',
       type: 'text',
       render: (value) => (
-        <div className="flex items-center gap-2">
-          <UserCircle className="h-4 w-4 text-muted-foreground" />
-          {value}
+        <div className="flex items-center gap-1">
+          <UserCircle className="h-3 w-3 text-muted-foreground" />
+          <span className="text-xs">{value}</span>
         </div>
       )
     },
@@ -47,9 +47,9 @@ export function PatientsList({ patients, onEdit, onDelete, onView, onCreatePresc
       key: 'insurance',
       label: 'Assurance',
       render: (value) => (
-        <div className="flex items-center gap-2">
-          <Shield className="h-4 w-4 text-muted-foreground" />
-          {value}
+        <div className="flex items-center gap-1">
+          <Shield className="h-3 w-3 text-muted-foreground" />
+          <span className="text-xs">{value}</span>
         </div>
       )
     },
@@ -66,9 +66,9 @@ export function PatientsList({ patients, onEdit, onDelete, onView, onCreatePresc
       render: (_, patient) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" className="h-6 w-6 p-0">
               <span className="sr-only">Ouvrir le menu</span>
-              <MoreVertical className="h-4 w-4" />
+              <MoreVertical className="h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

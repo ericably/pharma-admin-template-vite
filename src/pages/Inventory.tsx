@@ -241,26 +241,26 @@ export default function Inventory() {
   const activeCount = medications.filter(m => m.status === "Actif").length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 space-y-8 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-3 space-y-4 animate-fade-in">
       {/* Header Section with Enhanced Gradient */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-green-600 via-green-700 to-emerald-800 p-8 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-600 via-green-700 to-emerald-800 p-4 text-white shadow-xl">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                  <Package className="h-8 w-8 text-white" />
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <Package className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight">Gestion de l'Inventaire</h1>
-                  <p className="text-green-100 text-lg mt-1">Gérez votre stock de médicaments</p>
+                  <h1 className="text-2xl font-bold tracking-tight">Gestion de l'Inventaire</h1>
+                  <p className="text-green-100 text-sm">Gérez votre stock de médicaments</p>
                 </div>
               </div>
             </div>
-            <div className="text-right space-y-2">
-              <div className="text-green-100 text-sm">Total Médicaments</div>
-              <div className="text-3xl font-bold">{medications.length}</div>
+            <div className="text-right space-y-1">
+              <div className="text-green-100 text-xs">Total Médicaments</div>
+              <div className="text-2xl font-bold">{medications.length}</div>
             </div>
           </div>
         </div>
@@ -269,64 +269,64 @@ export default function Inventory() {
       </div>
 
       {/* Stats Cards with Enhanced Design */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-4">
-        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <Package2 className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <Package2 className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Total</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Total</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">{medications.length}</div>
-            <p className="text-emerald-100">Médicaments</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">{medications.length}</div>
+            <p className="text-emerald-100 text-sm">Médicaments</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <TrendingUp className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <TrendingUp className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Actifs</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Actifs</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">{activeCount}</div>
-            <p className="text-blue-100">En stock actif</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">{activeCount}</div>
+            <p className="text-blue-100 text-sm">En stock actif</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <AlertTriangle className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <AlertTriangle className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Stock Bas</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Stock Bas</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">{lowStockCount}</div>
-            <p className="text-orange-100">Stock faible</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">{lowStockCount}</div>
+            <p className="text-orange-100 text-sm">Stock faible</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <TrendingDown className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <TrendingDown className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Rupture</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Rupture</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">{outOfStockCount}</div>
-            <p className="text-red-100">Rupture de stock</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">{outOfStockCount}</div>
+            <p className="text-red-100 text-sm">Rupture de stock</p>
           </CardContent>
         </Card>
       </div>
@@ -334,12 +334,12 @@ export default function Inventory() {
       {/* Alert Section */}
       {(lowStockCount > 0 || outOfStockCount > 0) && (
         <Card className="bg-gradient-to-r from-orange-100 to-red-100 border-orange-200 shadow-lg">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center gap-2 text-orange-800">
-              <AlertTriangle className="h-5 w-5" />
+              <AlertTriangle className="h-4 w-4" />
               <div>
-                <p className="font-medium">Alertes de Stock</p>
-                <p className="text-sm">
+                <p className="font-medium text-sm">Alertes de Stock</p>
+                <p className="text-xs">
                   {outOfStockCount > 0 && `${outOfStockCount} médicament(s) en rupture de stock`}
                   {outOfStockCount > 0 && lowStockCount > 0 && " • "}
                   {lowStockCount > 0 && `${lowStockCount} médicament(s) avec stock faible`}
@@ -352,11 +352,11 @@ export default function Inventory() {
 
       {/* Main Content */}
       <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-        <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-xl text-gray-800">Inventaire des Médicaments</CardTitle>
-              <CardDescription className="text-gray-600">
+              <CardTitle className="text-lg text-gray-800">Inventaire des Médicaments</CardTitle>
+              <CardDescription className="text-gray-600 text-sm">
                 Gérez votre stock de médicaments, surveillez les niveaux et gérez les fournisseurs
               </CardDescription>
             </div>

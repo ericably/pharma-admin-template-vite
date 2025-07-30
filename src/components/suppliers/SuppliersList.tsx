@@ -36,9 +36,9 @@ export function SuppliersList({ suppliers, onEdit, onDelete, onView, onUpdate }:
       key: 'licenseNumber', 
       label: 'N° Licence',
       render: (value) => (
-        <div className="flex items-center gap-2">
-          <Barcode className="h-4 w-4 text-muted-foreground" />
-          {value}
+        <div className="flex items-center gap-1">
+          <Barcode className="h-3 w-3 text-muted-foreground" />
+          <span className="text-xs">{value}</span>
         </div>
       )
     },
@@ -55,9 +55,9 @@ export function SuppliersList({ suppliers, onEdit, onDelete, onView, onUpdate }:
       render: (_, supplier) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" className="h-6 w-6 p-0">
               <span className="sr-only">Ouvrir le menu</span>
-              <MoreVertical className="h-4 w-4" />
+              <MoreVertical className="h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

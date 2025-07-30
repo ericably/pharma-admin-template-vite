@@ -22,26 +22,26 @@ const sampleSalesData = [
 
 export default function Reports() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 space-y-8 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-3 space-y-4 animate-fade-in">
       {/* Header Section with Enhanced Gradient */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 p-8 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 p-4 text-white shadow-xl">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                  <BarChart3 className="h-8 w-8 text-white" />
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <BarChart3 className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight">Rapports & Analyses</h1>
-                  <p className="text-emerald-100 text-lg mt-1">Consultez vos données et statistiques</p>
+                  <h1 className="text-2xl font-bold tracking-tight">Rapports & Analyses</h1>
+                  <p className="text-emerald-100 text-sm">Consultez vos données et statistiques</p>
                 </div>
               </div>
             </div>
-            <div className="text-right space-y-2">
-              <div className="text-emerald-100 text-sm">Rapports Disponibles</div>
-              <div className="text-3xl font-bold">5</div>
+            <div className="text-right space-y-1">
+              <div className="text-emerald-100 text-xs">Rapports Disponibles</div>
+              <div className="text-2xl font-bold">5</div>
             </div>
           </div>
         </div>
@@ -50,70 +50,70 @@ export default function Reports() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-4">
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <TrendingUp className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <TrendingUp className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">CA</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">CA</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">€12,450</div>
-            <p className="text-blue-100">Chiffre d'affaires</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">€12,450</div>
+            <p className="text-blue-100 text-sm">Chiffre d'affaires</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <PieChart className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <PieChart className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Ventes</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Ventes</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">342</div>
-            <p className="text-emerald-100">Articles vendus</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">342</div>
+            <p className="text-emerald-100 text-sm">Articles vendus</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <FileText className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <FileText className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Ordonnances</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Ordonnances</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">89</div>
-            <p className="text-purple-100">Traitées ce mois</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">89</div>
+            <p className="text-purple-100 text-sm">Traitées ce mois</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-3">
+        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <Calendar className="h-6 w-6" />
+              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                <Calendar className="h-4 w-4" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20">Période</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Période</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-2">30</div>
-            <p className="text-orange-100">Jours analysés</p>
+          <CardContent className="pt-0">
+            <div className="text-2xl font-bold mb-1">30</div>
+            <p className="text-orange-100 text-sm">Jours analysés</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Reports Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-4">
             <div className="flex items-center space-x-4">

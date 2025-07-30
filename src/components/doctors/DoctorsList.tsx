@@ -28,14 +28,14 @@ export function DoctorsList({ doctors, onEdit, onDelete, onView, onUpdate }: Doc
 
   const columns: EditableColumn<Doctor>[] = [
     { key: 'id', label: 'ID', editable: false },
-    {
-      key: 'name',
-      label: 'Nom',
+    { 
+      key: 'name', 
+      label: 'Nom', 
       type: 'text',
       render: (value) => (
-        <div className="flex items-center gap-2">
-          <UserCircle className="h-4 w-4 text-muted-foreground" />
-          {value}
+        <div className="flex items-center gap-1">
+          <UserCircle className="h-3 w-3 text-muted-foreground" />
+          <span className="text-xs">{value}</span>
         </div>
       )
     },
@@ -43,48 +43,48 @@ export function DoctorsList({ doctors, onEdit, onDelete, onView, onUpdate }: Doc
     { key: 'phone', label: 'Téléphone', type: 'tel' },
     { key: 'speciality', label: 'Spécialité', type: 'text' },
     { key: 'licenseNumber', label: 'N° Licence', type: 'text' },
-    {
-      key: 'status',
-      label: 'Statut',
+    { 
+      key: 'status', 
+      label: 'Statut', 
       editable: false,
       render: (value) => getStatusBadge(value)
     },
-    {
-      key: 'actions',
-      label: 'Actions',
+    { 
+      key: 'actions', 
+      label: 'Actions', 
       editable: false,
       render: (_, doctor) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" className="h-6 w-6 p-0">
               <span className="sr-only">Ouvrir le menu</span>
-              <MoreVertical className="h-4 w-4" />
+              <MoreVertical className="h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {onView && (
-              <DropdownMenuItem onClick={() => onView(doctor)}>
-                <Eye className="mr-2 h-4 w-4" />
+              <DropdownMenuItem onClick={() => onView(doctor)} className="text-xs">
+                <Eye className="mr-1 h-3 w-3" />
                 Voir Détails
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => onEdit(doctor)}>
-              <Edit className="mr-2 h-4 w-4" />
+            <DropdownMenuItem onClick={() => onEdit(doctor)} className="text-xs">
+              <Edit className="mr-1 h-3 w-3" />
               Modifier
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <FilePlus className="mr-2 h-4 w-4" />
+            <DropdownMenuItem className="text-xs">
+              <FilePlus className="mr-1 h-3 w-3" />
               Nouvelle Ordonnance
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <FileText className="mr-2 h-4 w-4" />
+            <DropdownMenuItem className="text-xs">
+              <FileText className="mr-1 h-3 w-3" />
               Voir Historique
             </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-600"
+            <DropdownMenuItem 
+              className="text-red-600 text-xs"
               onClick={() => onDelete(doctor)}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
+              <Trash2 className="mr-1 h-3 w-3" />
               Supprimer
             </DropdownMenuItem>
           </DropdownMenuContent>
