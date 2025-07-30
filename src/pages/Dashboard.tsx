@@ -59,23 +59,23 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-4 animate-fade-in">
       {/* Header Section with Gradient */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 p-4 text-white shadow-xl">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight mb-2">
+              <h1 className="text-2xl font-bold tracking-tight mb-1">
                 Bonjour, Dr. PharmaSys
               </h1>
-              <p className="text-emerald-100 text-lg">
+              <p className="text-emerald-100 text-sm">
                 Vous avez <span className="font-semibold text-white">5 rendez-vous</span> aujourd'hui
               </p>
             </div>
             <div className="text-right">
-              <div className="text-emerald-100 text-sm">Aujourd'hui</div>
-              <div className="text-2xl font-bold">{currentTime}</div>
+              <div className="text-emerald-100 text-xs">Aujourd'hui</div>
+              <div className="text-lg font-bold">{currentTime}</div>
             </div>
           </div>
         </div>
@@ -84,7 +84,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         <div className="transform hover:scale-105 transition-all duration-300">
           <StatCard
             title="Total Medications"
@@ -129,7 +129,7 @@ export default function Dashboard() {
 
       {/* Today's Schedule */}
       <Card className="shadow-lg border-0 bg-gradient-to-r from-white to-gray-50">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-emerald-100 rounded-lg">
               <Calendar className="h-5 w-5 text-emerald-600" />
@@ -142,29 +142,29 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-              <div className="text-2xl font-bold text-emerald-600">07:30 - 07:40</div>
-              <div className="text-sm text-gray-600 mt-1">Motif: Hello on se voit en ligne...</div>
+            <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+              <div className="text-lg font-bold text-emerald-600">07:30 - 07:40</div>
+              <div className="text-xs text-gray-600 mt-1">Motif: Hello on se voit en ligne...</div>
               <div className="text-xs text-emerald-500 mt-1">En ligne - KOFFI Yao</div>
             </div>
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-              <div className="text-2xl font-bold text-amber-600">15:30 - 15:40</div>
-              <div className="text-sm text-gray-600 mt-1">Motif: bj lagon...</div>
+            <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+              <div className="text-lg font-bold text-amber-600">15:30 - 15:40</div>
+              <div className="text-xs text-gray-600 mt-1">Motif: bj lagon...</div>
               <div className="text-xs text-amber-500 mt-1">À domicile - KOFFI Yao</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue="overview" className="space-y-3">
         <TabsList className="bg-white shadow-md border-0 p-1 rounded-xl">
           <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-emerald-500 data-[state=active]:text-white transition-all duration-300">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="sales" className="rounded-lg data-[state=active]:bg-emerald-500 data-[state=active]:text-white transition-all duration-300">Ventes</TabsTrigger>
           <TabsTrigger value="inventory" className="rounded-lg data-[state=active]:bg-emerald-500 data-[state=active]:text-white transition-all duration-300">Inventaire</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+        <TabsContent value="overview" className="space-y-3">
+          <div className="grid gap-3 grid-cols-1 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <RecentActivityCard activities={recentActivities} />
             </div>
