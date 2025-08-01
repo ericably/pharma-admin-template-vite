@@ -2,8 +2,8 @@ import apiClient from '../apiClient';
 
 // Type definitions
 export interface Medication {
-  '@id'?: string;
-  id?: string;
+  '@id'?: number;
+  id?: number ; // Changed from optional to required to match component usage
   name: string;
   category?: string;
   description?: string;

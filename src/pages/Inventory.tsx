@@ -241,26 +241,26 @@ export default function Inventory() {
   const activeCount = medications.filter(m => m.status === "Actif").length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-3 space-y-4 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-2 space-y-2 animate-fade-in">
       {/* Header Section with Enhanced Gradient */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-600 via-green-700 to-emerald-800 p-4 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-green-600 via-green-700 to-emerald-800 p-3 text-white shadow-xl">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between">
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                  <Package className="h-5 w-5 text-white" />
+                <div className="p-1.5 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <Package className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold tracking-tight">Gestion de l'Inventaire</h1>
-                  <p className="text-green-100 text-sm">Gérez votre stock de médicaments</p>
+                  <h1 className="text-lg font-bold tracking-tight">Gestion de l'Inventaire</h1>
+                  <p className="text-green-100 text-xs">Gérez votre stock de médicaments</p>
                 </div>
               </div>
             </div>
-            <div className="text-right space-y-1">
+            <div className="text-right space-y-0.5">
               <div className="text-green-100 text-xs">Total Médicaments</div>
-              <div className="text-2xl font-bold">{medications.length}</div>
+              <div className="text-lg font-bold">{medications.length}</div>
             </div>
           </div>
         </div>

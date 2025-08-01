@@ -39,20 +39,20 @@ export function RecentActivityCard({ activities }: RecentActivityCardProps) {
 
   return (
     <Card className="col-span-3">
-      <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
-        <CardDescription>Latest actions in the system</CardDescription>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">Recent Activity</CardTitle>
+        <CardDescription className="text-xs">Latest actions in the system</CardDescription>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[400px] pr-4">
-          <div className="space-y-6">
+        <ScrollArea className="h-[300px] pr-2">
+          <div className="space-y-3">
             {activities.map((activity) => (
-              <div key={activity.id} className="flex flex-col space-y-2">
+              <div key={activity.id} className="flex flex-col space-y-1">
                 <div className="flex items-center justify-between">
-                  <div className="font-medium">{activity.title}</div>
+                  <div className="font-medium text-sm">{activity.title}</div>
                   {getActivityBadge(activity.type)}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   {activity.description}
                 </div>
                 <div className="flex items-center text-xs text-muted-foreground">

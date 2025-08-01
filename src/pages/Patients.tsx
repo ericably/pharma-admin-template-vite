@@ -241,26 +241,26 @@ export default function Patients() {
   const handleFormSubmit = selectedPatient ? handleUpdatePatient : handleCreatePatient;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-3 space-y-4 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-2 space-y-2 animate-fade-in">
       {/* Header Section with Enhanced Gradient */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-600 via-teal-700 to-cyan-800 p-4 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-teal-600 via-teal-700 to-cyan-800 p-3 text-white shadow-xl">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                  <Users className="h-8 w-8 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight">Gestion des Patients</h1>
-                  <p className="text-teal-100 text-sm mt-1">Gérez les informations et l'historique médical</p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                    <Users className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-lg font-bold tracking-tight">Gestion des Patients</h1>
+                    <p className="text-teal-100 text-xs mt-0.5">Gérez les informations et l'historique médical</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="text-right space-y-1">
+            <div className="text-right space-y-0.5">
               <div className="text-teal-100 text-xs">Total Patients</div>
-              <div className="text-xl font-bold">{patients.length}</div>
+              <div className="text-lg font-bold">{patients.length}</div>
             </div>
           </div>
         </div>
@@ -269,18 +269,18 @@ export default function Patients() {
       </div>
 
       {/* Stats Cards with Enhanced Design */}
-      <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
-        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-2">
+      <div className="grid gap-2 grid-cols-1 md:grid-cols-4">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-1">
             <div className="flex items-center justify-between">
-              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                <Users className="h-4 w-4" />
+              <div className="p-1.5 bg-white/20 backdrop-blur-sm rounded-lg">
+                <Users className="h-3 w-3" />
               </div>
               <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Total</Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-xl font-bold mb-1">{patients.length}</div>
+            <div className="text-lg font-bold mb-0.5">{patients.length}</div>
             <p className="text-emerald-100 text-xs">Patients enregistrés</p>
           </CardContent>
         </Card>
