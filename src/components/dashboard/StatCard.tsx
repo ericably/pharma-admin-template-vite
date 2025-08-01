@@ -29,21 +29,21 @@ export function StatCard({
 }: StatCardProps) {
   return (
     <Card className={cn("overflow-hidden", className)}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+      <CardHeader className="flex flex-row items-center justify-between pb-1">
+        <CardTitle className="text-xs font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        <div className={cn("p-2 rounded-md", iconBgColor)}>
-          <Icon className={cn("h-4 w-4", iconColor)} />
+        <div className={cn("p-1.5 rounded-md", iconBgColor)}>
+          <Icon className={cn("h-3 w-3", iconColor)} />
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-lg font-bold">{value}</div>
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
         )}
         {trend && (
-          <div className="flex items-center mt-1">
+          <div className="flex items-center mt-0.5">
             <span
               className={cn(
                 "text-xs font-medium",
