@@ -285,7 +285,7 @@ export default function Patients() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
@@ -296,11 +296,11 @@ export default function Patients() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold mb-2">{activePatients}</div>
-            <p className="text-blue-100">Patients actifs</p>
+            <p className="text-emerald-100">Patients actifs</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
@@ -311,11 +311,11 @@ export default function Patients() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold mb-2">{inactivePatients}</div>
-            <p className="text-orange-100">Patients inactifs</p>
+            <p className="text-emerald-100">Patients inactifs</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
@@ -326,7 +326,7 @@ export default function Patients() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold mb-2">{insuredPatients}</div>
-            <p className="text-purple-100">Avec assurance</p>
+            <p className="text-emerald-100">Avec assurance</p>
           </CardContent>
         </Card>
       </div>

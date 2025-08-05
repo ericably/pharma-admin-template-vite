@@ -169,11 +169,11 @@ export default function Dashboard() {
               <RecentActivityCard activities={recentActivities} />
             </div>
             
-            <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-red-50">
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-emerald-50">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-100 rounded-lg">
-                    <TrendingUp className="h-5 w-5 text-red-600" />
+                  <div className="p-2 bg-emerald-100 rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-emerald-600" />
                   </div>
                   <div>
                     <CardTitle className="text-lg">Alertes Stock</CardTitle>
@@ -185,7 +185,7 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">Amoxicillin 500mg</span>
-                    <span className="text-sm font-bold text-red-600 bg-red-100 px-2 py-1 rounded-full">15 units</span>
+                    <span className="text-sm font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full">15 units</span>
                   </div>
                   <Progress value={20} className="h-2" />
                 </div>
@@ -193,7 +193,7 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">Lisinopril 10mg</span>
-                    <span className="text-sm font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded-full">28 units</span>
+                    <span className="text-sm font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full">28 units</span>
                   </div>
                   <Progress value={40} className="h-2" />
                 </div>
@@ -201,7 +201,7 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">Atorvastatin 20mg</span>
-                    <span className="text-sm font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded-full">32 units</span>
+                    <span className="text-sm font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full">32 units</span>
                   </div>
                   <Progress value={35} className="h-2" />
                 </div>
@@ -211,11 +211,11 @@ export default function Dashboard() {
         </TabsContent>
         
         <TabsContent value="sales">
-          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-blue-50">
+          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-emerald-50">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <AreaChart className="h-5 w-5 text-blue-600" />
+                <div className="p-2 bg-emerald-100 rounded-lg">
+                  <AreaChart className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
                   <CardTitle>Évolution des ventes</CardTitle>
@@ -224,11 +224,11 @@ export default function Dashboard() {
               </div>
             </CardHeader>
             <CardContent className="pl-2">
-              <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-blue-200 rounded-xl bg-blue-50/50">
-                <div className="flex flex-col items-center text-blue-600">
+              <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-emerald-200 rounded-xl bg-emerald-50/50">
+                <div className="flex flex-col items-center text-emerald-600">
                   <AreaChart className="h-16 w-16 mb-4 opacity-60" />
                   <p className="text-lg font-medium">Graphique des ventes à venir</p>
-                  <p className="text-sm text-blue-500">Données en cours de chargement...</p>
+                  <p className="text-sm text-emerald-500">Données en cours de chargement...</p>
                 </div>
               </div>
             </CardContent>
@@ -236,11 +236,11 @@ export default function Dashboard() {
         </TabsContent>
         
         <TabsContent value="inventory">
-          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-purple-50">
+          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-emerald-50">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Pill className="h-5 w-5 text-purple-600" />
+                <div className="p-2 bg-emerald-100 rounded-lg">
+                  <Pill className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
                   <CardTitle>État de l'inventaire</CardTitle>
@@ -249,11 +249,11 @@ export default function Dashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-purple-200 rounded-xl bg-purple-50/50">
-                <div className="flex flex-col items-center text-purple-600">
+              <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-emerald-200 rounded-xl bg-emerald-50/50">
+                <div className="flex flex-col items-center text-emerald-600">
                   <Pill className="h-16 w-16 mb-4 opacity-60" />
                   <p className="text-lg font-medium">Vue d'ensemble de l'inventaire</p>
-                  <p className="text-sm text-purple-500">Données en cours de chargement...</p>
+                  <p className="text-sm text-emerald-500">Données en cours de chargement...</p>
                 </div>
               </div>
             </CardContent>

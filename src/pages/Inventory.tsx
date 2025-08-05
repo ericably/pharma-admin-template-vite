@@ -285,7 +285,7 @@ export default function Inventory() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -296,11 +296,11 @@ export default function Inventory() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="text-2xl font-bold mb-1">{activeCount}</div>
-            <p className="text-blue-100 text-sm">En stock actif</p>
+            <p className="text-emerald-100 text-sm">En stock actif</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -311,11 +311,11 @@ export default function Inventory() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="text-2xl font-bold mb-1">{lowStockCount}</div>
-            <p className="text-orange-100 text-sm">Stock faible</p>
+            <p className="text-emerald-100 text-sm">Stock faible</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -326,7 +326,7 @@ export default function Inventory() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="text-2xl font-bold mb-1">{outOfStockCount}</div>
-            <p className="text-red-100 text-sm">Rupture de stock</p>
+            <p className="text-emerald-100 text-sm">Rupture de stock</p>
           </CardContent>
         </Card>
       </div>

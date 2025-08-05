@@ -245,7 +245,7 @@ export default function Suppliers() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -256,11 +256,11 @@ export default function Suppliers() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="text-2xl font-bold mb-1">{activeSuppliers}</div>
-            <p className="text-blue-100 text-sm">Fournisseurs actifs</p>
+            <p className="text-emerald-100 text-sm">Fournisseurs actifs</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -271,7 +271,7 @@ export default function Suppliers() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="text-2xl font-bold mb-1">{inactiveSuppliers}</div>
-            <p className="text-orange-100 text-sm">Fournisseurs inactifs</p>
+            <p className="text-emerald-100 text-sm">Fournisseurs inactifs</p>
           </CardContent>
         </Card>
       </div>

@@ -53,7 +53,7 @@ export default function Orders() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -64,11 +64,11 @@ export default function Orders() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="text-2xl font-bold mb-1">12</div>
-            <p className="text-blue-100 text-sm">Commandes clients</p>
+            <p className="text-emerald-100 text-sm">Commandes clients</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -79,11 +79,11 @@ export default function Orders() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="text-2xl font-bold mb-1">5</div>
-            <p className="text-orange-100 text-sm">En traitement</p>
+            <p className="text-emerald-100 text-sm">En traitement</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -94,7 +94,7 @@ export default function Orders() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="text-2xl font-bold mb-1">€2,450</div>
-            <p className="text-purple-100 text-sm">Valeur totale</p>
+            <p className="text-emerald-100 text-sm">Valeur totale</p>
           </CardContent>
         </Card>
       </div>
