@@ -51,7 +51,7 @@ export default function Reports() {
 
       {/* Stats Cards */}
       <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -62,7 +62,7 @@ export default function Reports() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="text-2xl font-bold mb-1">€12,450</div>
-            <p className="text-blue-100 text-sm">Chiffre d'affaires</p>
+            <p className="text-emerald-100 text-sm">Chiffre d'affaires</p>
           </CardContent>
         </Card>
 
@@ -81,7 +81,7 @@ export default function Reports() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -92,11 +92,11 @@ export default function Reports() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="text-2xl font-bold mb-1">89</div>
-            <p className="text-purple-100 text-sm">Traitées ce mois</p>
+            <p className="text-emerald-100 text-sm">Traitées ce mois</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
@@ -107,7 +107,7 @@ export default function Reports() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="text-2xl font-bold mb-1">30</div>
-            <p className="text-orange-100 text-sm">Jours analysés</p>
+            <p className="text-emerald-100 text-sm">Jours analysés</p>
           </CardContent>
         </Card>
       </div>
