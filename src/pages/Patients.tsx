@@ -285,48 +285,48 @@ export default function Patients() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-1">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-0.5">
             <div className="flex items-center justify-between">
-              <div className="p-1.5 bg-white/20 backdrop-blur-sm rounded-lg">
-                <UserCheck className="h-4 w-4" />
+              <div className="p-1 bg-white/20 backdrop-blur-sm rounded">
+                <UserCheck className="h-3 w-3" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Actifs</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs px-1 py-0">Actifs</Badge>
             </div>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-xl font-bold mb-1">{activePatients}</div>
-            <p className="text-emerald-100 text-xs">Patients actifs</p>
+          <CardContent className="pt-0 pb-1">
+            <div className="text-lg font-bold mb-0.5">{activePatients}</div>
+            <p className="text-emerald-100 text-xs leading-tight">Patients actifs</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-1">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-0.5">
             <div className="flex items-center justify-between">
-              <div className="p-1.5 bg-white/20 backdrop-blur-sm rounded-lg">
-                <UserX className="h-4 w-4" />
+              <div className="p-1 bg-white/20 backdrop-blur-sm rounded">
+                <UserX className="h-3 w-3" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Inactifs</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs px-1 py-0">Inactifs</Badge>
             </div>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-xl font-bold mb-1">{inactivePatients}</div>
-            <p className="text-emerald-100 text-xs">Patients inactifs</p>
+          <CardContent className="pt-0 pb-1">
+            <div className="text-lg font-bold mb-0.5">{inactivePatients}</div>
+            <p className="text-emerald-100 text-xs leading-tight">Patients inactifs</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="pb-1">
+        <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-0.5">
             <div className="flex items-center justify-between">
-              <div className="p-1.5 bg-white/20 backdrop-blur-sm rounded-lg">
-                <Shield className="h-4 w-4" />
+              <div className="p-1 bg-white/20 backdrop-blur-sm rounded">
+                <Shield className="h-3 w-3" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Assurance</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs px-1 py-0">Assurance</Badge>
             </div>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-xl font-bold mb-1">{insuredPatients}</div>
-            <p className="text-emerald-100 text-xs">Avec assurance</p>
+          <CardContent className="pt-0 pb-1">
+            <div className="text-lg font-bold mb-0.5">{insuredPatients}</div>
+            <p className="text-emerald-100 text-xs leading-tight">Avec assurance</p>
           </CardContent>
         </Card>
       </div>

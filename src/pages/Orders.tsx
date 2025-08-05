@@ -54,47 +54,47 @@ export default function Orders() {
         </Card>
 
         <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-1">
             <div className="flex items-center justify-between">
-              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                <Package className="h-4 w-4" />
+              <div className="p-1.5 bg-white/20 backdrop-blur-sm rounded-lg">
+                <Package className="h-3 w-3" />
               </div>
               <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Clients</Badge>
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="text-2xl font-bold mb-1">12</div>
-            <p className="text-emerald-100 text-sm">Commandes clients</p>
+            <div className="text-xl font-bold mb-1">12</div>
+            <p className="text-emerald-100 text-xs">Commandes clients</p>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-1">
             <div className="flex items-center justify-between">
-              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                <Clock className="h-4 w-4" />
+              <div className="p-1.5 bg-white/20 backdrop-blur-sm rounded-lg">
+                <Clock className="h-3 w-3" />
               </div>
               <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">En attente</Badge>
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="text-2xl font-bold mb-1">5</div>
-            <p className="text-emerald-100 text-sm">En traitement</p>
+            <div className="text-xl font-bold mb-1">5</div>
+            <p className="text-emerald-100 text-xs">En traitement</p>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-1">
             <div className="flex items-center justify-between">
-              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                <TrendingUp className="h-4 w-4" />
+              <div className="p-1.5 bg-white/20 backdrop-blur-sm rounded-lg">
+                <TrendingUp className="h-3 w-3" />
               </div>
               <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Total</Badge>
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="text-2xl font-bold mb-1">€2,450</div>
-            <p className="text-emerald-100 text-sm">Valeur totale</p>
+            <div className="text-xl font-bold mb-1">€2,450</div>
+            <p className="text-emerald-100 text-xs">Valeur totale</p>
           </CardContent>
         </Card>
       </div>

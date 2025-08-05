@@ -286,47 +286,47 @@ export default function Inventory() {
         </Card>
 
         <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-0.5">
             <div className="flex items-center justify-between">
-              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                <TrendingUp className="h-4 w-4" />
+              <div className="p-1 bg-white/20 backdrop-blur-sm rounded">
+                <TrendingUp className="h-3 w-3" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Actifs</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs px-1 py-0">Actifs</Badge>
             </div>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-2xl font-bold mb-1">{activeCount}</div>
-            <p className="text-emerald-100 text-sm">En stock actif</p>
+          <CardContent className="pt-0 pb-1">
+            <div className="text-lg font-bold mb-0.5">{activeCount}</div>
+            <p className="text-emerald-100 text-xs leading-tight">En stock actif</p>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-0.5">
             <div className="flex items-center justify-between">
-              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                <AlertTriangle className="h-4 w-4" />
+              <div className="p-1 bg-white/20 backdrop-blur-sm rounded">
+                <AlertTriangle className="h-3 w-3" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Stock Bas</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs px-1 py-0">Stock Bas</Badge>
             </div>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-2xl font-bold mb-1">{lowStockCount}</div>
-            <p className="text-emerald-100 text-sm">Stock faible</p>
+          <CardContent className="pt-0 pb-1">
+            <div className="text-lg font-bold mb-0.5">{lowStockCount}</div>
+            <p className="text-emerald-100 text-xs leading-tight">Stock faible</p>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-0.5">
             <div className="flex items-center justify-between">
-              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                <TrendingDown className="h-4 w-4" />
+              <div className="p-1 bg-white/20 backdrop-blur-sm rounded">
+                <TrendingDown className="h-3 w-3" />
               </div>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs">Rupture</Badge>
+              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 text-xs px-1 py-0">Rupture</Badge>
             </div>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-2xl font-bold mb-1">{outOfStockCount}</div>
-            <p className="text-emerald-100 text-sm">Rupture de stock</p>
+          <CardContent className="pt-0 pb-1">
+            <div className="text-lg font-bold mb-0.5">{outOfStockCount}</div>
+            <p className="text-emerald-100 text-xs leading-tight">Rupture de stock</p>
           </CardContent>
         </Card>
       </div>
