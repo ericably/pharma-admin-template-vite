@@ -55,11 +55,24 @@ export function MedicationsList({ medications, onEdit, onDelete, onView, onUpdat
             dosage: selectedMedication.dosage,
             price: selectedMedication.price,
             supplier: selectedMedication.supplier,
-            status: selectedMedication.status
+            status: selectedMedication.status,
+            stock: 0 // Stock initial à 0 pour un nouveau médicament
           };
           
           try {
-            await onUpdate(currentMedication, updates);
+            // Si c'est une nouvelle ligne (id = 'new'), créer un nouveau médicament
+            if (String(currentMedication.id) === 'new') {
+              // Créer un nouvel objet médicament avec les données sélectionnées
+              const newMedication = {
+                ...updates,
+                id: Date.now(), // ID temporaire
+              } as Medication;
+              
+              await onUpdate(newMedication, updates);
+            } else {
+              // Mettre à jour un médicament existant
+              await onUpdate(currentMedication, updates);
+            }
           } catch (error) {
             console.error('Erreur lors de la mise à jour automatique:', error);
           }

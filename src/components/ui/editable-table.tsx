@@ -122,7 +122,13 @@ export function EditableTable<T extends Record<string, any>>({
   const handleSelectItem = (item: any, column: EditableColumn<T>) => {
     if (!editingCell || !column.autocomplete) return;
     
-    const rowItem = data.find(d => d[keyField] === editingCell.rowId);
+    let rowItem = data.find(d => d[keyField] === editingCell.rowId);
+    
+    // Si c'est une nouvelle ligne (rowId = 'new'), créer un objet temporaire
+    if (!rowItem && editingCell.rowId === 'new') {
+      rowItem = { [keyField]: 'new' } as T;
+    }
+    
     if (!rowItem) return;
 
     setEditValue(item[column.autocomplete.displayField]);
@@ -131,6 +137,10 @@ export function EditableTable<T extends Record<string, any>>({
     
     // Auto-remplir les autres champs
     column.autocomplete.onSelect(item, rowItem);
+    
+    // Réinitialiser l'état d'édition après la sélection
+    setEditingCell(null);
+    setEditValue('');
   };
 
   const handleKeyPress = (e: React.KeyboardEvent, column?: EditableColumn<T>) => {
@@ -190,12 +200,55 @@ export function EditableTable<T extends Record<string, any>>({
           <tbody className="[&_tr:last-child]:border-0">
             {data.length === 0 ? (
               <tr className="border-b transition-colors hover:bg-muted/50">
-                <td 
-                  colSpan={columns.length} 
-                  className="p-2 align-middle text-center py-4 text-muted-foreground text-xs"
-                >
-                  Aucune donnée trouvée
-                </td>
+                {columns.map((column) => (
+                  <td
+                    key={column.key}
+                    className="p-2 align-middle [&:has([role=checkbox])]:pr-0"
+                  >
+                    {column.key === 'name' || (column.key === columns[0].key && !columns.find(c => c.key === 'name')) ? (
+                      <div className="relative" ref={dropdownRef}>
+                        <div className="flex items-center gap-1">
+                          <Input
+                            type="text"
+                            value={editValue}
+                            onChange={(e) => {
+                              setEditValue(e.target.value);
+                              if (column.type === 'autocomplete') {
+                                handleSearch(e.target.value, column);
+                              }
+                            }}
+                            onKeyDown={(e) => handleKeyPress(e, column)}
+                            className="h-6 text-xs"
+                            placeholder="Tapez pour rechercher et ajouter..."
+                            onFocus={() => {
+                              setEditingCell({ rowId: 'new', columnKey: column.key });
+                            }}
+                          />
+                        </div>
+                        {showDropdown && searchResults.length > 0 && column.type === 'autocomplete' && (
+                          <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                            {searchResults.map((item, index) => (
+                              <div
+                                key={index}
+                                className="px-3 py-2 text-xs hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                onClick={() => handleSelectItem(item, column)}
+                              >
+                                <div className="font-medium">{item[column.autocomplete?.displayField || 'name']}</div>
+                                {item.category && (
+                                  <div className="text-gray-500 text-xs">{item.category} - {item.dosage}</div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="h-6 flex items-center text-xs text-muted-foreground">
+                        -
+                      </div>
+                    )}
+                  </td>
+                ))}
               </tr>
             ) : (
               data.map((item) => (
