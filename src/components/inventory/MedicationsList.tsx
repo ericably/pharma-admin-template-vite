@@ -10,6 +10,7 @@ import {
 import { Edit, Trash2, MoreVertical, Eye, Package, AlertTriangle, Pill, Euro } from "lucide-react";
 import { EditableTable, EditableColumn } from "@/components/ui/editable-table";
 import type { Medication } from "@/api/services/MedicationService";
+import MedicationSearchService from "@/api/services/MedicationSearchService";
 
 interface MedicationsListProps {
   medications: Medication[];
@@ -41,7 +42,42 @@ export function MedicationsList({ medications, onEdit, onDelete, onView, onUpdat
     { 
       key: 'name', 
       label: 'Nom', 
-      type: 'text',
+      type: 'autocomplete',
+      autocomplete: {
+        searchFn: (query: string) => MedicationSearchService.searchMedications(query),
+        displayField: "name",
+        minChars: 2,
+        onSelect: async (selectedMedication: any, currentMedication: Medication) => {
+          // Auto-remplir les champs avec les données du médicament sélectionné
+          const updates = {
+            name: selectedMedication.name,
+            category: selectedMedication.category,
+            dosage: selectedMedication.dosage,
+            price: selectedMedication.price,
+            supplier: selectedMedication.supplier,
+            status: selectedMedication.status,
+            stock: 0 // Stock initial à 0 pour un nouveau médicament
+          };
+          
+          try {
+            // Si c'est une nouvelle ligne (id = 'new'), créer un nouveau médicament
+            if (String(currentMedication.id) === 'new') {
+              // Créer un nouvel objet médicament avec les données sélectionnées
+              const newMedication = {
+                ...updates,
+                id: Date.now(), // ID temporaire
+              } as Medication;
+              
+              await onUpdate(newMedication, updates);
+            } else {
+              // Mettre à jour un médicament existant
+              await onUpdate(currentMedication, updates);
+            }
+          } catch (error) {
+            console.error('Erreur lors de la mise à jour automatique:', error);
+          }
+        }
+      },
       render: (value, medication) => (
         <div className="flex items-center gap-1">
           {medication.stock < 10 && (

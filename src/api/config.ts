@@ -1,10 +1,10 @@
 // API Configuration
 export const API_CONFIG = {
   // Authentication
-  AUTH_URL: import.meta.env.VITE_AUTH_URL || 'http://localhost:8080/api/login_check',
+  AUTH_URL:'http://localhost:8080/api/login_check',
   
   // Main API URL  
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+  BASE_URL: 'http://localhost:8080/api',
   
   // Request timeout
   TIMEOUT: 10000,
