@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,16 @@ import { Check, X, Edit } from "lucide-react";
 export interface EditableColumn<T = any> {
   key: string;
   label: string;
-  type?: 'text' | 'number' | 'email' | 'tel';
+  type?: 'text' | 'number' | 'email' | 'tel' | 'autocomplete';
   editable?: boolean;
   render?: (value: any, item: T) => React.ReactNode;
   validate?: (value: any) => boolean;
+  autocomplete?: {
+    searchFn: (query: string) => Promise<any[]>;
+    onSelect: (item: any, rowItem: T) => void;
+    displayField: string;
+    minChars?: number;
+  };
 }
 
 interface EditableTableProps<T = any> {
@@ -37,15 +43,26 @@ export function EditableTable<T extends Record<string, any>>({
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const startEdit = (rowId: string | number, columnKey: string, currentValue: any) => {
     setEditingCell({ rowId, columnKey });
     setEditValue(String(currentValue || ''));
+    setSearchResults([]);
+    setShowDropdown(false);
   };
 
   const cancelEdit = () => {
     setEditingCell(null);
     setEditValue('');
+    setSearchResults([]);
+    setShowDropdown(false);
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
   };
 
   const saveEdit = async () => {
@@ -75,13 +92,80 @@ export function EditableTable<T extends Record<string, any>>({
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleSearch = async (query: string, column: EditableColumn<T>) => {
+    if (!column.autocomplete?.searchFn) return;
+    
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    const minChars = column.autocomplete.minChars || 1;
+    if (query.length < minChars) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const results = await column.autocomplete!.searchFn(query);
+        setSearchResults(results);
+        setShowDropdown(results.length > 0);
+      } catch (error) {
+        console.error('Erreur lors de la recherche:', error);
+        setSearchResults([]);
+        setShowDropdown(false);
+      }
+    }, 300);
+  };
+
+  const handleSelectItem = (item: any, column: EditableColumn<T>) => {
+    if (!editingCell || !column.autocomplete) return;
+    
+    const rowItem = data.find(d => d[keyField] === editingCell.rowId);
+    if (!rowItem) return;
+
+    setEditValue(item[column.autocomplete.displayField]);
+    setShowDropdown(false);
+    setSearchResults([]);
+    
+    // Auto-remplir les autres champs
+    column.autocomplete.onSelect(item, rowItem);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent, column?: EditableColumn<T>) => {
     if (e.key === 'Enter') {
-      saveEdit();
+      if (showDropdown && searchResults.length > 0 && column?.type === 'autocomplete') {
+        handleSelectItem(searchResults[0], column);
+      } else {
+        saveEdit();
+      }
     } else if (e.key === 'Escape') {
       cancelEdit();
+    } else if (e.key === 'ArrowDown' && showDropdown) {
+      e.preventDefault();
+      // Focus premier élément de la liste
     }
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const isEditing = (rowId: string | number, columnKey: string) => {
     return editingCell?.rowId === rowId && editingCell?.columnKey === columnKey;
@@ -130,35 +214,59 @@ export function EditableTable<T extends Record<string, any>>({
                         className="p-2 align-middle [&:has([role=checkbox])]:pr-0"
                       >
                         {editing ? (
-                          <div className="flex items-center gap-1">
-                            <Input
-                              type={column.type || 'text'}
-                              value={editValue}
-                              onChange={(e) => setEditValue(e.target.value)}
-                              onKeyDown={handleKeyPress}
-                              className="h-6 text-xs"
-                              autoFocus
-                            />
-                            <div className="flex gap-1">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-6 w-6 p-0"
-                                onClick={saveEdit}
-                                disabled={isLoading}
-                              >
-                                <Check className="h-3 w-3 text-green-600" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-6 w-6 p-0"
-                                onClick={cancelEdit}
-                                disabled={isLoading}
-                              >
-                                <X className="h-3 w-3 text-red-600" />
-                              </Button>
+                          <div className="relative" ref={dropdownRef}>
+                            <div className="flex items-center gap-1">
+                              <Input
+                                type={column.type === 'autocomplete' ? 'text' : (column.type || 'text')}
+                                value={editValue}
+                                onChange={(e) => {
+                                  setEditValue(e.target.value);
+                                  if (column.type === 'autocomplete') {
+                                    handleSearch(e.target.value, column);
+                                  }
+                                }}
+                                onKeyDown={(e) => handleKeyPress(e, column)}
+                                className="h-6 text-xs"
+                                autoFocus
+                                placeholder={column.type === 'autocomplete' ? 'Tapez pour rechercher...' : ''}
+                              />
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 w-6 p-0"
+                                  onClick={saveEdit}
+                                  disabled={isLoading}
+                                >
+                                  <Check className="h-3 w-3 text-green-600" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 w-6 p-0"
+                                  onClick={cancelEdit}
+                                  disabled={isLoading}
+                                >
+                                  <X className="h-3 w-3 text-red-600" />
+                                </Button>
+                              </div>
                             </div>
+                            {showDropdown && searchResults.length > 0 && column.type === 'autocomplete' && (
+                              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                                {searchResults.map((item, index) => (
+                                  <div
+                                    key={index}
+                                    className="px-3 py-2 text-xs hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                    onClick={() => handleSelectItem(item, column)}
+                                  >
+                                    <div className="font-medium">{item[column.autocomplete?.displayField || 'name']}</div>
+                                    {item.category && (
+                                      <div className="text-gray-500 text-xs">{item.category} - {item.dosage}</div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div 
