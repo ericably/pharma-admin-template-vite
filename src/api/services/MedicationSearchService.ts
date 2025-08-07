@@ -1,7 +1,18 @@
 import { apiClient } from '@/api/apiClient';
 
+export interface ApiMedicationResult {
+  cis: string;
+  denomination: string;
+  forme_pharma: string;
+  voies_admin: string;
+  statut_amm: string;
+  commercialisation: string;
+  titulaire: string;
+  type: string;
+}
+
 export interface MedicationSearchResult {
-  id: number;
+  id: string;
   name: string;
   category: string;
   dosage: string;
@@ -14,6 +25,23 @@ export interface MedicationSearchResult {
 export class MedicationSearchService {
   private baseUrl = 'http://localhost:3000/api';
 
+  private mapApiResultToMedication(apiResult: ApiMedicationResult): MedicationSearchResult {
+    // Extraire le dosage de la dénomination (ex: "ASPIRINE ARROW 100 mg" -> "100 mg")
+    const dosageMatch = apiResult.denomination.match(/(\d+\s*mg)/i);
+    const dosage = dosageMatch ? dosageMatch[1] : apiResult.forme_pharma;
+    
+    return {
+      id: apiResult.cis,
+      name: apiResult.denomination,
+      category: apiResult.forme_pharma,
+      dosage: dosage,
+      stock: 0,
+      price: 0,
+      supplier: apiResult.titulaire,
+      status: apiResult.commercialisation === 'Commercialisée' ? 'Actif' : 'Inactif'
+    };
+  }
+
   async searchMedications(query: string): Promise<MedicationSearchResult[]> {
     if (!query.trim()) return [];
     
@@ -22,8 +50,12 @@ export class MedicationSearchService {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json();
-      return data.items || data || [];
+      const apiResponse = await response.json();
+      
+      // L'API retourne { data: [...], pagination: {...}, metadata: {...} }
+      const medications = apiResponse.data || [];
+      
+      return medications.map((med: ApiMedicationResult) => this.mapApiResultToMedication(med));
     } catch (error) {
       console.error('Erreur lors de la recherche de médicaments:', error);
       return [];
