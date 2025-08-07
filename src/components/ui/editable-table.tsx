@@ -133,16 +133,18 @@ export function EditableTable<T extends Record<string, any>>({
     
     if (!rowItem) return;
 
-    setEditValue(item[column.autocomplete.displayField]);
-    setShowDropdown(false);
-    setSearchResults([]);
-    
     // Auto-remplir les autres champs
-    column.autocomplete.onSelect(item, rowItem);
-    
-    // Réinitialiser l'état d'édition après la sélection
-    setEditingCell(null);
-    setEditValue('');
+    try {
+      column.autocomplete.onSelect(item, rowItem);
+      
+      // Fermer le dropdown
+      setShowDropdown(false);
+      setSearchResults([]);
+      setEditingCell(null);
+      setEditValue('');
+    } catch (error) {
+      console.error('Erreur lors de la sélection:', error);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent, column?: EditableColumn<T>) => {
@@ -185,7 +187,7 @@ export function EditableTable<T extends Record<string, any>>({
 
   return (
     <div className={cn("rounded-md border", className)}>
-      <div className="relative w-full overflow-auto">
+      <div className="relative w-full overflow-auto" style={{ overflowY: 'visible' }}>
         <table className="w-full caption-bottom text-xs">
           <thead className="[&_tr]:border-b">
             <tr className="border-b transition-colors hover:bg-muted/50">
@@ -227,20 +229,16 @@ export function EditableTable<T extends Record<string, any>>({
                             }}
                           />
                         </div>
-                        {(() => {
-                          console.log('Conditions dropdown new row:', {
-                            showDropdown,
-                            searchResultsLength: searchResults.length,
-                            editingCellRowId: editingCell?.rowId,
-                            editingCellColumnKey: editingCell?.columnKey,
-                            columnKey: column.key,
-                            shouldShow: showDropdown && searchResults.length > 0 && editingCell?.rowId === 'new' && editingCell?.columnKey === column.key
-                          });
-                          return showDropdown && searchResults.length > 0 && editingCell?.rowId === 'new' && editingCell?.columnKey === column.key;
-                        })() && (
+                        {showDropdown && searchResults.length > 0 && editingCell?.rowId === 'new' && editingCell?.columnKey === column.key && (
                           <div 
-                            className="absolute top-full left-0 right-0 z-[9999] mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto"
-                            style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 9999 }}
+                            className="fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto min-w-[300px]"
+                            style={{ 
+                              position: 'fixed',
+                              zIndex: 10000,
+                              top: dropdownRef.current?.getBoundingClientRect().bottom || 0,
+                              left: dropdownRef.current?.getBoundingClientRect().left || 0,
+                              width: dropdownRef.current?.getBoundingClientRect().width || 300
+                            }}
                           >
                             {searchResults.map((item, index) => (
                               <div
@@ -320,7 +318,16 @@ export function EditableTable<T extends Record<string, any>>({
                               </div>
                             </div>
                             {showDropdown && searchResults.length > 0 && column.type === 'autocomplete' && (
-                              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                              <div 
+                                className="fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto min-w-[300px]"
+                                style={{ 
+                                  position: 'fixed',
+                                  zIndex: 10000,
+                                  top: dropdownRef.current?.getBoundingClientRect().bottom || 0,
+                                  left: dropdownRef.current?.getBoundingClientRect().left || 0,
+                                  width: dropdownRef.current?.getBoundingClientRect().width || 300
+                                }}
+                              >
                                 {searchResults.map((item, index) => (
                                   <div
                                     key={index}
