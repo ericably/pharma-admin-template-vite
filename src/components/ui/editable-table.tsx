@@ -109,8 +109,10 @@ export function EditableTable<T extends Record<string, any>>({
     searchTimeoutRef.current = setTimeout(async () => {
       try {
         const results = await column.autocomplete!.searchFn(query);
+        console.log('Résultats de recherche:', results);
         setSearchResults(results);
         setShowDropdown(results.length > 0);
+        console.log('ShowDropdown mis à:', results.length > 0);
       } catch (error) {
         console.error('Erreur lors de la recherche:', error);
         setSearchResults([]);
