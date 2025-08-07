@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,51 @@ interface EditableTableProps<T = any> {
 interface EditingCell {
   rowId: string | number;
   columnKey: string;
+}
+
+// Portal dropdown to render search results outside of table overflow
+function SearchResultsPortal({ anchorRef, dropdownRef, items, displayField, onSelect }: { anchorRef: React.RefObject<HTMLInputElement>; dropdownRef: React.RefObject<HTMLDivElement>; items: any[]; displayField: string; onSelect: (item: any) => void; }) {
+  const [pos, setPos] = React.useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
+
+  const updatePosition = () => {
+    const el = anchorRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    setPos({ top: rect.bottom, left: rect.left, width: rect.width });
+  };
+
+  useEffect(() => {
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, []);
+
+  const content = (
+    <div
+      ref={dropdownRef}
+      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto text-xs"
+      style={{ position: 'fixed', top: pos.top + 4, left: pos.left, width: Math.max(pos.width, 300), zIndex: 10000 }}
+    >
+      {items.map((item, index) => (
+        <div
+          key={index}
+          className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+          onClick={() => onSelect(item)}
+        >
+          <div className="font-medium">{item[displayField] ?? ''}</div>
+          {item.category && (
+            <div className="text-gray-500 dark:text-gray-400 text-[11px]">{item.category} {item.dosage ? `- ${item.dosage}` : ''}</div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
+  return createPortal(content, document.body);
 }
 
 export function EditableTable<T extends Record<string, any>>({
@@ -232,22 +278,13 @@ export function EditableTable<T extends Record<string, any>>({
                           />
                         </div>
                         {showDropdown && searchResults.length > 0 && editingCell?.rowId === 'new' && editingCell?.columnKey === column.key && (
-                          <div 
-                            className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto min-w-full z-50"
-                          >
-                            {searchResults.map((item, index) => (
-                              <div
-                                key={index}
-                                className="px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-600 last:border-b-0"
-                                onClick={() => handleSelectItem(item, column)}
-                              >
-                                <div className="font-medium">{item[column.autocomplete?.displayField || 'name']}</div>
-                                {item.category && (
-                                  <div className="text-gray-500 dark:text-gray-400 text-xs">{item.category} - {item.dosage}</div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
+                          <SearchResultsPortal
+                            anchorRef={inputRef}
+                            dropdownRef={dropdownRef}
+                            items={searchResults}
+                            displayField={column.autocomplete?.displayField || 'name'}
+                            onSelect={(it) => handleSelectItem(it, column)}
+                          />
                         )}
                       </div>
                     ) : (
@@ -314,22 +351,13 @@ export function EditableTable<T extends Record<string, any>>({
                               </div>
                             </div>
                             {showDropdown && searchResults.length > 0 && column.type === 'autocomplete' && (
-                              <div 
-                                className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto min-w-full z-50"
-                              >
-                                {searchResults.map((item, index) => (
-                                  <div
-                                    key={index}
-                                    className="px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-600 last:border-b-0"
-                                    onClick={() => handleSelectItem(item, column)}
-                                  >
-                                    <div className="font-medium">{item[column.autocomplete?.displayField || 'name']}</div>
-                                    {item.category && (
-                                      <div className="text-gray-500 dark:text-gray-400 text-xs">{item.category} - {item.dosage}</div>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
+                              <SearchResultsPortal
+                                anchorRef={inputRef}
+                                dropdownRef={dropdownRef}
+                                items={searchResults}
+                                displayField={column.autocomplete?.displayField || 'name'}
+                                onSelect={(it) => handleSelectItem(it, column)}
+                              />
                             )}
                           </div>
                         ) : (
