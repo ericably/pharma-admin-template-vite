@@ -205,12 +205,12 @@ export function EditableTable<T extends Record<string, any>>({
                     key={column.key}
                     className="p-2 align-middle [&:has([role=checkbox])]:pr-0"
                   >
-                    {column.key === 'name' || (column.key === columns[0].key && !columns.find(c => c.key === 'name')) ? (
+                    {column.type === 'autocomplete' && column.key === 'name' ? (
                       <div className="relative" ref={dropdownRef}>
                         <div className="flex items-center gap-1">
                           <Input
                             type="text"
-                            value={editValue}
+                            value={editingCell?.rowId === 'new' && editingCell?.columnKey === column.key ? editValue : ''}
                             onChange={(e) => {
                               setEditValue(e.target.value);
                               if (column.type === 'autocomplete') {
@@ -225,17 +225,17 @@ export function EditableTable<T extends Record<string, any>>({
                             }}
                           />
                         </div>
-                        {showDropdown && searchResults.length > 0 && column.type === 'autocomplete' && (
-                          <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                        {showDropdown && searchResults.length > 0 && editingCell?.rowId === 'new' && editingCell?.columnKey === column.key && (
+                          <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
                             {searchResults.map((item, index) => (
                               <div
                                 key={index}
-                                className="px-3 py-2 text-xs hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                className="px-3 py-2 text-xs hover:bg-accent cursor-pointer border-b border-border last:border-b-0"
                                 onClick={() => handleSelectItem(item, column)}
                               >
                                 <div className="font-medium">{item[column.autocomplete?.displayField || 'name']}</div>
                                 {item.category && (
-                                  <div className="text-gray-500 text-xs">{item.category} - {item.dosage}</div>
+                                  <div className="text-muted-foreground text-xs">{item.category} - {item.dosage}</div>
                                 )}
                               </div>
                             ))}
