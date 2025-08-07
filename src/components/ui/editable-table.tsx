@@ -228,16 +228,16 @@ export function EditableTable<T extends Record<string, any>>({
                           />
                         </div>
                         {showDropdown && searchResults.length > 0 && editingCell?.rowId === 'new' && editingCell?.columnKey === column.key && (
-                          <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                          <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
                             {searchResults.map((item, index) => (
                               <div
                                 key={index}
-                                className="px-3 py-2 text-xs hover:bg-accent cursor-pointer border-b border-border last:border-b-0"
+                                className="px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-600 last:border-b-0"
                                 onClick={() => handleSelectItem(item, column)}
                               >
                                 <div className="font-medium">{item[column.autocomplete?.displayField || 'name']}</div>
                                 {item.category && (
-                                  <div className="text-muted-foreground text-xs">{item.category} - {item.dosage}</div>
+                                  <div className="text-gray-500 dark:text-gray-400 text-xs">{item.category} - {item.dosage}</div>
                                 )}
                               </div>
                             ))}
@@ -307,16 +307,16 @@ export function EditableTable<T extends Record<string, any>>({
                               </div>
                             </div>
                             {showDropdown && searchResults.length > 0 && column.type === 'autocomplete' && (
-                              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
                                 {searchResults.map((item, index) => (
                                   <div
                                     key={index}
-                                    className="px-3 py-2 text-xs hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                    className="px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-600 last:border-b-0"
                                     onClick={() => handleSelectItem(item, column)}
                                   >
                                     <div className="font-medium">{item[column.autocomplete?.displayField || 'name']}</div>
                                     {item.category && (
-                                      <div className="text-gray-500 text-xs">{item.category} - {item.dosage}</div>
+                                      <div className="text-gray-500 dark:text-gray-400 text-xs">{item.category} - {item.dosage}</div>
                                     )}
                                   </div>
                                 ))}
