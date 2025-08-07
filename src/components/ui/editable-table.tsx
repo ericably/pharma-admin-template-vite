@@ -227,8 +227,21 @@ export function EditableTable<T extends Record<string, any>>({
                             }}
                           />
                         </div>
-                        {showDropdown && searchResults.length > 0 && editingCell?.rowId === 'new' && editingCell?.columnKey === column.key && (
-                          <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                        {(() => {
+                          console.log('Conditions dropdown new row:', {
+                            showDropdown,
+                            searchResultsLength: searchResults.length,
+                            editingCellRowId: editingCell?.rowId,
+                            editingCellColumnKey: editingCell?.columnKey,
+                            columnKey: column.key,
+                            shouldShow: showDropdown && searchResults.length > 0 && editingCell?.rowId === 'new' && editingCell?.columnKey === column.key
+                          });
+                          return showDropdown && searchResults.length > 0 && editingCell?.rowId === 'new' && editingCell?.columnKey === column.key;
+                        })() && (
+                          <div 
+                            className="absolute top-full left-0 right-0 z-[9999] mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto"
+                            style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 9999 }}
+                          >
                             {searchResults.map((item, index) => (
                               <div
                                 key={index}
