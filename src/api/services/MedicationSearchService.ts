@@ -14,6 +14,7 @@ export interface ApiMedicationResult {
 
 export interface MedicationSearchResult {
   id: string;
+  codeCis: string;
   name: string;
   category: string;
   dosage: string;
@@ -26,11 +27,12 @@ export interface MedicationSearchResult {
 export class MedicationSearchService {
   private mapApiResultToMedication(apiResult: ApiMedicationResult): MedicationSearchResult {
     // Extraire le dosage de la dénomination (ex: "ASPIRINE ARROW 100 mg" -> "100 mg")
-    const dosageMatch = apiResult.denomination.match(/(\d+\s*mg)/i);
-    const dosage = dosageMatch ? dosageMatch[1] : apiResult.forme_pharma;
+     const dosageMatch = apiResult.denomination.match(/(\d+\s*mg)/i);
+     const dosage = dosageMatch ? dosageMatch[1] : apiResult.forme_pharma;
 
     return {
-      id: apiResult.cis,
+      id: '1',
+      codeCis: apiResult.cis,
       name: apiResult.denomination,
       category: apiResult.forme_pharma,
       dosage: dosage,
