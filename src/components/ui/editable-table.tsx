@@ -25,6 +25,7 @@ interface EditableTableProps<T = any> {
   data: T[];
   columns: EditableColumn<T>[];
   onUpdate: (item: T, updates: Partial<T>) => Promise<void>;
+  onCreate?: (newItem: Partial<T>) => Promise<void>;
   className?: string;
   keyField?: string;
 }
@@ -83,6 +84,7 @@ export function EditableTable<T extends Record<string, any>>({
   data,
   columns,
   onUpdate,
+  onCreate,
   className,
   keyField = 'id'
 }: EditableTableProps<T>) {
@@ -91,6 +93,7 @@ export function EditableTable<T extends Record<string, any>>({
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [pendingRow, setPendingRow] = useState<Partial<T> | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -114,6 +117,18 @@ export function EditableTable<T extends Record<string, any>>({
 
   const saveEdit = async () => {
     if (!editingCell) return;
+
+    // If we're editing the pending "new" row, just update local state
+    if (editingCell.rowId === 'new' && pendingRow) {
+      const column = columns.find(c => c.key === editingCell.columnKey);
+      if (!column) return;
+      if (column.validate && !column.validate(editValue)) return;
+
+      setPendingRow(prev => ({ ...(prev || {}), [editingCell.columnKey]: editValue } as Partial<T>));
+      setEditingCell(null);
+      setEditValue('');
+      return;
+    }
 
     const item = data.find(d => d[keyField] === editingCell.rowId);
     if (!item) return;
@@ -169,15 +184,38 @@ export function EditableTable<T extends Record<string, any>>({
   };
 
   const handleSelectItem = async (item: any, column: EditableColumn<T>) => {
-    if (!editingCell || !column.autocomplete) return;
-    
-    let rowItem = data.find(d => d[keyField] === editingCell.rowId);
-    
-    // Si c'est une nouvelle ligne (rowId = 'new'), créer un objet temporaire
+    if (!column.autocomplete) return;
+
+    // If creation flow is enabled, build a pending row locally
+    if (onCreate) {
+      const newRow: Partial<T> = { [keyField]: 'new' } as any;
+
+      // Prefer using displayField for the edited column
+      const displayField = column.autocomplete.displayField;
+      (newRow as any)[column.key] = displayField ? item[displayField] ?? '' : item[column.key] ?? '';
+
+      // Copy any matching keys from the selected item into the row
+      columns.forEach((c) => {
+        if (Object.prototype.hasOwnProperty.call(item, c.key)) {
+          (newRow as any)[c.key] = item[c.key];
+        }
+      });
+
+      setPendingRow(newRow);
+      setShowDropdown(false);
+      setSearchResults([]);
+      setEditingCell(null);
+      setEditValue('');
+      return;
+    }
+
+    // Fallback: legacy behavior delegates population to the provided onSelect
+    if (!editingCell) return;
+
+    let rowItem = data.find((d) => d[keyField] === editingCell.rowId);
     if (!rowItem && editingCell.rowId === 'new') {
       rowItem = { [keyField]: 'new' } as T;
     }
-    
     if (!rowItem) return;
 
     // Fermer le dropdown d'abord
@@ -249,7 +287,127 @@ export function EditableTable<T extends Record<string, any>>({
             </tr>
           </thead>
           <tbody className="[&_tr:last-child]:border-0">
-            {data.length === 0 ? (
+            {pendingRow && (
+              <tr key="new" className="border-b transition-colors hover:bg-muted/50">
+                {columns.map((column, idx) => {
+                  const cellValue = (pendingRow as any)[column.key];
+                  const rowId = 'new';
+                  const editing = isEditing(rowId, column.key);
+                  const isLast = idx === columns.length - 1;
+
+                  return (
+                    <td
+                      key={column.key}
+                      className="p-2 align-middle [&:has([role=checkbox])]:pr-0"
+                    >
+                      {editing ? (
+                        <div className="relative" ref={dropdownRef}>
+                          <div className="flex items-center gap-1">
+                            <Input
+                              ref={inputRef}
+                              type={column.type === 'autocomplete' ? 'text' : (column.type || 'text')}
+                              value={editValue}
+                              onChange={(e) => {
+                                setEditValue(e.target.value);
+                                if (column.type === 'autocomplete') {
+                                  handleSearch(e.target.value, column);
+                                }
+                              }}
+                              onKeyDown={(e) => handleKeyPress(e, column)}
+                              className="h-6 text-xs"
+                              autoFocus
+                              placeholder={column.type === 'autocomplete' ? 'Tapez pour rechercher...' : ''}
+                            />
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 w-6 p-0"
+                                onClick={saveEdit}
+                                disabled={isLoading}
+                              >
+                                <Check className="h-3 w-3 text-green-600" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 w-6 p-0"
+                                onClick={cancelEdit}
+                                disabled={isLoading}
+                              >
+                                <X className="h-3 w-3 text-red-600" />
+                              </Button>
+                            </div>
+                          </div>
+                          {showDropdown && searchResults.length > 0 && column.type === 'autocomplete' && (
+                            <SearchResultsPortal
+                              anchorRef={inputRef}
+                              dropdownRef={dropdownRef}
+                              items={searchResults}
+                              displayField={column.autocomplete?.displayField || 'name'}
+                              onSelect={(it) => handleSelectItem(it, column)}
+                            />
+                          )}
+                        </div>
+                      ) : (
+                        <div 
+                          className={cn(
+                            "flex items-center gap-1 min-h-[24px] text-xs",
+                            column.editable !== false && "cursor-pointer hover:bg-muted/50 rounded px-1 py-0.5 -mx-1 -my-0.5"
+                          )}
+                          onClick={() => {
+                            if (column.editable !== false) {
+                              startEdit(rowId, column.key, cellValue);
+                            }
+                          }}
+                        >
+                          <span className="flex-1">
+                            {column.render ? column.render(cellValue, pendingRow as T) : (cellValue ?? '')}
+                          </span>
+                        </div>
+                      )}
+
+                      {isLast && !editing && (
+                        <div className="flex justify-end gap-2 mt-1">
+                          <Button
+                            size="sm"
+                            className="h-6 px-2"
+                            onClick={async () => {
+                              if (!onCreate) return;
+                              setIsLoading(true);
+                              try {
+                                await onCreate(pendingRow as T);
+                                setPendingRow(null);
+                                setEditingCell(null);
+                                setEditValue('');
+                              } catch (error) {
+                                console.error('Erreur lors de la création:', error);
+                              } finally {
+                                setIsLoading(false);
+                              }
+                            }}
+                            disabled={isLoading}
+                          >
+                            Valider
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 px-2"
+                            onClick={() => setPendingRow(null)}
+                            disabled={isLoading}
+                          >
+                            Annuler
+                          </Button>
+                        </div>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            )}
+
+            {data.length === 0 && !pendingRow ? (
               <tr className="border-b transition-colors hover:bg-muted/50">
                 {columns.map((column) => (
                   <td
