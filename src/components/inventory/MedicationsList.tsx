@@ -7,9 +7,10 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { Edit, Trash2, MoreVertical, Eye, Package, AlertTriangle, Pill, Euro } from "lucide-react";
+import { Edit, Trash2, MoreVertical, Eye, Package, AlertTriangle, Pill, Euro, Calendar } from "lucide-react";
 import { EditableTable, EditableColumn } from "@/components/ui/editable-table";
 import type { Medication } from "@/api/services/MedicationService";
+import MedicationService from "@/api/services/MedicationService";
 import MedicationSearchService from "@/api/services/MedicationSearchService";
 
 interface MedicationsListProps {
@@ -47,36 +48,8 @@ export function MedicationsList({ medications, onEdit, onDelete, onView, onUpdat
         searchFn: (query: string) => MedicationSearchService.searchMedications(query),
         displayField: "name",
         minChars: 2,
-        onSelect: async (selectedMedication: any, currentMedication: Medication) => {
-          // Auto-remplir les champs avec les données du médicament sélectionné
-          const updates = {
-            name: selectedMedication.name,
-            category: selectedMedication.category,
-            dosage: selectedMedication.dosage,
-            price: selectedMedication.price,
-            supplier: selectedMedication.supplier,
-            status: selectedMedication.status,
-            stock: 0 // Stock initial à 0 pour un nouveau médicament
-          };
-          
-          try {
-            // Si c'est une nouvelle ligne (id = 'new'), créer un nouveau médicament
-            if (String(currentMedication.id) === 'new') {
-              // Créer un nouvel objet médicament avec les données sélectionnées
-              const newMedication = {
-                ...updates,
-                id: Date.now(), // ID temporaire
-              } as Medication;
-              
-              await onUpdate(newMedication, updates);
-            } else {
-              // Mettre à jour un médicament existant
-              await onUpdate(currentMedication, updates);
-            }
-          } catch (error) {
-            console.error('Erreur lors de la mise à jour automatique:', error);
-          }
-        }
+        // onSelect handled by EditableTable when onCreate is provided
+        onSelect: () => {},
       },
       render: (value, medication) => (
         <div className="flex items-center gap-1">
@@ -88,8 +61,20 @@ export function MedicationsList({ medications, onEdit, onDelete, onView, onUpdat
         </div>
       )
     },
-    { key: 'category', label: 'Catégorie', type: 'text' },
-    { key: 'dosage', label: 'Dosage', type: 'text' },
+    { key: 'category', label: 'Catégorie', type: 'text', editable: false },
+    { key: 'dosage', label: 'Dosage', type: 'text', editable: false },
+    { 
+      key: 'expirationDate', 
+      label: 'Date de péremption', 
+      type: 'text',
+      validate: (value) => !value || /^\d{4}-\d{2}-\d{2}$/.test(String(value)),
+      render: (value) => (
+        <div className="flex items-center gap-1">
+          <Calendar className="h-3 w-3 text-muted-foreground" />
+          <span className="text-xs">{value || '-'}</span>
+        </div>
+      )
+    },
     { 
       key: 'stock', 
       label: 'Stock', 
@@ -108,7 +93,7 @@ export function MedicationsList({ medications, onEdit, onDelete, onView, onUpdat
       render: (value) => (
         <div className="flex items-center gap-1">
           <Euro className="h-3 w-3 text-muted-foreground" />
-          <span className="text-xs">{value.toFixed(2)} €</span>
+          <span className="text-xs">{Number(value).toFixed(2)} €</span>
         </div>
       )
     },
@@ -118,6 +103,7 @@ export function MedicationsList({ medications, onEdit, onDelete, onView, onUpdat
       editable: false,
       render: (value) => getStatusBadge(value)
     },
+    { key: 'codeCis', label: 'Code cis', type: 'text', editable: false },
     { 
       key: 'actions', 
       label: 'Actions', 
@@ -163,6 +149,23 @@ export function MedicationsList({ medications, onEdit, onDelete, onView, onUpdat
       data={medications}
       columns={columns}
       onUpdate={onUpdate}
+      onCreate={async (pending) => {
+        console.log(pending, medications)
+        const payload = {
+          name: String((pending as any).name || ''),
+          category: String((pending as any).category || ''),
+          dosage: String((pending as any).dosage || ''),
+          stock: Number((pending as any).stock || 0),
+          supplier: String((pending as any).supplier || ''),
+          price: Number((pending as any).price || 0),
+          status: String((pending as any).status || ''),
+          description: (pending as any).description || '',
+          expirationDate: (pending as any).expirationDate || '',
+          codeCis: (pending as any).codeCis || '',
+          distribution: (pending as any).distribution || '',
+        };
+        await MedicationService.createMedication(payload);
+      }}
       keyField="id"
     />
   );

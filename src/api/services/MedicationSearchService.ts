@@ -13,7 +13,7 @@ export interface ApiMedicationResult {
 }
 
 export interface MedicationSearchResult {
-  id: string;
+  id: string | null;
   codeCis: string;
   name: string;
   category: string;
@@ -22,6 +22,9 @@ export interface MedicationSearchResult {
   price: number;
   supplier: string;
   status: string;
+  distribution: string;
+  description: string;
+  expirationDate?: string;
 }
 
 export class MedicationSearchService {
@@ -29,17 +32,19 @@ export class MedicationSearchService {
     // Extraire le dosage de la dénomination (ex: "ASPIRINE ARROW 100 mg" -> "100 mg")
      const dosageMatch = apiResult.denomination.match(/(\d+\s*mg)/i);
      const dosage = dosageMatch ? dosageMatch[1] : apiResult.forme_pharma;
-
+     console.log('Mapped dosage:', apiResult);
     return {
-      id: '1',
+      id: null,
       codeCis: apiResult.cis,
       name: apiResult.denomination,
+      description: apiResult.denomination,
       category: apiResult.forme_pharma,
       dosage: dosage,
       stock: 0,
       price: 0,
       supplier: apiResult.titulaire,
-      status: apiResult.commercialisation === 'Commercialisée' ? 'Actif' : 'Inactif'
+      status: apiResult.statut_amm,
+      distribution: apiResult.commercialisation,
     };
   }
 

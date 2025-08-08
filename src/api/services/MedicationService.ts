@@ -15,6 +15,8 @@ export interface Medication {
   createdAt?: string;
   updatedAt?: string;
   expirationDate?: string; // Added expirationDate field
+  codeCis: string,
+  distribution?: string,
 }
 
 class MedicationService {
