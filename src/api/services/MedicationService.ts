@@ -11,6 +11,7 @@ export interface Medication {
   supplier: string;
   price: number;
   status: string;
+  expirationDate?: string;
   createdAt?: string;
   updatedAt?: string;
 }
