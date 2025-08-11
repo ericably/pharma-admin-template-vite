@@ -371,12 +371,16 @@ export function EditableTable<T extends Record<string, any>>({
                         <div className="flex justify-end gap-2 mt-1">
                           <Button
                             size="sm"
-                            className="h-6 px-2"
+                            variant="default"
+                            className="h-6 w-6 p-0 rounded-full"
+                            aria-label="Valider la création"
                             onClick={async () => {
                               if (!onCreate) return;
                               setIsLoading(true);
                               try {
                                 await onCreate(pendingRow as T);
+                                // informer l'app qu'un élément a été créé (pour rafraîchir la liste)
+                                window.dispatchEvent(new CustomEvent('editableTable:itemCreated'));
                                 setPendingRow(null);
                                 setEditingCell(null);
                                 setEditValue('');
@@ -388,16 +392,17 @@ export function EditableTable<T extends Record<string, any>>({
                             }}
                             disabled={isLoading}
                           >
-                            Valider
+                            <Check className="h-3 w-3" />
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-6 px-2"
+                            className="h-6 w-6 p-0 rounded-full"
+                            aria-label="Annuler"
                             onClick={() => setPendingRow(null)}
                             disabled={isLoading}
                           >
-                            Annuler
+                            <X className="h-3 w-3" />
                           </Button>
                         </div>
                       )}

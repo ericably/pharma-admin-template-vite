@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -63,6 +63,14 @@ export default function Inventory() {
   });
 
   const medications = medicationsData?.items || [];
+  
+  useEffect(() => {
+    const handleCreated = (_e: Event) => {
+      refetch();
+    };
+    window.addEventListener('editableTable:itemCreated', handleCreated);
+    return () => window.removeEventListener('editableTable:itemCreated', handleCreated);
+  }, [refetch]);
   
   const filteredMedications = medications.filter(medication => {
     const matchesSearch = 
