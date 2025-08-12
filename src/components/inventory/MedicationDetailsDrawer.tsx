@@ -235,6 +235,42 @@ export default function MedicationDetailsDrawer({ open, onOpenChange, medication
             </div>
           )}
 
+          {/* Avis SMR */}
+          {details?.avis_smr && details.avis_smr.length > 0 && (
+            <div className="rounded-md border p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <h4 className="text-sm font-medium">Avis SMR</h4>
+              </div>
+              <div className="space-y-2">
+                {details.avis_smr.map((a, idx) => (
+                  <div key={idx} className="text-xs border rounded p-2">
+                    <div className="font-medium">{a.valeur_smr} • {a.date_avis}</div>
+                    <div className="text-muted-foreground mt-1" dangerouslySetInnerHTML={{ __html: a.libelle_smr || '' }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Avis ASMR */}
+          {details?.avis_asmr && details.avis_asmr.length > 0 && (
+            <div className="rounded-md border p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <h4 className="text-sm font-medium">Avis ASMR</h4>
+              </div>
+              <div className="space-y-2">
+                {details.avis_asmr.map((a, idx) => (
+                  <div key={idx} className="text-xs border rounded p-2">
+                    <div className="font-medium">ASMR {a.valeur_asmr} • {a.date_avis}</div>
+                    <div className="text-muted-foreground mt-1">{a.libelle_asmr}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Conditions */}
           {details?.conditions && details.conditions.length > 0 && (
             <div className="rounded-md border p-3">
