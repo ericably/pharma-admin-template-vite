@@ -35,6 +35,7 @@ import { useToast } from "@/hooks/use-toast";
 import MedicationService, { Medication } from "@/api/services/MedicationService";
 import { useQuery } from "@tanstack/react-query";
 import { MedicationsList } from "@/components/inventory/MedicationsList";
+import MedicationDetailsDrawer from "@/components/inventory/MedicationDetailsDrawer";
 
 export default function Inventory() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,6 +43,8 @@ export default function Inventory() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
+  const [sortKey, setSortKey] = useState<'name' | 'stock' | 'price'>('name');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   
   const { toast } = useToast();
   
@@ -94,6 +97,14 @@ export default function Inventory() {
       default:
         return true;
     }
+  });
+
+  const sortedMedications = [...filteredMedications].sort((a, b) => {
+    const dir = sortDir === 'asc' ? 1 : -1;
+    if (sortKey === 'name') return a.name.localeCompare(b.name) * dir;
+    if (sortKey === 'stock') return (a.stock - b.stock) * dir;
+    if (sortKey === 'price') return (a.price - b.price) * dir;
+    return 0;
   });
 
   const handleCreateMedication = async (data: any) => {
@@ -515,6 +526,24 @@ export default function Inventory() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex bg-white/70 border-gray-200 hover:bg-white hover:border-green-500">
+                    Trier
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => { setSortKey('name'); setSortDir('asc'); }}>Nom A→Z</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setSortKey('name'); setSortDir('desc'); }}>Nom Z→A</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setSortKey('stock'); setSortDir('desc'); }}>Stock décroissant</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setSortKey('stock'); setSortDir('asc'); }}>Stock croissant</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setSortKey('price'); setSortDir('desc'); }}>Prix décroissant</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setSortKey('price'); setSortDir('asc'); }}>Prix croissant</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Button variant="outline" onClick={handleExportMedications} className="bg-white/70 border-gray-200 hover:bg-white hover:border-green-500">
                 <FileDown className="mr-2 h-4 w-4" />
                 Exporter
@@ -524,7 +553,7 @@ export default function Inventory() {
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <MedicationsList
-              medications={filteredMedications}
+              medications={sortedMedications}
               onEdit={handleEditMedication}
               onDelete={handleDeleteMedication}
               onView={handleViewMedication}
@@ -559,8 +588,17 @@ export default function Inventory() {
               </>
             )}
           </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+          </CardContent>
+        </Card>
+
+        {/* Détails du produit */}
+        <MedicationDetailsDrawer
+          open={!!selectedMedication}
+          onOpenChange={(v) => { if (!v) setSelectedMedication(null); }}
+          medication={selectedMedication}
+          onUpdated={() => refetch()}
+        />
+      </div>
+    );
+  }
+

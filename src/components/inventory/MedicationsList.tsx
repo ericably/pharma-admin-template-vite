@@ -44,6 +44,7 @@ export function MedicationsList({ medications, onEdit, onDelete, onView, onUpdat
       key: 'name', 
       label: 'Nom', 
       type: 'autocomplete',
+      editable: false,
       autocomplete: {
         searchFn: (query: string) => MedicationSearchService.searchMedications(query),
         displayField: "name",

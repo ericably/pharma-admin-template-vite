@@ -368,7 +368,7 @@ export function EditableTable<T extends Record<string, any>>({
                       )}
 
                       {isLast && !editing && (
-                        <div className="flex justify-end gap-2 mt-1">
+                        <div className="flex justify-end items-center gap-2 mt-1">
                           <Button
                             size="sm"
                             variant="default"
