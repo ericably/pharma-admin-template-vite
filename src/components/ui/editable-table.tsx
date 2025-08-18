@@ -9,7 +9,7 @@ import { Check, X, Edit, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 export interface EditableColumn<T = any> {
   key: string;
   label: string;
-  type?: 'text' | 'number' | 'email' | 'tel' | 'autocomplete';
+  type?: 'text' | 'number' | 'email' | 'tel' | 'date' | 'autocomplete';
   editable?: boolean;
   render?: (value: any, item: T) => React.ReactNode;
   validate?: (value: any) => boolean;

@@ -17,7 +17,12 @@ import {
   Shield,
   ArrowUpDown,
   Eye,
-  Plus
+  Plus,
+  Edit,
+  Trash2,
+  MoreVertical,
+  FilePlus,
+  FileText
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,11 +31,12 @@ import PatientService, { Patient } from "@/api/services/PatientService";
 import { useQuery } from "@tanstack/react-query";
 import { EditableTable, EditableColumn } from "@/components/ui/editable-table";
 import { PrescriptionCreateForm } from "@/components/prescriptions/PrescriptionCreateForm";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { PatientDetailsDrawer } from "@/components/patients/PatientDetailsDrawer";
 
 export default function Patients() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentFilter, setCurrentFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<string>("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [selectedPatientForPrescription, setSelectedPatientForPrescription] = useState<Patient | null>(null);
@@ -39,10 +45,14 @@ export default function Patients() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { toast } = useToast();
+  const itemsPerPage = 20;
 
-  const { data: patientsData, refetch } = useQuery({
-    queryKey: ['patients'],
-    queryFn: () => PatientService.getAllPatients()
+  const { data: patientsData, refetch, isLoading } = useQuery({
+    queryKey: ['patients', currentPage, searchQuery, currentFilter],
+    queryFn: () => PatientService.getAllPatients(currentPage, itemsPerPage, { 
+      search: searchQuery,
+      filter: currentFilter 
+    })
   });
 
   const patients = patientsData?.items || [];
@@ -283,7 +293,7 @@ export default function Patients() {
     { 
       key: 'dob', 
       label: 'Date de naissance', 
-      type: 'text',
+      type: 'date',
       render: (value) => <span className="text-xs">{value}</span>
     },
     { 
@@ -307,25 +317,31 @@ export default function Patients() {
       label: 'Actions', 
       editable: false,
       render: (_, patient) => (
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleViewDetails(patient)}
-            className="h-6 px-2 text-xs"
-          >
-            <Eye className="h-3 w-3 mr-1" />
-            Détails
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleCreatePrescription(patient)}
-            className="h-6 px-2 text-xs"
-          >
-            Ordonnance
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-6 w-6 p-0">
+              <span className="sr-only">Ouvrir le menu</span>
+              <MoreVertical className="h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-white border shadow-lg">
+            <DropdownMenuItem onClick={() => handleViewDetails(patient)}>
+              <Eye className="mr-2 h-4 w-4" />
+              Voir Détails
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleCreatePrescription(patient)}>
+              <FilePlus className="mr-2 h-4 w-4" />
+              Nouvelle Ordonnance
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              className="text-red-600" 
+              onClick={() => handleDeletePatient(patient)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Supprimer
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
     }
   ];
@@ -480,9 +496,8 @@ export default function Patients() {
               onUpdate={handleUpdatePatient}
               onCreate={handleCreatePatient}
               keyField="id"
-              onSort={handleSort}
-              sortBy={sortBy}
-              sortDirection={sortDirection}
+              emptyRowMessage="Cliquer pour ajouter un patient"
+              isLoading={isLoading}
             />
           </div>
           
@@ -509,65 +524,20 @@ export default function Patients() {
         />
       )}
 
-      <Drawer open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DrawerContent className="max-h-[85vh]">
-          <DrawerHeader>
-            <DrawerTitle>Détails du Patient</DrawerTitle>
-          </DrawerHeader>
-          {selectedPatientDetails && (
-            <div className="p-6 overflow-y-auto">
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold border-b pb-2">Informations Personnelles</h3>
-                  <div className="grid gap-3">
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Nom</label>
-                      <p className="text-base">{selectedPatientDetails.name}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Email</label>
-                      <p className="text-base">{selectedPatientDetails.email}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Téléphone</label>
-                      <p className="text-base">{selectedPatientDetails.phone}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Date de naissance</label>
-                      <p className="text-base">{selectedPatientDetails.dob}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Adresse</label>
-                      <p className="text-base">{selectedPatientDetails.address || 'Non renseignée'}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold border-b pb-2">Informations Médicales</h3>
-                  <div className="grid gap-3">
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Assurance</label>
-                      <p className="text-base">{selectedPatientDetails.insurance || 'Aucune'}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Statut</label>
-                      <div className="mt-1">{getStatusBadge(selectedPatientDetails.status)}</div>
-                    </div>
-                  </div>
-                  <div className="mt-6">
-                    <Button 
-                      onClick={() => handleCreatePrescription(selectedPatientDetails)}
-                      className="w-full"
-                    >
-                      Créer une Ordonnance
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </DrawerContent>
-      </Drawer>
+      <PatientDetailsDrawer
+        patient={selectedPatientDetails}
+        isOpen={isDetailsOpen}
+        onClose={() => {
+          setIsDetailsOpen(false);
+          setSelectedPatientDetails(null);
+        }}
+        onCreatePrescription={(patient) => {
+          setIsDetailsOpen(false);
+          setSelectedPatientDetails(null);
+          handleCreatePrescription(patient);
+        }}
+        onUpdate={handleUpdatePatient}
+      />
     </div>
   );
 }
