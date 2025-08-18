@@ -28,6 +28,9 @@ interface EditableTableProps<T = any> {
   onCreate?: (newItem: Partial<T>) => Promise<void>;
   className?: string;
   keyField?: string;
+  onSort?: (column: string) => void;
+  sortBy?: string;
+  sortDirection?: 'asc' | 'desc';
 }
 
 interface EditingCell {
@@ -86,7 +89,10 @@ export function EditableTable<T extends Record<string, any>>({
   onUpdate,
   onCreate,
   className,
-  keyField = 'id'
+  keyField = 'id',
+  onSort,
+  sortBy,
+  sortDirection
 }: EditableTableProps<T>) {
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
   const [editValue, setEditValue] = useState<string>('');
@@ -94,6 +100,8 @@ export function EditableTable<T extends Record<string, any>>({
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [pendingRow, setPendingRow] = useState<Partial<T> | null>(null);
+  const [sortKey, setSortKey] = useState<string>('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);

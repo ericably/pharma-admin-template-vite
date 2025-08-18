@@ -199,24 +199,24 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
-        <DialogHeader className="pb-4">
-          <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5 text-blue-600" />
-            Commande Rapide - {patient.name}
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pb-3">
+          <DialogTitle className="text-lg font-semibold flex items-center gap-2">
+            <ShoppingCart className="h-4 w-4 text-blue-600" />
+            Ordonnance - {patient.name}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Client Info compacte */}
-          <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
+          <div className="bg-blue-50 p-2 rounded-lg border-l-3 border-blue-500">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <span className="font-medium text-blue-800">{patient.name}</span>
-                <span className="text-blue-600 text-sm">{patient.email}</span>
+              <div className="flex items-center gap-3">
+                <span className="font-medium text-blue-800 text-sm">{patient.name}</span>
+                <span className="text-blue-600 text-xs">{patient.email}</span>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-green-600">{getTotalPrice().toFixed(2)}€</div>
+                <div className="text-lg font-bold text-green-600">{getTotalPrice().toFixed(2)}€</div>
                 <div className="text-xs text-gray-500">Total</div>
               </div>
             </div>
@@ -225,8 +225,8 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
           {/* Produits - Interface très compacte */}
           <div className="space-y-2">
             {items.map((item, index) => (
-              <div key={index} className="bg-white border rounded-lg p-3 shadow-sm">
-                <div className="flex items-center gap-3">
+              <div key={index} className="bg-white border rounded-lg p-2 shadow-sm">
+                <div className="flex items-center gap-2">
                   {/* Sélection produit - Plus compact */}
                   <div className="flex-1 min-w-0">
                     <Popover 
@@ -237,7 +237,7 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
                         <Button
                           variant="outline"
                           role="combobox"
-                          className="w-full h-10 justify-between text-left"
+                          className="w-full h-8 justify-between text-left text-xs"
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <span className="truncate">
@@ -286,31 +286,31 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
 
                   {/* Quantité compacte */}
                   <div className="flex items-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => decrementQuantity(index)}
-                      disabled={item.quantity <= 1}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <span className="mx-2 text-center w-8 text-sm font-medium">{item.quantity}</span>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => incrementQuantity(index)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => decrementQuantity(index)}
+                        disabled={item.quantity <= 1}
+                        className="h-6 w-6 p-0"
+                      >
+                        <Minus className="h-2 w-2" />
+                      </Button>
+                      <span className="mx-1 text-center w-6 text-xs font-medium">{item.quantity}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => incrementQuantity(index)}
+                        className="h-6 w-6 p-0"
+                      >
+                        <Plus className="h-2 w-2" />
+                      </Button>
                   </div>
 
                   {/* Total ligne */}
-                  <div className="text-right min-w-[80px]">
-                    <div className="text-lg font-bold text-green-600">
+                  <div className="text-right min-w-[60px]">
+                    <div className="text-sm font-bold text-green-600">
                       {(item.price * item.quantity).toFixed(2)}€
                     </div>
                   </div>
@@ -322,9 +322,9 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
                       variant="ghost"
                       size="sm"
                       onClick={() => removeItem(index)}
-                      className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
+                      className="text-red-600 hover:text-red-700 h-6 w-6 p-0"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3" />
                     </Button>
                   )}
                 </div>
@@ -336,25 +336,24 @@ export function PrescriptionCreateForm({ isOpen, onClose, patient, onSuccess }: 
               type="button" 
               variant="outline" 
               onClick={addItem}
-              className="w-full h-10 border-dashed border-2 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+              className="w-full h-8 border-dashed border-2 hover:border-blue-500 hover:bg-blue-50 transition-colors text-xs"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-3 w-3 mr-1" />
               Ajouter un produit
             </Button>
           </div>
 
           {/* Actions */}
-          <div className="flex justify-between items-center pt-4 border-t">
-            <Button type="button" variant="outline" onClick={handleClose}>
+          <div className="flex justify-between items-center pt-3 border-t">
+            <Button type="button" variant="outline" onClick={handleClose} size="sm">
               Annuler
             </Button>
             <Button 
               onClick={onSubmit} 
-              size="lg"
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8"
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6"
               disabled={getValidItems().length === 0}
             >
-              <ShoppingCart className="mr-2 h-5 w-5" />
+              <ShoppingCart className="mr-2 h-4 w-4" />
               Valider • {getTotalPrice().toFixed(2)}€
             </Button>
           </div>

@@ -9,30 +9,34 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { 
   ChevronDown, 
-  Plus, 
   Search, 
   FileDown,
   Users,
   UserCheck,
   UserX,
-  Shield
+  Shield,
+  ArrowUpDown,
+  Eye,
+  Plus
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import PatientService, { Patient } from "@/api/services/PatientService";
 import { useQuery } from "@tanstack/react-query";
-import { PatientsList } from "@/components/patients/PatientsList";
-import { PatientForm } from "@/components/patients/PatientForm";
+import { EditableTable, EditableColumn } from "@/components/ui/editable-table";
 import { PrescriptionCreateForm } from "@/components/prescriptions/PrescriptionCreateForm";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 export default function Patients() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentFilter, setCurrentFilter] = useState("all");
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<string>("");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [selectedPatientForPrescription, setSelectedPatientForPrescription] = useState<Patient | null>(null);
   const [isPrescriptionFormOpen, setIsPrescriptionFormOpen] = useState(false);
+  const [selectedPatientDetails, setSelectedPatientDetails] = useState<Patient | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { toast } = useToast();
 
@@ -43,7 +47,7 @@ export default function Patients() {
 
   const patients = patientsData?.items || [];
   
-  const filteredPatients = patients.filter(patient => {
+  let filteredPatients = patients.filter(patient => {
     const matchesSearch = 
       patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (patient.id && patient.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -65,22 +69,44 @@ export default function Patients() {
     }
   });
 
+  // Apply sorting
+  if (sortBy) {
+    filteredPatients = [...filteredPatients].sort((a, b) => {
+      let aValue = a[sortBy as keyof Patient];
+      let bValue = b[sortBy as keyof Patient];
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+      
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
   const activePatients = patients.filter(p => p.status === "Actif").length;
   const inactivePatients = patients.filter(p => p.status === "Inactif").length;
   const insuredPatients = patients.filter(p => p.insurance !== undefined && p.insurance !== "").length;
 
-  const handleCreatePatient = async (data: Omit<Patient, '@id' | 'id'>) => {
+  const handleCreatePatient = async (newPatient: Partial<Patient>) => {
     try {
-      await PatientService.createPatient(data);
-      
+      const patientData = {
+        name: newPatient.name || '',
+        email: newPatient.email || '',
+        phone: newPatient.phone || '',
+        dob: newPatient.dob || '',
+        address: newPatient.address || '',
+        insurance: newPatient.insurance || '',
+        status: newPatient.status || 'Actif'
+      };
+      await PatientService.createPatient(patientData);
+      await refetch();
       toast({
         title: "Succès",
         description: "Le patient a été ajouté avec succès.",
-        variant: "default",
       });
-      
-      setIsFormOpen(false);
-      refetch();
     } catch (error) {
       console.error("Error creating patient:", error);
       toast({
@@ -91,34 +117,36 @@ export default function Patients() {
     }
   };
 
-  const handleUpdatePatient = async (data: Omit<Patient, '@id' | 'id'>) => {
-    if (!selectedPatient?.id) return;
-    
+  const handleUpdatePatient = async (patient: Patient, updates: Partial<Patient>) => {
     try {
-      await PatientService.updatePatient(selectedPatient.id, data);
-      
+      await PatientService.updatePatient(patient.id, updates);
+      await refetch();
       toast({
         title: "Succès",
-        description: "Le patient a été modifié avec succès.",
-        variant: "default",
+        description: "Patient mis à jour avec succès",
       });
-      
-      setIsFormOpen(false);
-      setSelectedPatient(null);
-      refetch();
     } catch (error) {
-      console.error("Error updating patient:", error);
       toast({
         title: "Erreur",
-        description: "Une erreur s'est produite lors de la modification du patient.",
+        description: "Erreur lors de la mise à jour du patient",
         variant: "destructive",
       });
     }
   };
 
-  const handleEditPatient = (patient: Patient) => {
-    setSelectedPatient(patient);
-    setIsFormOpen(true);
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    return status === "Actif" ? 
+      <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Actif</Badge> :
+      <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">Inactif</Badge>;
   };
 
   const handleDeletePatient = async (patient: Patient) => {
@@ -228,17 +256,79 @@ export default function Patients() {
     });
   };
 
-  const handleOpenForm = () => {
-    setSelectedPatient(null);
-    setIsFormOpen(true);
+  const handleViewDetails = (patient: Patient) => {
+    setSelectedPatientDetails(patient);
+    setIsDetailsOpen(true);
   };
 
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-    setSelectedPatient(null);
-  };
-
-  const handleFormSubmit = selectedPatient ? handleUpdatePatient : handleCreatePatient;
+  const columns: EditableColumn<Patient>[] = [
+    { 
+      key: 'id', 
+      label: 'ID', 
+      editable: false,
+      render: (value) => <span className="text-xs">{value}</span>
+    },
+    { 
+      key: 'name', 
+      label: 'Nom', 
+      type: 'text',
+      render: (value) => (
+        <div className="flex items-center gap-1">
+          <span className="text-xs font-medium">{value}</span>
+        </div>
+      )
+    },
+    { key: 'email', label: 'Email', type: 'email' },
+    { key: 'phone', label: 'Téléphone', type: 'tel' },
+    { 
+      key: 'dob', 
+      label: 'Date de naissance', 
+      type: 'text',
+      render: (value) => <span className="text-xs">{value}</span>
+    },
+    { 
+      key: 'insurance', 
+      label: 'Assurance',
+      render: (value) => (
+        <div className="flex items-center gap-1">
+          <Shield className="h-3 w-3 text-muted-foreground" />
+          <span className="text-xs">{value || '-'}</span>
+        </div>
+      )
+    },
+    { 
+      key: 'status', 
+      label: 'Statut', 
+      editable: false,
+      render: (value) => getStatusBadge(value)
+    },
+    { 
+      key: 'actions', 
+      label: 'Actions', 
+      editable: false,
+      render: (_, patient) => (
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleViewDetails(patient)}
+            className="h-6 px-2 text-xs"
+          >
+            <Eye className="h-3 w-3 mr-1" />
+            Détails
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleCreatePrescription(patient)}
+            className="h-6 px-2 text-xs"
+          >
+            Ordonnance
+          </Button>
+        </div>
+      )
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-2 space-y-2 animate-fade-in">
@@ -339,14 +429,6 @@ export default function Patients() {
               <CardTitle className="text-xl text-gray-800">Liste des Patients</CardTitle>
               <CardDescription className="text-gray-600">Recherchez et gérez vos patients</CardDescription>
             </div>
-            <Button 
-              onClick={handleOpenForm}
-              className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0"
-              size="lg"
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              Ajouter Patient
-            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -392,28 +474,15 @@ export default function Patients() {
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <PatientsList
-              patients={filteredPatients}
-              onEdit={handleEditPatient}
-              onDelete={handleDeletePatient}
-              onView={() => {}} // Simplified for now
-              onCreatePrescription={handleCreatePrescription}
-              onUpdate={async (patient, updates) => {
-                try {
-                  await PatientService.updatePatient(patient.id, updates);
-                  await refetch();
-                  toast({
-                    title: "Succès",
-                    description: "Patient mis à jour avec succès",
-                  });
-                } catch (error) {
-                  toast({
-                    title: "Erreur",
-                    description: "Erreur lors de la mise à jour du patient",
-                    variant: "destructive",
-                  });
-                }
-              }}
+            <EditableTable
+              data={filteredPatients}
+              columns={columns}
+              onUpdate={handleUpdatePatient}
+              onCreate={handleCreatePatient}
+              keyField="id"
+              onSort={handleSort}
+              sortBy={sortBy}
+              sortDirection={sortDirection}
             />
           </div>
           
@@ -428,13 +497,6 @@ export default function Patients() {
         </CardContent>
       </Card>
 
-      <PatientForm
-        isOpen={isFormOpen}
-        onClose={handleCloseForm}
-        onSubmit={handleFormSubmit}
-        initialData={selectedPatient || undefined}
-      />
-
       {selectedPatientForPrescription && (
         <PrescriptionCreateForm
           isOpen={isPrescriptionFormOpen}
@@ -446,6 +508,66 @@ export default function Patients() {
           onSuccess={handlePrescriptionSuccess}
         />
       )}
+
+      <Drawer open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DrawerContent className="max-h-[85vh]">
+          <DrawerHeader>
+            <DrawerTitle>Détails du Patient</DrawerTitle>
+          </DrawerHeader>
+          {selectedPatientDetails && (
+            <div className="p-6 overflow-y-auto">
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold border-b pb-2">Informations Personnelles</h3>
+                  <div className="grid gap-3">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Nom</label>
+                      <p className="text-base">{selectedPatientDetails.name}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Email</label>
+                      <p className="text-base">{selectedPatientDetails.email}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Téléphone</label>
+                      <p className="text-base">{selectedPatientDetails.phone}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Date de naissance</label>
+                      <p className="text-base">{selectedPatientDetails.dob}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Adresse</label>
+                      <p className="text-base">{selectedPatientDetails.address || 'Non renseignée'}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold border-b pb-2">Informations Médicales</h3>
+                  <div className="grid gap-3">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Assurance</label>
+                      <p className="text-base">{selectedPatientDetails.insurance || 'Aucune'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Statut</label>
+                      <div className="mt-1">{getStatusBadge(selectedPatientDetails.status)}</div>
+                    </div>
+                  </div>
+                  <div className="mt-6">
+                    <Button 
+                      onClick={() => handleCreatePrescription(selectedPatientDetails)}
+                      className="w-full"
+                    >
+                      Créer une Ordonnance
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
