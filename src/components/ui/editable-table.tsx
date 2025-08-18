@@ -105,8 +105,6 @@ export function EditableTable<T extends Record<string, any>>({
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [sortKey, setSortKey] = useState<string | null>(null);
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const startEdit = (rowId: string | number, columnKey: string, currentValue: any) => {
     setEditingCell({ rowId, columnKey });
     setEditValue(String(currentValue || ''));
