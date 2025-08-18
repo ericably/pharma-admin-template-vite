@@ -24,13 +24,15 @@ export interface EditableColumn<T = any> {
 interface EditableTableProps<T = any> {
   data: T[];
   columns: EditableColumn<T>[];
-  onUpdate: (item: T, updates: Partial<T>) => Promise<void>;
+  onUpdate?: (item: T, updates: Partial<T>) => Promise<void>;
   onCreate?: (newItem: Partial<T>) => Promise<void>;
   className?: string;
   keyField?: string;
   onSort?: (column: string) => void;
   sortBy?: string;
   sortDirection?: 'asc' | 'desc';
+  emptyRowMessage?: string;
+  isLoading?: boolean;
 }
 
 interface EditingCell {
@@ -92,11 +94,13 @@ export function EditableTable<T extends Record<string, any>>({
   keyField = 'id',
   onSort,
   sortBy,
-  sortDirection
+  sortDirection,
+  emptyRowMessage = "Cliquer pour ajouter",
+  isLoading = false
 }: EditableTableProps<T>) {
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
   const [editValue, setEditValue] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [pendingRow, setPendingRow] = useState<Partial<T> | null>(null);
@@ -148,16 +152,16 @@ export function EditableTable<T extends Record<string, any>>({
       return;
     }
 
-    setIsLoading(true);
+    setIsSaving(true);
     try {
       const updates = { [editingCell.columnKey]: editValue } as Partial<T>;
-      await onUpdate(item, updates);
+      await onUpdate?.(item, updates);
       setEditingCell(null);
       setEditValue('');
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -414,7 +418,7 @@ export function EditableTable<T extends Record<string, any>>({
                                 variant="ghost"
                                 className="h-6 w-6 p-0"
                                 onClick={saveEdit}
-                                disabled={isLoading}
+                                disabled={isSaving}
                                 aria-label="Valider la modification"
                               >
                                 <Check className="h-3 w-3 text-green-600" />
@@ -424,7 +428,7 @@ export function EditableTable<T extends Record<string, any>>({
                                 variant="ghost"
                                 className="h-6 w-6 p-0"
                                 onClick={cancelEdit}
-                                disabled={isLoading}
+                                disabled={isSaving}
                                 aria-label="Annuler la modification"
                               >
                                 <X className="h-3 w-3 text-red-600" />
@@ -468,7 +472,7 @@ export function EditableTable<T extends Record<string, any>>({
                             aria-label="Valider la création"
                             onClick={async () => {
                               if (!onCreate) return;
-                              setIsLoading(true);
+                              setIsSaving(true);
                               try {
                                 await onCreate(pendingRow as T);
                                 window.dispatchEvent(new CustomEvent('editableTable:itemCreated'));
@@ -478,10 +482,10 @@ export function EditableTable<T extends Record<string, any>>({
                               } catch (error) {
                                 console.error('Erreur lors de la création:', error);
                               } finally {
-                                setIsLoading(false);
+                                setIsSaving(false);
                               }
                             }}
-                            disabled={isLoading}
+                            disabled={isSaving}
                           >
                             <Check className="h-3 w-3" />
                           </Button>
@@ -491,7 +495,7 @@ export function EditableTable<T extends Record<string, any>>({
                             className="h-6 w-6 p-0 rounded-full"
                             aria-label="Annuler"
                             onClick={() => setPendingRow(null)}
-                            disabled={isLoading}
+                            disabled={isSaving}
                           >
                             <X className="h-3 w-3" />
                           </Button>
@@ -543,7 +547,7 @@ export function EditableTable<T extends Record<string, any>>({
                                 variant="ghost"
                                 className="h-6 w-6 p-0"
                                 onClick={saveEdit}
-                                disabled={isLoading}
+                                disabled={isSaving}
                               >
                                 <Check className="h-3 w-3 text-green-600" />
                               </Button>
@@ -552,7 +556,7 @@ export function EditableTable<T extends Record<string, any>>({
                                 variant="ghost"
                                 className="h-6 w-6 p-0"
                                 onClick={cancelEdit}
-                                disabled={isLoading}
+                                disabled={isSaving}
                               >
                                 <X className="h-3 w-3 text-red-600" />
                               </Button>
