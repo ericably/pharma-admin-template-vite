@@ -58,203 +58,179 @@ export function PatientDetailsDrawer({
 
   return (
     <Drawer open={isOpen} onOpenChange={onClose}>
-      <DrawerContent className="max-h-[85vh]">
-        <DrawerHeader className="border-b">
-          <div className="flex items-center justify-between">
-            <DrawerTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-blue-600" />
-              Détails du Patient - {patient.name}
-            </DrawerTitle>
-            {!isEditing && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2"
-              >
-                <Edit className="h-4 w-4" />
-                Modifier
-              </Button>
-            )}
-          </div>
+      <DrawerContent className="max-w-md mx-auto max-h-[80vh]">
+        <DrawerHeader className="pb-3">
+          <DrawerTitle className="text-sm font-medium flex items-center gap-2">
+            <User className="h-4 w-4 text-primary" />
+            {patient.name}
+          </DrawerTitle>
+          {!isEditing && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsEditing(true)}
+              className="absolute top-3 right-3 h-7 px-2 text-xs"
+            >
+              <Edit className="h-3 w-3" />
+            </Button>
+          )}
         </DrawerHeader>
         
-        <div className="p-6 overflow-y-auto">
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* Informations Personnelles */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2 flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Informations Personnelles
-              </h3>
-              <div className="grid gap-4">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <div className="w-full">
-                    <Label className="text-sm font-medium text-gray-600">Nom complet</Label>
-                    {isEditing ? (
-                      <Input
-                        value={editedPatient.name ?? patient.name}
-                        onChange={(e) => setEditedPatient({...editedPatient, name: e.target.value})}
-                        className="mt-1"
-                      />
-                    ) : (
-                      <p className="text-base font-semibold">{patient.name}</p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Mail className="h-4 w-4 text-gray-500" />
-                  <div className="w-full">
-                    <Label className="text-sm font-medium text-gray-600">Email</Label>
-                    {isEditing ? (
-                      <Input
-                        type="email"
-                        value={editedPatient.email ?? patient.email}
-                        onChange={(e) => setEditedPatient({...editedPatient, email: e.target.value})}
-                        className="mt-1"
-                      />
-                    ) : (
-                      <p className="text-base">{patient.email}</p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Phone className="h-4 w-4 text-gray-500" />
-                  <div className="w-full">
-                    <Label className="text-sm font-medium text-gray-600">Téléphone</Label>
-                    {isEditing ? (
-                      <Input
-                        type="tel"
-                        value={editedPatient.phone ?? patient.phone}
-                        onChange={(e) => setEditedPatient({...editedPatient, phone: e.target.value})}
-                        className="mt-1"
-                      />
-                    ) : (
-                      <p className="text-base">{patient.phone}</p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <div className="w-full">
-                    <Label className="text-sm font-medium text-gray-600">Date de naissance</Label>
-                    {isEditing ? (
-                      <Input
-                        type="date"
-                        value={editedPatient.dob ?? patient.dob}
-                        onChange={(e) => setEditedPatient({...editedPatient, dob: e.target.value})}
-                        className="mt-1"
-                      />
-                    ) : (
-                      <p className="text-base">{patient.dob}</p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <MapPin className="h-4 w-4 text-gray-500" />
-                  <div className="w-full">
-                    <Label className="text-sm font-medium text-gray-600">Adresse</Label>
-                    {isEditing ? (
-                      <Textarea
-                        value={editedPatient.address ?? patient.address ?? ''}
-                        onChange={(e) => setEditedPatient({...editedPatient, address: e.target.value})}
-                        className="mt-1"
-                        rows={2}
-                      />
-                    ) : (
-                      <p className="text-base">{patient.address || 'Non renseignée'}</p>
-                    )}
-                  </div>
+        <div className="px-4 pb-4 overflow-y-auto">
+          <div className="space-y-3">
+            {/* Informations de base */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                <User className="h-3 w-3 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <Label className="text-xs font-medium text-muted-foreground">Nom</Label>
+                  {isEditing ? (
+                    <Input
+                      value={editedPatient.name ?? patient.name}
+                      onChange={(e) => setEditedPatient({...editedPatient, name: e.target.value})}
+                      className="h-7 text-xs mt-1"
+                    />
+                  ) : (
+                    <p className="text-sm font-medium truncate">{patient.name}</p>
+                  )}
                 </div>
               </div>
-            </div>
-
-            {/* Informations Médicales */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2 flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                Informations Médicales
-              </h3>
-              <div className="grid gap-4">
-                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                  <Shield className="h-4 w-4 text-blue-500" />
-                  <div className="w-full">
-                    <Label className="text-sm font-medium text-blue-600">Assurance</Label>
-                    {isEditing ? (
-                      <Input
-                        value={editedPatient.insurance ?? patient.insurance ?? ''}
-                        onChange={(e) => setEditedPatient({...editedPatient, insurance: e.target.value})}
-                        className="mt-1"
-                        placeholder="Nom de l'assurance"
-                      />
-                    ) : (
-                      <p className="text-base font-semibold">{patient.insurance || 'Aucune assurance'}</p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                  <div className="w-4 h-4 flex items-center justify-center">
-                    <div className={`w-2 h-2 rounded-full ${patient.status === 'Actif' ? 'bg-green-500' : 'bg-gray-500'}`}></div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-green-600">Statut</label>
-                    <div className="mt-1">{getStatusBadge(patient.status)}</div>
-                  </div>
-                </div>
-
-                {/* Historique placeholder */}
-                <div className="mt-6 p-4 border border-gray-200 rounded-lg">
-                  <h4 className="font-medium text-gray-800 mb-2 flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Historique des Ordonnances
-                  </h4>
-                  <p className="text-sm text-gray-500">Aucune ordonnance récente</p>
-                </div>
-
-                {/* Actions */}
-                <div className="mt-6 space-y-2">
+              
+              <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                <Mail className="h-3 w-3 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <Label className="text-xs font-medium text-muted-foreground">Email</Label>
                   {isEditing ? (
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={handleSave}
-                        className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                      >
-                        <Save className="mr-2 h-4 w-4" />
-                        Sauvegarder
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        onClick={handleCancel}
-                        className="flex-1"
-                      >
-                        <X className="mr-2 h-4 w-4" />
-                        Annuler
-                      </Button>
-                    </div>
+                    <Input
+                      type="email"
+                      value={editedPatient.email ?? patient.email}
+                      onChange={(e) => setEditedPatient({...editedPatient, email: e.target.value})}
+                      className="h-7 text-xs mt-1"
+                    />
                   ) : (
-                    <Button 
-                      onClick={() => onCreatePrescription(patient)}
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                      size="lg"
-                    >
-                      <FileText className="mr-2 h-4 w-4" />
-                      Créer une Ordonnance
-                    </Button>
+                    <p className="text-sm truncate">{patient.email}</p>
                   )}
-                  <Button 
-                    variant="outline"
-                    className="w-full"
-                    onClick={onClose}
-                  >
-                    Fermer
-                  </Button>
                 </div>
+              </div>
+              
+              <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                <Phone className="h-3 w-3 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <Label className="text-xs font-medium text-muted-foreground">Téléphone</Label>
+                  {isEditing ? (
+                    <Input
+                      type="tel"
+                      value={editedPatient.phone ?? patient.phone}
+                      onChange={(e) => setEditedPatient({...editedPatient, phone: e.target.value})}
+                      className="h-7 text-xs mt-1"
+                    />
+                  ) : (
+                    <p className="text-sm">{patient.phone}</p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                <Calendar className="h-3 w-3 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <Label className="text-xs font-medium text-muted-foreground">Date de naissance</Label>
+                  {isEditing ? (
+                    <Input
+                      type="date"
+                      value={editedPatient.dob ?? patient.dob}
+                      onChange={(e) => setEditedPatient({...editedPatient, dob: e.target.value})}
+                      className="h-7 text-xs mt-1"
+                    />
+                  ) : (
+                    <p className="text-sm">{patient.dob}</p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                <Shield className="h-3 w-3 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <Label className="text-xs font-medium text-muted-foreground">Assurance</Label>
+                  {isEditing ? (
+                    <Input
+                      value={editedPatient.insurance ?? patient.insurance ?? ''}
+                      onChange={(e) => setEditedPatient({...editedPatient, insurance: e.target.value})}
+                      className="h-7 text-xs mt-1"
+                      placeholder="Nom de l'assurance"
+                    />
+                  ) : (
+                    <p className="text-sm">{patient.insurance || 'Aucune assurance'}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                <MapPin className="h-3 w-3 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <Label className="text-xs font-medium text-muted-foreground">Adresse</Label>
+                  {isEditing ? (
+                    <Textarea
+                      value={editedPatient.address ?? patient.address ?? ''}
+                      onChange={(e) => setEditedPatient({...editedPatient, address: e.target.value})}
+                      className="h-14 text-xs mt-1 resize-none"
+                      placeholder="Adresse complète"
+                    />
+                  ) : (
+                    <p className="text-sm">{patient.address || 'Non renseignée'}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                <div className="w-3 h-3 flex items-center justify-center">
+                  <div className={`w-2 h-2 rounded-full ${patient.status === 'Actif' ? 'bg-green-500' : 'bg-gray-500'}`}></div>
+                </div>
+                <div className="flex-1">
+                  <Label className="text-xs font-medium text-muted-foreground">Statut</Label>
+                  <div className="mt-1">{getStatusBadge(patient.status)}</div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="pt-2 space-y-2">
+                {isEditing ? (
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={handleSave}
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                    >
+                      <Save className="mr-1 h-3 w-3" />
+                      Sauvegarder
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={handleCancel}
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                    >
+                      <X className="mr-1 h-3 w-3" />
+                      Annuler
+                    </Button>
+                  </div>
+                ) : (
+                  <Button 
+                    onClick={() => onCreatePrescription(patient)}
+                    className="w-full h-8 text-xs"
+                    size="sm"
+                  >
+                    <FileText className="mr-1 h-3 w-3" />
+                    Créer une Ordonnance
+                  </Button>
+                )}
+                <Button 
+                  variant="outline"
+                  className="w-full h-8 text-xs"
+                  onClick={onClose}
+                  size="sm"
+                >
+                  Fermer
+                </Button>
               </div>
             </div>
           </div>
