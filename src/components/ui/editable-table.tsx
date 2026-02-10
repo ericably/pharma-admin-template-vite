@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Check, X, Edit, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Check, X, Edit, ArrowUp, ArrowDown, ArrowUpDown, Plus } from "lucide-react";
 
 export interface EditableColumn<T = any> {
   key: string;
@@ -335,50 +335,37 @@ export function EditableTable<T extends Record<string, any>>({
             </tr>
           </thead>
           <tbody className="[&_tr:last-child]:border-0">
-            {/* Row d'entrée pour ajouter via API - toujours visible en haut */}
-            <tr className="border-b transition-colors hover:bg-muted/50">
-              {columns.map((column) => (
-                <td
-                  key={column.key}
-                  className="p-2 align-middle [&:has([role=checkbox])]:pr-0"
-                >
-                  {column.type === 'autocomplete' && column.key === 'name' ? (
-                    <div className="relative" ref={dropdownRef}>
-                      <div className="flex items-center gap-1">
-                        <Input
-                          ref={inputRef}
-                          type="text"
-                          value={editingCell?.rowId === 'new' && editingCell?.columnKey === column.key ? editValue : ''}
-                          onChange={(e) => {
-                            setEditValue(e.target.value);
-                            if (column.type === 'autocomplete') {
-                              handleSearch(e.target.value, column);
-                            }
-                          }}
-                          onKeyDown={(e) => handleKeyPress(e, column)}
-                          className="h-6 text-xs"
-                          placeholder="Tapez pour rechercher et ajouter..."
-                          onFocus={() => {
-                            setEditingCell({ rowId: 'new', columnKey: column.key });
-                          }}
-                        />
-                      </div>
-                      {showDropdown && searchResults.length > 0 && editingCell?.rowId === 'new' && editingCell?.columnKey === column.key && (
-                        <SearchResultsPortal
-                          anchorRef={inputRef}
-                          dropdownRef={dropdownRef}
-                          items={searchResults}
-                          displayField={column.autocomplete?.displayField || 'name'}
-                          onSelect={(it) => handleSelectItem(it, column)}
-                        />
+            {/* Row d'entrée pour ajouter - cliquer pour activer */}
+            {!pendingRow && onCreate && (
+              <tr 
+                className="border-b transition-colors hover:bg-muted/50 cursor-pointer group"
+                onClick={() => {
+                  const emptyRow: Partial<T> = {} as Partial<T>;
+                  columns.forEach(c => {
+                    if (c.editable !== false && c.key !== 'actions') {
+                      (emptyRow as any)[c.key] = '';
+                    }
+                  });
+                  setPendingRow(emptyRow);
+                  // Auto-focus first editable column
+                  const firstEditable = columns.find(c => c.editable !== false && c.key !== 'actions');
+                  if (firstEditable) {
+                    setTimeout(() => startEdit('new', firstEditable.key, ''), 50);
+                  }
+                }}
+              >
+                {columns.map((column) => (
+                  <td key={column.key} className="p-2 align-middle">
+                    <div className="h-6 flex items-center text-xs text-muted-foreground group-hover:text-foreground">
+                      {column.key === 'actions' ? '' : <Plus className="h-3 w-3 mr-1 opacity-0 group-hover:opacity-100" />}
+                      {column.key === (columns.find(c => c.editable !== false && c.key !== 'actions')?.key) && (
+                        <span className="opacity-50 group-hover:opacity-100">{emptyRowMessage}</span>
                       )}
                     </div>
-                  ) : (
-                    <div className="h-6 flex items-center text-xs text-muted-foreground">-</div>
-                  )}
-                </td>
-              ))}
-            </tr>
+                  </td>
+                ))}
+              </tr>
+            )}
 
             {/* Ligne en attente de validation */}
             {pendingRow && (
