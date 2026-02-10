@@ -14,7 +14,8 @@ import {
   UserRound,  // Added for Doctors
   Hospital,   // Added for Pharmacists
   Truck,      // Added for Suppliers
-  Cross       // Pharmacy symbol
+  Cross,      // Pharmacy symbol
+  Shield      // Insurance
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -35,6 +36,7 @@ const navigation: NavigationItem[] = [
   { name: "Doctors", href: "/doctors", icon: UserRound },
   { name: "Suppliers", href: "/suppliers", icon: Truck },
   { name: "Billing", href: "/billing", icon: BarChart4 },
+  { name: "Assurances", href: "/insurance", icon: Shield },
   { name: "Reports", href: "/reports", icon: BarChart4 },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
